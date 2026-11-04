@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "UberClone Conductor",
+    "slug": "uberclone-driver",
+    "scheme": "uberclonedriver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.laxaruz.uberclonedriver"
+    },
+    "android": {
+      "package": "com.laxaruz.uberclonedriver"
+    }
+  }
+}

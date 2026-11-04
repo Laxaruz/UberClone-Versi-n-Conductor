@@ -1,0 +1,13 @@
+node_modules/
+.expo/
+dist/
+web-build/
+coverage/
+tmp/
+android/
+ios/
+.idea/
+.env
+.env.*
+!.env.example
+npm-debug.log*
