@@ -5,7 +5,7 @@ import useTranslation from '../i18n/useTranslation';
 
 export default function HomeScreen({ navigation }) {
   const t = useTranslation();
-  const { driverSession, activeTrip } = useDriver();
+  const { driverSession, activeTrip, registrationStatus } = useDriver();
 
   return (
     <View style={styles.container}>
@@ -18,6 +18,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('profile')}</Text>
         <Text style={styles.cardText}>{driverSession?.name || t('noSession')}</Text>
+        <Text style={styles.cardText}>{t(registrationStatus === 'pending_demo' ? 'pendingApproval' : 'notRegistered')}</Text>
       </View>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('trip')}</Text>

@@ -7,15 +7,18 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "check": "expo install --check"
+    "check": "expo install --check",
+    "test:registration": "node tests/validateRegistration.test.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "9.2.1",
     "@react-navigation/bottom-tabs": "^7.21.0",
     "@react-navigation/drawer": "^7.14.4",
     "@react-navigation/native": "^7.5.1",
     "@react-navigation/native-stack": "^7.21.0",
     "expo": "~58.0.19",
+    "expo-image-picker": "~58.0.10",
     "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
     "react-native": "^0.88.1",

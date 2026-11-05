@@ -47,7 +47,7 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Resumen de la respuesta:** La sección 8 requiere registrar cada uso de IA en el momento, conservar el prompt literal, resumir la respuesta en 2–3 líneas y documentar uso, cambios, archivos/commit, verificación y aprendizaje. También requiere docs/AI_LOG.md, entradas por integrante integradas por PR a main, referencia desde README.md y entrega en PDF.
 - **Enlace al chat:** No disponible en esta sesión.
 - **Qué se usó / modificó / descartó:** Se usaron las instrucciones de la sección 8 para estructurar esta entrada. No se modificó código ni se atribuyó implementación. La revisión de avances queda pendiente.
-- **Archivos afectados y commit:** docs/AI_LOG.md (creado en esta sesión; entrada #1); hash del commit — pendiente.
+- **Archivos afectados y commit:** docs/AI_LOG.md (creado en esta sesión; entrada #1); hash del commit — 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b.
 - **Verificación:** Se renderizaron y revisaron visualmente las 9 páginas del PDF; los requisitos se verificaron en la sección 8 (páginas 7–9). La lectura local y la consulta de ramas en GitHub confirmaron que Kevin-dev y Jhoseth-dev apuntan a 085730a5af585e3d7c58c335e9d5a41f4783f8dd y main a d249e54fd14d81d9d6f0172388f74a81cbc847af. La consulta del estado local falló por permisos; no quedó confirmado si el árbol de trabajo está limpio. No se ejecutaron pruebas del proyecto.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
 
@@ -65,7 +65,7 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Resumen de la respuesta:** La rama Kevin-dev sigue en el commit `085730a5af585e3d7c58c335e9d5a41f4783f8dd`; aún no contiene cálculo tarifario ni modelo detallado del viaje. Se recomendó centralizar parámetros y una función pura en `src/config/pricing.js`; con categoría Económica, el ejemplo da tarifa de 19.200 COP, comisión de 3.840 COP y ganancia neta de 15.360 COP sin propina.
 - **Enlace al chat:** No disponible en esta sesión.
 - **Qué se usó / modificó / descartó:** Se consultaron la guía y el árbol/código actual de la rama para formular una recomendación conforme al requisito de una función pura y precios centralizados. No se modificó código ni se afirmó que la sugerencia se haya implementado.
-- **Archivos afectados y commit:** `docs/AI_LOG.md` (esta entrada); hash del commit que la incluya — pendiente.
+- **Archivos afectados y commit:** `docs/AI_LOG.md` (esta entrada); hash del commit que la incluya — 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b.
 - **Verificación:** La API de GitHub confirmó los heads de las ramas; el árbol de Kevin-dev y los contenidos de `src/context/DriverContext.js` y `src/screens/TripPreviewScreen.js` se leyeron en el commit indicado. El contexto conserva `activeTrip` inicialmente en `null` (línea 10) y la pantalla de vista previa solo muestra su ID (línea 14). No se ejecutaron pruebas; la aritmética del ejemplo se comprobó manualmente contra la fórmula y la tabla de la guía (páginas 4–5).
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
 
@@ -84,7 +84,7 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Enlace al chat:** No disponible en esta sesión.
 - **Qué se usó / modificó / descartó:** Se leyó el contenido local de los tres archivos y se comparó con la guía. Se recomendaron ajustes antes del commit; no se modificó código ni se afirmó que fueran aplicados.
 - **Archivos revisados:** `src/config/pricing.js`, `src/utils/calculateFare.js`, `src/models/trip.js`.
-- **Archivo afectado y commit:** `docs/AI_LOG.md` (esta entrada); hash del commit que la incluya — pendiente. Según Kevin, los archivos revisados aún no tienen commit ni push.
+- **Archivo afectado y commit:** `docs/AI_LOG.md` (esta entrada); hash del commit que la incluya — 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b. Según Kevin, los archivos revisados aún no tienen commit ni push.
 - **Verificación:** Se inspeccionaron las tres copias locales con números de línea. La lista de ramas en GitHub aún muestra `Kevin-dev` y `Jhoseth-dev` en `085730a5af585e3d7c58c335e9d5a41f4783f8dd` y `main` en `d249e54fd14d81d9d6f0172388f74a81cbc847af`; la consulta local de `git status` falló por permisos. Kevin reportó haber comprobado con Node Económico, XL, tarifa mínima, propina y tasa guardada; no se repitieron esas comprobaciones.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
 
@@ -103,6 +103,93 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Enlace al chat:** No disponible en esta sesión.
 - **Qué se usó / modificó / descartó:** Se leyó la versión local actual de los tres archivos y se revisaron sus referencias de IA. No se modificó código. Las pruebas de Node se registran como reportadas por Kevin; no se repitieron.
 - **Archivos revisados:** `src/config/pricing.js`, `src/utils/calculateFare.js`, `src/models/trip.js`.
-- **Archivo afectado y commit:** `docs/AI_LOG.md` (esta entrada); hash del commit que la incluya — pendiente. Kevin reporta que los cambios de código siguen sin commit ni push.
+- **Archivo afectado y commit:** `docs/AI_LOG.md` (esta entrada); hash del commit que la incluya — 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b. Kevin reporta que los cambios de código siguen sin commit ni push.
 - **Verificación:** Se inspeccionaron los tres archivos locales con números de línea. GitHub confirma que los heads remotos siguen en Kevin-dev y Jhoseth-dev: `085730a5af585e3d7c58c335e9d5a41f4783f8dd`; main: `d249e54fd14d81d9d6f0172388f74a81cbc847af`. git status local falló por permisos. Kevin reportó volver a comprobar Económico, XL, tarifa mínima, viaje, tasa guardada y categoría toString; no se ejecutaron pruebas en esta revisión.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #5
+
+- **Fecha y hora:** 2026-11-04 20:28:15 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Verificar el commit local informado y completar los hashes en las entradas previas relacionadas.
+- **Prompt completo y literal:**
+
+> Hice el commit 6ba2a33 en Kevin-dev con el modelo de viaje, los precios configurables, el calculo de tarifas y docs/AI_LOG.md. Comprobe que package-lock.json quedo fuera. Aun no hice push. El hash de este commit ya se puede completar en las entradas relacionadas.
+
+- **Resumen de la respuesta:** El HEAD local de Kevin-dev es el commit completo `6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b`. La lista de archivos del commit confirma que incluye `docs/AI_LOG.md` y los tres archivos de código indicados, y que `package-lock.json` quedó fuera.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se completó el hash `6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b` en las entradas #1–#4, que corresponden al registro y al trabajo de tarifa/modelo incluido en ese commit. Se añadió esta entrada para registrar la actualización. No se hizo push ni se creó un commit.
+- **Archivos afectados y commit:** `docs/AI_LOG.md` (actualización posterior al commit); hash del commit que incluya esta actualización — pendiente.
+- **Verificación:** El ref local `HEAD`/`Kevin-dev` resolvió al hash completo indicado. `git show --stat` y `git diff-tree` enumeraron `docs/AI_LOG.md`, `src/config/pricing.js`, `src/models/trip.js` y `src/utils/calculateFare.js`; `package-lock.json` no aparece. `git status` no pudo ejecutarse porque Git respondió que la operación requiere un árbol de trabajo. GitHub todavía mostraba las ramas remotas en los heads anteriores; los cambios del commit local no aparecen publicados. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+
+## Entrada #6
+
+- **Fecha y hora:** 2026-11-04 22:31:15 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Recomendar una estructura de bitácoras y revisar los requisitos del formulario antes de integrar el segundo avance de Jhoseth.
+- **Prompt completo y literal:**
+
+> Quiero integrar el segundo avance de Jhoseth en Kevin-dev. Voy a conservar mi bitacora en docs/AI_LOG_KEVIN.md y la de Jhoseth en docs/AI_LOG_JHOSETH.md. La guia tambien exige docs/AI_LOG.md en main, asi que necesito mantener un archivo final que reuna las entradas de ambos. Voy a revisar el registro de este avance para que incluya el idioma en Datos personales, use listas desplegables donde la guia las pide y guarde categorias compatibles con calculateFare. Quiero conservar las validaciones y pruebas que ya funcionan, usando solo lo visto en clase. Que estructura recomiendas para las bitacoras y para estos ajustes. Ves algun requisito del registro que deba revisar antes de modificarlo.
+
+- **Resumen de la respuesta:** GitHub confirma el avance de Jhoseth en 44a85b5ddd716426f47c28bb4a1bb33ba560beab, hijo de 085730a5af585e3d7c58c335e9d5a41f4783f8dd; Kevin-dev va por una rama distinta. La revisión encontró pendientes en idioma, listas desplegables, valores de categoría compatibles, referencias IA y fidelidad/estructura del registro de Jhoseth.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se contrastaron la guía, el commit y los archivos del registro con la configuración y función de tarifa en Kevin-dev. Se recomendó conservar bitácoras por integrante y una bitácora canónica global en main, resolviendo numeración y referencias al consolidar. No se modificó código ni se integraron ramas.
+- **Archivos revisados:** src/screens/RegistrationScreen.js, src/utils/validateRegistration.js, src/context/DriverContext.js, src/i18n/translations.js, tests/validateRegistration.test.mjs y docs/AI_LOG.md de Jhoseth-dev; src/config/pricing.js y src/utils/calculateFare.js de Kevin-dev.
+- **Archivo afectado y commit:** docs/AI_LOG.md (esta entrada en la copia local de Kevin); hash del commit que la incluya — pendiente.
+- **Verificación:** GitHub API confirmó Jhoseth-dev en 44a85b5ddd716426f47c28bb4a1bb33ba560beab, padre 085730a5af585e3d7c58c335e9d5a41f4783f8dd, y Kevin-dev en 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b. El commit de Jhoseth incluye el formulario, validador y prueba de 11 casos; no se ejecutaron pruebas. Se leyeron los archivos y sus líneas indicadas en la respuesta.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #7 — Revisión del segundo avance del registro del conductor
+
+- **Fecha:** 2026-11-04
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Objetivo:** Revisar y documentar el segundo avance funcional personal del registro del conductor, incluyendo validaciones, pruebas automatizadas, comprobaciones parciales en iPhone y estado de los cambios en Git.
+- **Prompt(s):**
+
+  **1. Solicitud inicial de revisión:**
+
+  > Termine los cambios locales de mi segundo commit personal en Jhoseth-dev. Implemente las tres pestañas del registro, validaciones por campo, seleccion de fotos y fechas, y el estado pending_demo. La pantalla aclara que no hubo revision real. Pase 10 casos de validacion, la comprobacion de dependencias y la exportacion para Android e iOS. Todavia no hice el commit ni probe el formulario en un dispositivo. Revisa este resumen para la bitacora y dime si necesitas algun dato verificable adicional antes de registrar el avance.
+
+  **2. Ampliación y corrección de evidencias:**
+
+  > Verifique mi rama Jhoseth-dev. Los cambios siguen sin commit. Corrijo un dato anterior, ejecute 11 comprobaciones y no 10. El comando npm run test termino con 11 validation cases passed. Probe un formulario valido, telefono corto, capacidad XL menor de 6, conductor menor de edad, placa en minusculas, SOAT que vence hoy, fecha imposible de SOAT, fecha imposible de nacimiento, vehiculo que requiere revision segun el año, foto de revision faltante y terminos sin aceptar. Ejecute npm run check y termino con Dependencies are up to date usando el mapa local de Expo porque la consulta de red no estuvo disponible. Ejecute npx expo export --platform android --platform ios y se exportaron los paquetes de ambas plataformas. Esta fue una exportacion de JavaScript y recursos, no hay hash nuevo. Adjunto las salidas de git status --short y git diff --stat.
+  >
+  > Probe la validacion del correo en mi iPhone. Al ingresar un dominio incompleto, como nombre@bonito, el formulario mostro un error. Esta comprobacion corresponde al campo de correo en la pestaña Datos personales. Probe en mi la pestaña Datos personales del registro. Comprobe que puedo ingresar texto y numeros, seleccionar una fecha y elegir una opcion de genero.
+
+  **3. Confirmación del estado y solicitud de documentación:**
+
+  > Confirme que estoy en la rama Jhoseth-dev y que mi segundo avance sigue sin commit. Los archivos nuevos son src/screens/RegistrationScreen.js, src/utils/validateRegistration.js y tests/validateRegistration.test.mjs. La prueba npm run test termino con 11 casos aprobados. Tambien probe la app en mi iPhone. Comprobe que abre Inicio, que puedo ingresar datos en la pestaña Datos personales, seleccionar fecha y genero, y que un correo con dominio incompleto muestra un error. Aun no he probado todo el formulario en el celular. Necesito que prepares la entrada de este avance como pendiente y me indiques que contenido debo incorporar a docs/AI_LOG.md en mi rama.
+
+- **Resumen de la respuesta:** ChatGPT revisó el alcance reportado, organizó las evidencias y diferenció las pruebas automatizadas de las comprobaciones manuales en iPhone. Aclaró que la exportación de Expo genera JavaScript y recursos, no un instalador nativo, y que el avance permanece pendiente de commit.
+- **Qué se usó / modificó / descartó:** Se utilizaron las recomendaciones de revisión, los criterios de verificación y la estructura propuesta para documentar el avance. Se corrigió el reporte inicial de 10 a 11 casos aprobados.
+- **Archivos afectados por el avance:** `app.json`, `package-lock.json`, `package.json`, `src/context/DriverContext.js`, `src/i18n/translations.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`, `src/screens/RegistrationScreen.js`, `src/utils/validateRegistration.js`, `tests/validateRegistration.test.mjs`.
+- **Documentación:** Esta entrada se incorpora a `docs/AI_LOG.md` en `Jhoseth-dev`.
+- **Commit y hash:** `44a85b5ddd716426f47c28bb4a1bb33ba560beab` en `Jhoseth-dev`.
+- **Verificación:**
+  - `npm run test:registration`: `11 validation cases passed`. Casos: formulario válido, teléfono corto, capacidad XL menor de 6, conductor menor de edad, placa en minúsculas, SOAT que vence hoy, fecha imposible de SOAT, fecha imposible de nacimiento, vehículo que requiere revisión según el año, foto de revisión faltante y términos sin aceptar.
+  - `npm run check`: `Dependencies are up to date`. Se utilizó el mapa local de Expo porque la consulta de red no estuvo disponible.
+  - `npx expo export --platform android --platform ios`: exportación de JavaScript y recursos para Android e iOS. No corresponde a una compilación instalable APK, AAB o IPA.
+  - Prueba manual en iPhone: la aplicación abre Inicio; en Datos personales se puede ingresar texto y números, seleccionar una fecha y una opción de género; un correo con dominio incompleto muestra un error.
+  - **Limitación:** No se ha probado el formulario completo en el dispositivo.
+- **Aprendizaje:** Diferenciar las pruebas automatizadas de las pruebas manuales en dispositivo y comprender que una exportación de Expo no equivale a generar una compilación instalable. Documentar las limitaciones evita afirmar que el formulario completo está validado cuando quedan comprobaciones pendientes.
+## Entrada #8 — Revisión local de la integración del registro
+
+- **Fecha y hora:** 2026-11-04 22:55:03 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar en modo lectura la integración local del segundo avance de Jhoseth, los ajustes de idioma/opciones/categorías, las pruebas reportadas y la sincronización de las bitácoras antes de confirmarla.
+- **Prompt completo y literal:**
+
+> Prepare en Kevin-dev la integracion del commit 44a85b5. Separe mis entradas en docs/AI_LOG_KEVIN.md y las de Jhoseth en docs/AI_LOG_JHOSETH.md. Deje docs/AI_LOG.md como registro comun con numeros del 1 al 7. Corregi el idioma del registro, las listas de opciones y los valores de categoria para que coincidan con calculateFare. Comprobe 13 casos de validacion y exporte el JavaScript para Android e iOS. No hice commit ni push y no probe todo el formulario en un celular. Quiero que revises los archivos locales antes de confirmar la integracion. Las nuevas entradas mias deben quedar en mi archivo y en el registro comun con el mismo numero.
+
+- **Resumen de la respuesta:** La revisión local encontró que el formulario ya incluye idioma, menús desplegables y categorías compatibles con calculateFare; el validador y el archivo de pruebas también usan los nuevos valores. Quedan por resolver referencias IA ausentes si los bloques fueron asistidos y la entrada #7 común, que agrupa tres consultas y aún contiene datos personales y no registra horas.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se leyeron los archivos locales y se compararon con la guía y las categorías de calculateFare. Se añadió esta misma entrada #8 a la bitácora de Kevin y a la común. No se modificó código ni se realizó merge, commit o push.
+- **Archivos revisados:** src/screens/RegistrationScreen.js, src/utils/validateRegistration.js, src/context/DriverContext.js, src/i18n/translations.js, src/navigation/RootNavigator.js, src/screens/HomeScreen.js, tests/validateRegistration.test.mjs, package.json, app.json, src/config/pricing.js, src/utils/calculateFare.js, docs/AI_LOG_KEVIN.md, docs/AI_LOG_JHOSETH.md y docs/AI_LOG.md.
+- **Archivos afectados y commit:** docs/AI_LOG_KEVIN.md y docs/AI_LOG.md (entrada #8, mismo texto); hash del commit que incluya estas actualizaciones — pendiente.
+- **Verificación:** La copia local muestra HEAD en Kevin-dev en 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b; git status falló con “this operation must be run in a work tree”, así que no se confirmó el estado del índice/árbol. GitHub confirma Kevin-dev en ese hash, Jhoseth-dev en 44a85b5ddd716426f47c28bb4a1bb33ba560beab y main en d249e54fd14d81d9d6f0172388f74a81cbc847af. Se inspeccionó el archivo con 13 aserciones, pero las pruebas y la exportación se registran como reportadas por Kevin; no se repitieron. Kevin indica que no se ha probado el formulario completo en un celular.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
