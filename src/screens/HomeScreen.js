@@ -1,35 +1,66 @@
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { AppState, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AvailabilityToggle from '../components/AvailabilityToggle';
+import DriverMap from '../components/DriverMap';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
+import useDriverLocation from '../hooks/useDriverLocation';
 import useTranslation from '../i18n/useTranslation';
 
 export default function HomeScreen({ navigation }) {
   const t = useTranslation();
-  const { driverSession, activeTrip, registrationStatus, available, canGoAvailable, updateAvailability } = useDriver();
+  const { driverSession, activeTrip, registrationStatus, available, canGoAvailable, updateAvailability,
+    saveCurrentLocation, firebaseConfigured, realtimeConnected, backendError, availabilityUpdating } = useDriver();
   let statusMessage = t('notRegistered');
   if (registrationStatus === 'pending_demo') statusMessage = t('pendingApproval');
   if (registrationStatus === 'approved_demo') statusMessage = t('approvedDemo');
+  if (registrationStatus === 'approved') statusMessage = t('approved');
+  const isFocused = useIsFocused();
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
+  const { location, loading, error } = useDriverLocation({
+    isFocused: isFocused && appActive,
+    trackingEnabled: available && canGoAvailable,
+    onLocation: saveCurrentLocation,
+  });
+
+  useEffect(() => {
+    const listener = AppState.addEventListener('change', (state) => setAppActive(state === 'active'));
+    return () => listener.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!isFocused || !appActive) updateAvailability(false);
+  }, [isFocused, appActive, updateAvailability]);
+
+  useEffect(() => {
+    if (error && available) updateAvailability(false);
+  }, [error, available, updateAvailability]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t('appName')}</Text>
       <View style={styles.badge}>
-        <Text style={styles.badgeText}>{t('mockMode')}</Text>
+        <Text style={styles.badgeText}>{t(firebaseConfigured && realtimeConnected ? 'connectedDemo' : 'mockMode')}</Text>
       </View>
-      <Text style={styles.description}>{t('mockDescription')}</Text>
+      <Text style={styles.description}>{t(firebaseConfigured ? 'connectedDescription' : 'mockDescription')}</Text>
+
+      <DriverMap location={location} sharing={available} simulatedApproval={registrationStatus === 'approved_demo'} />
+      {loading ? <Text style={styles.locationMessage}>{t('locating')}</Text> : null}
+      {error ? <Text style={styles.locationError}>{t(error)}</Text> : null}
+      {backendError ? <Text style={styles.locationError}>{t(backendError)}</Text> : null}
+      <AvailabilityToggle
+        value={available}
+        enabled={canGoAvailable && !!location && !availabilityUpdating}
+        reason={availabilityUpdating ? 'savingAvailability' : !canGoAvailable && registrationStatus !== 'approved_demo' && registrationStatus !== 'approved'
+          ? 'approvalRequired' : !realtimeConnected ? 'realtimeRequired' : 'locationRequired'}
+        onChange={(nextValue) => updateAvailability(nextValue, location)}
+      />
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('profile')}</Text>
-        <Text style={styles.cardText}>{driverSession?.name || t('noSession')}</Text>
+        <Text style={styles.cardText}>{driverSession?.displayName || t('noSession')}</Text>
         <Text style={styles.cardText}>{statusMessage}</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('availability')}</Text>
-        <View style={styles.availabilityRow}>
-          <Text style={styles.cardText}>{t(available ? 'available' : 'unavailable')}</Text>
-          <Switch value={available} onValueChange={updateAvailability} disabled={!canGoAvailable} />
-        </View>
-        {!canGoAvailable ? <Text style={styles.cardText}>{t('availabilityBlocked')}</Text> : null}
       </View>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('trip')}</Text>
@@ -45,12 +76,15 @@ export default function HomeScreen({ navigation }) {
       >
         <Text style={styles.secondaryButtonText}>{t('openTrip')}</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: colors.background },
+  container: { padding: 20, paddingBottom: 40 },
+  locationMessage: { color: colors.muted, marginTop: 8 },
+  locationError: { color: colors.warning, marginTop: 8 },
   title: { fontSize: 28, fontWeight: '800', color: colors.text },
   badge: {
     alignSelf: 'flex-start',
@@ -72,7 +106,6 @@ const styles = StyleSheet.create({
   },
   cardTitle: { color: colors.primary, fontSize: 15, fontWeight: '700' },
   cardText: { color: colors.text, fontSize: 16, marginTop: 6 },
-  availabilityRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   button: {
     marginTop: 12,
     padding: 16,

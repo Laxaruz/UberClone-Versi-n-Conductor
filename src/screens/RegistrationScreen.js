@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../config/theme';
@@ -31,15 +31,18 @@ function dateString(date) {
 
 export default function RegistrationScreen({ section }) {
   const t = useTranslation();
-  const { language, updateLanguage, registration, updateRegistration, registrationSubmitted, registrationStatus, submitRegistration } = useDriver();
+  const { language, updateLanguage, registration, updateRegistration, registrationSubmitted, registrationStatus,
+    submitRegistration, firebaseConfigured, realtimeConnected, backendError, registering } = useDriver();
   const [touched, setTouched] = useState({});
   const [openDate, setOpenDate] = useState(null);
   const [openChoice, setOpenChoice] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
   const errors = validateRegistration(registration);
   const inspectionRequired = needsInspection(registration.year);
-  const canSubmit = Object.keys(errors).length === 0 && registrationStatus === 'not_submitted';
+  const canSubmit = Object.keys(errors).length === 0 && registrationStatus === 'not_submitted'
+    && (!firebaseConfigured || realtimeConnected) && !registering;
   const locked = registrationStatus !== 'not_submitted';
+  const submitLabel = registering ? t('sendingRegistration') : t(firebaseConfigured ? 'submitRegistration' : 'simulateRegistration');
 
   function choiceLabel(option) {
     if (option === 'es') return t('spanish');
@@ -137,35 +140,43 @@ export default function RegistrationScreen({ section }) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title}>{t(section)}</Text>
-      {sections[section].map(renderField)}
-      {section === 'documents' && (
-        <View>
+    <View style={styles.screen}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>{t(section)}</Text>
+        {sections[section].map(renderField)}
+        {section === 'documents' && (
           <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: registration.acceptedTerms }} style={styles.terms}
             disabled={locked}
             onPress={() => updateRegistration('acceptedTerms', !registration.acceptedTerms)}>
             <Text style={styles.checkbox}>{registration.acceptedTerms ? '☑' : '☐'}</Text>
             <Text style={styles.termsText}>{t('acceptTerms')}</Text>
           </Pressable>
-          {(registrationSubmitted && errors.acceptedTerms) ? <Text style={styles.error}>{t('required')}</Text> : null}
-          {registrationStatus === 'pending_demo' && <Text style={styles.notice}>{t('pendingApproval')}</Text>}
-          {registrationStatus === 'approved_demo' && <Text style={styles.notice}>{t('approvedDemo')}</Text>}
-          {registrationStatus === 'not_submitted' &&
-            <Pressable accessibilityRole="button" disabled={!canSubmit} style={[styles.submit, !canSubmit && styles.disabled]} onPress={submitRegistration}>
-              <Text style={styles.submitText}>{t('submitRegistration')}</Text>
-            </Pressable>}
-          {!canSubmit && registrationStatus === 'not_submitted' ? <Text style={styles.hint}>{t('completeTabs')}</Text> : null}
-        </View>
-      )}
-      <Text style={styles.notice}>{t('registrationDemo')}</Text>
-    </ScrollView>
+        )}
+        {section === 'documents' && registrationSubmitted && errors.acceptedTerms ? <Text style={styles.error}>{t('required')}</Text> : null}
+        <Text style={styles.notice}>{t(firebaseConfigured ? 'registrationCloudDemo' : 'registrationDemo')}</Text>
+      </ScrollView>
+      <View style={styles.footer}>
+        <Pressable accessibilityRole="button" accessibilityLabel={submitLabel} disabled={!canSubmit}
+          style={[styles.submit, !canSubmit && styles.disabled]} onPress={submitRegistration}>
+          {registering && <ActivityIndicator color={colors.surface} style={styles.spinner} />}
+          <Text style={styles.submitText}>{submitLabel}</Text>
+        </Pressable>
+        {registrationStatus === 'not_submitted' ? (
+          <>
+            {Object.keys(errors).length > 0 ? <Text style={styles.hint}>{t('completeTabs')}</Text> : null}
+            {firebaseConfigured && !realtimeConnected ? <Text style={styles.hint}>{t('firebaseConnecting')}</Text> : null}
+          </>
+        ) : <Text style={styles.footerStatus}>{t(registrationStatus === 'approved_demo' ? 'approvedDemo' : registrationStatus === 'approved' ? 'approved' : 'pendingApproval')}</Text>}
+        {backendError ? <Text style={styles.error}>{t(backendError)}</Text> : null}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 20, paddingBottom: 48 },
+  content: { padding: 20, paddingBottom: 24 },
   title: { color: colors.text, fontSize: 24, fontWeight: '700', marginBottom: 16 },
   field: { marginBottom: 18 }, label: { color: colors.text, fontWeight: '600', marginBottom: 8 },
   input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, minHeight: 48, justifyContent: 'center' },
@@ -177,6 +188,9 @@ const styles = StyleSheet.create({
   photo: { height: 120, width: 120, borderRadius: 10, marginBottom: 8 },
   error: { color: '#B3261E', marginTop: 5 },
   terms: { flexDirection: 'row', alignItems: 'center', marginVertical: 14 }, checkbox: { fontSize: 24, marginRight: 8 }, termsText: { flex: 1, color: colors.text },
-  submit: { backgroundColor: colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' }, disabled: { opacity: 0.4 }, submitText: { color: colors.surface, fontWeight: '700' },
+  footer: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 20, paddingVertical: 12 },
+  footerStatus: { color: colors.warning, fontWeight: '700', textAlign: 'center', marginTop: 8 },
+  submit: { backgroundColor: colors.primary, padding: 16, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
+  spinner: { marginRight: 10 }, disabled: { opacity: 0.4 }, submitText: { color: colors.surface, fontWeight: '700' },
   hint: { color: colors.muted, marginTop: 8 }, notice: { color: colors.warning, marginTop: 20 },
 });

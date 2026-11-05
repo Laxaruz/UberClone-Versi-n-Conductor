@@ -1,3 +1,3 @@
-export function canEnableAvailability(driverSession) {
-  return driverSession?.approvalStatus === 'approved_demo';
+export function canEnableAvailability(driverSession, realtimeConnected) {
+  return ['approved', 'approved_demo'].includes(driverSession?.approvalStatus) && realtimeConnected === true;
 }

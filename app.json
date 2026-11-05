@@ -23,6 +23,12 @@
           "cameraPermission": "Permite tomar las fotos requeridas para el registro del conductor.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permite mostrar tu ubicacion actual en el mapa del conductor."
+        }
       ]
     ]
   }

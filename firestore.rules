@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(driverId) {
+      return request.auth != null && request.auth.uid == driverId;
+    }
+
+    function validCoordinates(value) {
+      return value is map
+        && value.keys().hasOnly(['latitude', 'longitude'])
+        && value.keys().hasAll(['latitude', 'longitude'])
+        && value.latitude is number
+        && value.longitude is number
+        && value.latitude >= -90 && value.latitude <= 90
+        && value.longitude >= -180 && value.longitude <= 180;
+    }
+
+    match /drivers/{driverId} {
+      allow get: if isOwner(driverId);
+      allow list: if false;
+
+      allow create: if isOwner(driverId)
+        && request.resource.data.keys().hasOnly([
+          'displayName', 'vehicleCategory', 'approvalStatus', 'registrationMode',
+          'photoStatus', 'available', 'location', 'locationUpdatedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'displayName', 'vehicleCategory', 'approvalStatus', 'registrationMode',
+          'photoStatus', 'available', 'location', 'locationUpdatedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 50
+        && request.resource.data.vehicleCategory in ['economy', 'xl', 'premium']
+        && request.resource.data.approvalStatus == 'pending_demo'
+        && request.resource.data.registrationMode == 'demo'
+        && request.resource.data.photoStatus == 'local_only'
+        && request.resource.data.available == false
+        && request.resource.data.location == null
+        && request.resource.data.locationUpdatedAt == null
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isOwner(driverId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'available', 'location', 'locationUpdatedAt', 'updatedAt'
+        ])
+        && request.resource.data.available is bool
+        && request.resource.data.locationUpdatedAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && (
+          (request.resource.data.available == false && request.resource.data.location == null)
+          || (
+            resource.data.approvalStatus in ['approved_demo', 'approved']
+            && request.resource.data.available == true
+            && validCoordinates(request.resource.data.location)
+          )
+        );
+
+      allow delete: if false;
+    }
+  }
+}
