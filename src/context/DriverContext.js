@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initialRegistration, validateRegistration } from '../utils/validateRegistration';
+import { canEnableAvailability } from '../utils/canEnableAvailability';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -11,7 +12,10 @@ export function DriverProvider({ children }) {
   const [activeTrip, setActiveTrip] = useState(null);
   const [registration, setRegistration] = useState(initialRegistration);
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
-  const [registrationStatus, setRegistrationStatus] = useState('not_submitted');
+  const [requestedAvailability, setRequestedAvailability] = useState(false);
+  const registrationStatus = driverSession?.approvalStatus ?? 'not_submitted';
+  const canGoAvailable = canEnableAvailability(driverSession);
+  const available = canGoAvailable && requestedAvailability;
 
   useEffect(() => {
     let isMounted = true;
@@ -32,6 +36,10 @@ export function DriverProvider({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!canGoAvailable) setRequestedAvailability(false);
+  }, [canGoAvailable]);
+
   function updateLanguage(nextLanguage) {
     if (nextLanguage !== 'es' && nextLanguage !== 'en') return;
     setLanguage(nextLanguage);
@@ -48,8 +56,13 @@ export function DriverProvider({ children }) {
   function submitRegistration() {
     setRegistrationSubmitted(true);
     if (Object.keys(validateRegistration(registration)).length > 0) return false;
-    setRegistrationStatus('pending_demo');
     setDriverSession({ name: registration.fullName.trim(), approvalStatus: 'pending_demo' });
+    return true;
+  }
+
+  function updateAvailability(nextAvailability) {
+    if (nextAvailability && !canGoAvailable) return false;
+    setRequestedAvailability(nextAvailability);
     return true;
   }
 
@@ -68,6 +81,9 @@ export function DriverProvider({ children }) {
         showRegistrationErrors: () => setRegistrationSubmitted(true),
         registrationStatus,
         submitRegistration,
+        available,
+        canGoAvailable,
+        updateAvailability,
       }}
     >
       {children}

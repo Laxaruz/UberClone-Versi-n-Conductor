@@ -1,11 +1,14 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
 
 export default function HomeScreen({ navigation }) {
   const t = useTranslation();
-  const { driverSession, activeTrip, registrationStatus } = useDriver();
+  const { driverSession, activeTrip, registrationStatus, available, canGoAvailable, updateAvailability } = useDriver();
+  let statusMessage = t('notRegistered');
+  if (registrationStatus === 'pending_demo') statusMessage = t('pendingApproval');
+  if (registrationStatus === 'approved_demo') statusMessage = t('approvedDemo');
 
   return (
     <View style={styles.container}>
@@ -18,7 +21,15 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('profile')}</Text>
         <Text style={styles.cardText}>{driverSession?.name || t('noSession')}</Text>
-        <Text style={styles.cardText}>{t(registrationStatus === 'pending_demo' ? 'pendingApproval' : 'notRegistered')}</Text>
+        <Text style={styles.cardText}>{statusMessage}</Text>
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>{t('availability')}</Text>
+        <View style={styles.availabilityRow}>
+          <Text style={styles.cardText}>{t(available ? 'available' : 'unavailable')}</Text>
+          <Switch value={available} onValueChange={updateAvailability} disabled={!canGoAvailable} />
+        </View>
+        {!canGoAvailable ? <Text style={styles.cardText}>{t('availabilityBlocked')}</Text> : null}
       </View>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('trip')}</Text>
@@ -61,6 +72,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: { color: colors.primary, fontSize: 15, fontWeight: '700' },
   cardText: { color: colors.text, fontSize: 16, marginTop: 6 },
+  availabilityRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   button: {
     marginTop: 12,
     padding: 16,

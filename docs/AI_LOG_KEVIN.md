@@ -158,3 +158,58 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y commit:** docs/AI_LOG_KEVIN.md y docs/AI_LOG.md (entrada #8, mismo texto); hash del commit que incluya estas actualizaciones — pendiente.
 - **Verificación:** La copia local muestra HEAD en Kevin-dev en 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b; git status falló con “this operation must be run in a work tree”, así que no se confirmó el estado del índice/árbol. GitHub confirma Kevin-dev en ese hash, Jhoseth-dev en 44a85b5ddd716426f47c28bb4a1bb33ba560beab y main en d249e54fd14d81d9d6f0172388f74a81cbc847af. Se inspeccionó el archivo con 13 aserciones, pero las pruebas y la exportación se registran como reportadas por Kevin; no se repitieron. Kevin indica que no se ha probado el formulario completo en un celular.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #9 — Alcance de cuentas y aprobación del conductor
+
+- **Fecha y hora:** 2026-11-04 23:08:17 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Verificar el estado actual de Kevin-dev y definir un alcance pequeño para el siguiente avance de cuenta y aprobación, separando lo implementable en modo demo de una integración real.
+- **Prompt completo y literal:**
+
+> Ya integre en Kevin-dev el avance de Jhoseth con el commit 70ee701. Separe las bitacoras de ambos y mantuve el registro comun. Todavia no hice push. Quiero empezar mi siguiente avance sobre cuentas y aprobacion del conductor. Antes de tocar codigo, revisa el estado actual y dime cual seria el alcance concreto de este commit, que puedo resolver con lo visto en clase y que servicios o datos faltan para no presentar una simulacion como integracion real.
+
+- **Resumen de la respuesta:** El HEAD local es el merge commit 70ee701890ce0161f54474b394b9624b650dafc3, con padres 6ba2a33 y 44a85b5; las ramas remotas aún no lo muestran. La sesión y aprobación actuales son solo estado local pending_demo, sin autenticación, persistencia de cuenta, backend, almacenamiento de documentos ni control de disponibilidad.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se inspeccionaron el commit, el contexto, las pantallas, las dependencias y la configuración de entorno para proponer el alcance del siguiente avance. No se modificó código ni se ejecutaron pruebas.
+- **Archivos revisados:** package.json, .env.example, src/context/DriverContext.js, src/screens/RegistrationScreen.js, src/screens/HomeScreen.js, src/navigation/RootNavigator.js y la guía del proyecto.
+- **Archivos afectados y commit:** docs/AI_LOG_KEVIN.md y docs/AI_LOG.md (entrada #9, mismo texto); hash del commit que incluya estas actualizaciones — pendiente.
+- **Verificación:** git rev-parse y git show confirmaron HEAD 70ee701890ce0161f54474b394b9624b650dafc3 con padres 6ba2a33b07cc243c6c17bda0c0c7340a525a1a7b y 44a85b5ddd716426f47c28bb4a1bb33ba560beab. GitHub aún muestra Kevin-dev en 6ba2a33, Jhoseth-dev en 44a85b5 y main en d249e54. git status falló con “this operation must be run in a work tree”; el estado limpio del árbol no quedó confirmado. La búsqueda en código y dependencias no encontró autenticación, backend, disponibilidad ni SDK Firebase; .env.example solo contiene nombres de configuración vacíos. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+
+## Entrada #10 — Materiales y contenidos vistos en clase
+
+- **Fecha y hora:** 2026-11-04 23:23:48 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Incorporar la carpeta de la materia como referencia para ajustar recomendaciones futuras a talleres, clases y ejemplos disponibles.
+- **Prompt completo y literal (ruta local sanitizada para no registrar el usuario de Windows):**
+
+> No se si tengas conocimiento de lo que hemos visto en clase, para facilitar las cosas te dejo la ruta de la materia y ahi guardo todos los archivos, esto incluye talleres, clases, ejemplos, etc. Con esto ya puedes saber realmente que es lo que he visto en clase y que no
+>
+> Ruta: C:\Users\<usuario>\OneDrive\Escritorio\Universidad\SEMESTRE 5\Desarrollo movil.
+
+- **Resumen de la respuesta:** Se localizaron y contrastaron ejemplos locales de React Native/Expo: estado con `useState`, Context, persistencia JSON con AsyncStorage y consumo de API con `fetch`, `async/await` y `response.ok`. En los materiales revisados no apareció un ejemplo de autenticación ni un flujo administrativo de aprobación.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron los archivos de clase listados abajo para calibrar las futuras recomendaciones del proyecto. No se modificó código ni se ejecutaron pruebas. La ruta de Windows se sanitizó en este registro para omitir el usuario local.
+- **Archivos de clase revisados:** `Codigos explicados.md`, `practicas/map.js`, `practicas/Flatlist.js`, `ClasesInglesMV/src/hooks/useAlmacenamiento.js`, `ClasesInglesMV/src/contexts/ReservasContext.js`, `ClasesInglesMV/src/hooks/useReserva.js` y `Pok-Dex-Explorer/src/services/pokemonApi.js`.
+- **Archivos del proyecto afectados y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #10; hash del commit que incluya la actualización — pendiente.
+- **Verificación:** Se listaron materiales de la carpeta excluyendo dependencias instaladas y metadatos; se leyeron los ejemplos relevantes y se buscaron referencias a autenticación, API y almacenamiento en prácticas/proyectos de clase. No se ejecutaron pruebas ni se modificaron archivos de código.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #11 — Revisión del estado local de disponibilidad
+
+- **Fecha y hora:** 2026-11-05 07:06:20 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar los cambios locales de disponibilidad y la condición de aprobación antes del commit.
+- **Prompt completo y literal:**
+
+> Prepare en mi rama un estado local de disponibilidad. Al enviar un registro valido, la cuenta queda pendiente en modo demostracion. El interruptor inicia apagado y solo permite activarse cuando la sesion tiene el estado approved_demo. No agregue una opcion para aprobar mi propia cuenta. Comprobe la regla con cuatro estados de sesion y exporte la app para Android e iOS. Todavia no hice commit ni push. Podrias revisar los cambios locales y decirme si hay algun error antes del commit.
+
+- **Resumen de la respuesta:** La condición de disponibilidad exige `approved_demo`; sin sesión y con registro pendiente el interruptor parte apagado y queda deshabilitado. No se encontró una opción de autoaprobación en la pantalla, aunque el contexto sí expone el setter de sesión a sus consumidores.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron contexto, helper, pantalla, traducciones, pruebas y metadatos de exportación. No se modificó código ni se ejecutaron pruebas; la comprobación de cuatro estados se conserva como reportada por Kevin.
+- **Archivos revisados:** `src/context/DriverContext.js`, `src/utils/canEnableAvailability.js`, `src/screens/HomeScreen.js`, `src/i18n/translations.js`, `tests/validateRegistration.test.mjs`, `package.json` y `dist/metadata.json`.
+- **Archivos afectados y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #11; hash del commit que incluya las actualizaciones — pendiente.
+- **Verificación:** La lectura del código confirmó el estado inicial falso, la condición `approvalStatus === 'approved_demo'`, la protección de `updateAvailability` y el interruptor deshabilitado cuando falta aprobación. `dist/metadata.json` contiene bundles para Android e iOS. En el repositorio solo se encontró la prueba de validación del registro, no una prueba guardada de los cuatro estados; no se ejecutaron pruebas ni se verificó la app en dispositivo. Git no pudo acceder al árbol de trabajo por “Permission denied”, por lo que rama, diff y hash actual no quedaron confirmados.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

@@ -149,7 +149,9 @@ export default function RegistrationScreen({ section }) {
             <Text style={styles.termsText}>{t('acceptTerms')}</Text>
           </Pressable>
           {(registrationSubmitted && errors.acceptedTerms) ? <Text style={styles.error}>{t('required')}</Text> : null}
-          {registrationStatus === 'pending_demo' ? <Text style={styles.notice}>{t('pendingApproval')}</Text> :
+          {registrationStatus === 'pending_demo' && <Text style={styles.notice}>{t('pendingApproval')}</Text>}
+          {registrationStatus === 'approved_demo' && <Text style={styles.notice}>{t('approvedDemo')}</Text>}
+          {registrationStatus === 'not_submitted' &&
             <Pressable accessibilityRole="button" disabled={!canSubmit} style={[styles.submit, !canSubmit && styles.disabled]} onPress={submitRegistration}>
               <Text style={styles.submitText}>{t('submitRegistration')}</Text>
             </Pressable>}

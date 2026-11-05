@@ -46,6 +46,8 @@ const translations = {
     imageTooLarge: 'La imagen debe pesar menos de 10 MB.',
     acceptTerms: 'Acepto los términos y la comisión del 20 %.', submitRegistration: 'Enviar registro',
     completeTabs: 'Completa las tres pestañas para habilitar el envío.', pendingApproval: 'Pendiente de aprobación en demostración',
+    approvedDemo: 'Aprobado en demostración', availability: 'Disponibilidad', available: 'Disponible',
+    unavailable: 'No disponible', availabilityBlocked: 'Solo un conductor aprobado puede ponerse disponible.',
     notRegistered: 'Registro sin enviar', registrationDemo: 'Modo demostración: este registro no se ha enviado para revisión real. Las fotos seleccionadas no están verificadas.',
   },
   en: {
@@ -95,6 +97,8 @@ const translations = {
     imageTooLarge: 'Image must be under 10 MB.',
     acceptTerms: 'I accept the terms and the 20% commission.', submitRegistration: 'Submit registration',
     completeTabs: 'Complete all three tabs to enable submission.', pendingApproval: 'Pending approval in demo mode',
+    approvedDemo: 'Approved in demo mode', availability: 'Availability', available: 'Available',
+    unavailable: 'Unavailable', availabilityBlocked: 'Only an approved driver can become available.',
     notRegistered: 'Registration not submitted', registrationDemo: 'Demo mode: this registration was not sent for real review. Selected photos have not been verified.',
   },
 };
