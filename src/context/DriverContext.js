@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { initialRegistration, validateRegistration } from '../utils/validateRegistration';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -8,6 +9,9 @@ export function DriverProvider({ children }) {
   const [language, setLanguage] = useState('es');
   const [driverSession, setDriverSession] = useState(null);
   const [activeTrip, setActiveTrip] = useState(null);
+  const [registration, setRegistration] = useState(initialRegistration);
+  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState('not_submitted');
 
   useEffect(() => {
     let isMounted = true;
@@ -35,6 +39,18 @@ export function DriverProvider({ children }) {
     });
   }
 
+  function updateRegistration(key, value) {
+    setRegistration((current) => ({ ...current, [key]: value }));
+  }
+
+  function submitRegistration() {
+    setRegistrationSubmitted(true);
+    if (Object.keys(validateRegistration(registration)).length > 0) return false;
+    setRegistrationStatus('pending_demo');
+    setDriverSession({ name: registration.fullName.trim(), approvalStatus: 'pending_demo' });
+    return true;
+  }
+
   return (
     <DriverContext.Provider
       value={{
@@ -44,6 +60,12 @@ export function DriverProvider({ children }) {
         setDriverSession,
         activeTrip,
         setActiveTrip,
+        registration,
+        updateRegistration,
+        registrationSubmitted,
+        showRegistrationErrors: () => setRegistrationSubmitted(true),
+        registrationStatus,
+        submitRegistration,
       }}
     >
       {children}

@@ -7,24 +7,23 @@ import useTranslation from '../i18n/useTranslation';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
+import RegistrationScreen from '../screens/RegistrationScreen';
+import { useDriver } from '../context/DriverContext';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 
 function PersonalScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('personal')} />;
+  return <RegistrationScreen section="personal" />;
 }
 
 function VehicleScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('vehicle')} />;
+  return <RegistrationScreen section="vehicle" />;
 }
 
 function DocumentsScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('documents')} />;
+  return <RegistrationScreen section="documents" />;
 }
 
 function EarningsScreen() {
@@ -49,11 +48,12 @@ function PaymentPreviewScreen() {
 
 function RegistrationTabs() {
   const t = useTranslation();
+  const { showRegistrationErrors } = useDriver();
   return (
     <Tabs.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary }}>
-      <Tabs.Screen name="Personal" component={PersonalScreen} options={{ title: t('personal') }} />
-      <Tabs.Screen name="Vehicle" component={VehicleScreen} options={{ title: t('vehicle') }} />
-      <Tabs.Screen name="Documents" component={DocumentsScreen} options={{ title: t('documents') }} />
+      <Tabs.Screen name="Personal" component={PersonalScreen} options={{ title: t('personal') }} listeners={{ blur: showRegistrationErrors }} />
+      <Tabs.Screen name="Vehicle" component={VehicleScreen} options={{ title: t('vehicle') }} listeners={{ blur: showRegistrationErrors }} />
+      <Tabs.Screen name="Documents" component={DocumentsScreen} options={{ title: t('documents') }} listeners={{ blur: showRegistrationErrors }} />
     </Tabs.Navigator>
   );
 }
