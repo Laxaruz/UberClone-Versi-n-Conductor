@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "UberClone Conductor",
+    "slug": "uberclone-driver",
+    "scheme": "uberclonedriver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.laxaruz.uberclonedriver"
+    },
+    "android": {
+      "package": "com.laxaruz.uberclonedriver"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite seleccionar las fotos requeridas para el registro del conductor.",
+          "cameraPermission": "Permite tomar las fotos requeridas para el registro del conductor.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permite mostrar tu ubicacion actual en el mapa del conductor."
+        }
+      ]
+    ]
+  }
+}
