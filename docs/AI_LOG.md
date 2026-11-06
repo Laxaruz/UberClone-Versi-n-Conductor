@@ -302,3 +302,106 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
   - Pendiente: probar la habilitación del nuevo botón, el indicador de carga y el bloqueo de envíos repetidos con un registro nuevo.
   - Alcance: la salida de Inicio y el estado remoto se probaron en iPhone; no se instrumentó directamente el número de suscripciones GPS activas. Android no se probó en dispositivo.
 - **Aprendizaje:** Una prueba del cliente de Firestore y una prueba en el teléfono aportan evidencias distintas. La aprobación `approved_demo` no representa una revisión real. Mostrar el botón en tres pestañas no debe crear tres flujos de envío ni permitir saltarse las validaciones.
+
+## Entrada #13 — Alcance de persistencia para pestañas personales y vehículo
+
+- **Fecha y hora:** 2026-11-05 20:08:23 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar la guía y el estado local para proponer un alcance mínimo de persistencia/hidratación de Datos personales y Vehículo para la entrega parcial, sin cambiar la condición de envío de las tres pestañas.
+- **Prompt completo y literal:**
+
+> Revise la guia pensando en la entrega parcial de mañana. Entiendo que se evaluaran Datos personales y Vehiculo, las dos primeras pestanas del registro. Los campos y validaciones ya estan, pero Firestore guarda muy pocos datos del formulario. Al reiniciar, el registro pendiente podria mostrar los campos vacios y bloqueados. Quiero que mi siguiente commit ayude a que esas dos pestanas conserven y muestren sus datos correctamente, sin cambiar la condicion de envio de las tres pestanas. Las fotos por ahora son locales. Que alcance minimo recomiendas para este commit y que pruebas en el dispositivo consideras necesarias. Todavia no he integrado el nuevo commit de Jhoseth ni he modificado codigo.
+
+- **Resumen de la respuesta:** La guía exige las tres pestañas completas y válidas para enviar, prohíbe guardar datos sensibles en AsyncStorage y no define una rúbrica específica para la entrega parcial de mañana. En la copia local revisada no hay integración Firestore: el formulario sigue en memoria; se recomendó basar el siguiente commit en el servicio/esquema real después de revisar el nuevo commit de Jhoseth.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron visualmente las nueve páginas de la guía y se contrastaron con el formulario, contexto y dependencias locales. No se modificó código ni se ejecutaron pruebas. La descripción de Firestore se conserva como afirmación de Kevin, no como hecho comprobado en esta copia.
+- **Archivos revisados:** Guía del proyecto; `src/context/DriverContext.js`, `src/screens/RegistrationScreen.js`, `src/utils/validateRegistration.js`, `package.json` y `.env.example`.
+- **Archivos afectados y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #13; hash del commit que incluya estas actualizaciones — pendiente.
+- **Verificación:** `pdfinfo` confirmó un documento de nueve páginas y se renderizaron/inspeccionaron visualmente las nueve. La búsqueda local no encontró referencias Firestore ni dependencia Firebase en el código/manifiesto; sí encontró los nombres vacíos de configuración Firebase en `.env.example`. El contexto inicia el formulario con `initialRegistration`, `updateRegistration` solo cambia estado y `submitRegistration` crea una sesión local con nombre y `pending_demo`. Git no pudo acceder al worktree por “Permission denied”; rama y hash actuales no quedaron confirmados. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #14 — Alcance de persistencia del registro en Firestore
+
+- **Fecha y hora:** 2026-11-05 20:16:49 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el commit remoto de Jhoseth y recomendar el alcance mínimo para conservar y mostrar Datos personales y Vehículo tras reiniciar, sin alterar la validación de las tres pestañas.
+- **Prompt completo y literal:**
+
+> Mi rama local Kevin-dev sigue en 4265d82, por eso los archivos que revisaste aun no muestran Firebase. El nuevo commit de Jhoseth esta publicado en Jhoseth-dev con el hash 3fa0fce36bace41f519748f3f1d72dd7ddd373de. Puedes verlo en [https://github.com/Laxaruz/UberClone-Versi-n-Conductor/commit/3fa0fce36bace41f519748f3f1d72dd7ddd373de](https://github.com/Laxaruz/UberClone-Versi-n-Conductor/commit/3fa0fce36bace41f519748f3f1d72dd7ddd373de). Revisa especialmente src/services/firebaseClient.js, src/services/driverRepository.js, firestore.rules, src/context/DriverContext.js y src/screens/RegistrationScreen.js. Ese commit usa autenticacion anonima y guarda el conductor en drivers con su uid, pero solo conserva nombre y categoria del formulario. Con esa version concreta, que alcance recomiendas para mi siguiente commit si debo presentar funcionando Datos personales y Vehiculo manana. Mantendre la condicion de envio de las tres pestanas y las fotos siguen siendo locales. Todavia no he integrado ese commit ni he modificado codigo.
+
+- **Resumen de la respuesta:** El commit remoto 3fa0fce está una confirmación por delante de 4265d82 y guarda solo nombre/categoría; la escucha restaura la sesión de conductor, pero no el formulario. Las reglas actuales solo permiten crear ese esquema reducido y actualizar disponibilidad/ubicación, por lo que la persistencia de los campos requiere ampliar reglas y sincronizar el documento antes de bloquear la pantalla.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se consultó el diff del commit remoto y los cinco archivos solicitados para definir el alcance. No se integró el commit, no se modificó código ni Git y no se ejecutaron pruebas.
+- **Archivos revisados:** `src/services/firebaseClient.js`, `src/services/driverRepository.js`, `firestore.rules`, `src/context/DriverContext.js`, `src/screens/RegistrationScreen.js`; también metadatos del commit y comparación contra `4265d82`.
+- **Archivos afectados y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #14. Commit remoto revisado: `3fa0fce36bace41f519748f3f1d72dd7ddd373de`; hash de un futuro commit de Kevin — pendiente.
+- **Verificación:** GitHub compare confirmó `4265d82a84ff7fd9ecc1542995763abbd74314cc` como ancestro directo y `3fa0fce36bace41f519748f3f1d72dd7ddd373de` un commit ahead, sin commits behind. Se leyó el contenido de los cinco archivos en ese SHA. La consulta local de Git sigue limitada por “Permission denied”; no se cambió la rama local. No se ejecutaron pruebas ni se verificó en dispositivo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #15 — Revisión del commit de Firebase de Jhoseth y alcance del registro
+
+- **Fecha y hora:** 2026-11-05 20:18:53 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el commit remoto 3fa0fce y definir el alcance mínimo para restaurar Datos personales y Vehículo después del reinicio, manteniendo la validación de las tres pestañas.
+- **Prompt completo y literal:**
+
+> Mi rama local Kevin-dev sigue en 4265d82, por eso los archivos que revisaste aun no muestran Firebase. El nuevo commit de Jhoseth esta publicado en Jhoseth-dev con el hash 3fa0fce36bace41f519748f3f1d72dd7ddd373de. Puedes verlo en [https://github.com/Laxaruz/UberClone-Versi-n-Conductor/commit/3fa0fce36bace41f519748f3f1d72dd7ddd373de](https://github.com/Laxaruz/UberClone-Versi-n-Conductor/commit/3fa0fce36bace41f519748f3f1d72dd7ddd373de). Revisa especialmente src/services/firebaseClient.js, src/services/driverRepository.js, firestore.rules, src/context/DriverContext.js y src/screens/RegistrationScreen.js. Ese commit usa autenticacion anonima y guarda el conductor en drivers con su uid, pero solo conserva nombre y categoria del formulario. Con esa version concreta, que alcance recomiendas para mi siguiente commit si debo presentar funcionando Datos personales y Vehiculo manana. Mantendre la condicion de envio de las tres pestanas y las fotos siguen siendo locales. Todavia no he integrado ese commit ni he modificado codigo.
+
+- **Resumen de la respuesta:** El documento `drivers/{uid}` actual solo guarda nombre/categoría y la escucha restaura únicamente la sesión, no el objeto del formulario. Las reglas también rechazarían campos nuevos, así que el siguiente avance debe persistir y rehidratar los campos permitidos con estado de carga, ampliar reglas sin habilitar autoaprobación y mantener intacta la validación global de tres pestañas.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usó el compare remoto contra `4265d82` y el contenido de los cinco archivos señalados para planificar el avance. No se integró el commit ni se modificó código o Git; no se ejecutaron pruebas.
+- **Archivos revisados:** `src/services/firebaseClient.js`, `src/services/driverRepository.js`, `firestore.rules`, `src/context/DriverContext.js`, `src/screens/RegistrationScreen.js` y metadatos/diff del commit.
+- **Archivos afectados y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #15; hash del futuro commit de Kevin — pendiente. Commit remoto revisado: `3fa0fce36bace41f519748f3f1d72dd7ddd373de`.
+- **Verificación:** GitHub compare confirmó que `4265d82a84ff7fd9ecc1542995763abbd74314cc` es ancestro y que `3fa0fce36bace41f519748f3f1d72dd7ddd373de` está un commit adelante, cero detrás. `createPendingDriver` usa `setDoc` con `displayName`, `vehicleCategory` y estados; `observeDriver` actualiza `driverSession`, no `registration`. Las reglas limitan creación a ese esquema y actualización a disponibilidad/ubicación. `RegistrationScreen` mantiene `canSubmit` con validación completa y bloquea campos cuando el estado no es `not_submitted`. No se integró ni se probaron dispositivos.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #16 — Revisión local de persistencia y restauración del registro
+
+- **Fecha y hora:** 2026-11-05 21:39:23 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el cambio local sobre la integración de Firebase para guardar y restaurar los campos de Datos personales y Vehículo antes del commit.
+- **Prompt completo y literal:**
+
+> Integre en Kevin-dev el commit 3fa0fce de Jhoseth. Prepare mi cambio para guardar en Firestore los campos escritos de Datos personales y Vehiculo cuando se envia un registro valido, y restaurarlos al volver a abrir la app. Agregue una espera para la primera lectura antes de mostrar el formulario bloqueado. Mantengo las fotos locales y la condicion de que las tres pestanas esten completas para enviar. Amplie las reglas de Firestore sin permitir que el conductor cambie su aprobacion. Conserve las bitacoras con numeros unicos. Pase las pruebas de registro, disponibilidad y restauracion, y exporte para Android e iOS. Aun no probe el envio en un dispositivo porque falta configurar Firebase y publicar las reglas nuevas. No hice commit ni push. Podrias revisar los cambios locales y senalar cualquier error antes del commit.
+
+- **Resumen de la respuesta:** La implementación guarda y restaura los campos no fotográficos de las dos pestañas y conserva el bloqueo pendiente; las reglas mantienen la aprobación protegida y el envío sigue dependiendo de las tres pestañas. Se encontró un posible bloqueo de carga cuando Firestore solo entrega una instantánea de caché y una brecha de cobertura: el test de restauración prueba el mapeo, no la lectura real.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se compararon los archivos locales contra HEAD/índice y se revisaron el guardado, hidratación, reglas, pantalla, helper, pruebas, configuración y bitácoras. No se modificó código, no se ejecutaron pruebas y no se hizo commit ni push.
+- **Archivos revisados:** `src/services/driverRepository.js`, `firestore.rules`, `src/context/DriverContext.js`, `src/screens/RegistrationScreen.js`, `src/utils/registrationDetails.js`, `tests/registrationDetails.test.mjs`, `tests/availability.test.mjs`, `tests/validateRegistration.test.mjs`, `package.json`, `src/i18n/translations.js`, `docs/FIREBASE_SETUP.md`, `docs/AI_LOG_KEVIN.md`, `docs/AI_LOG.md` y `dist/metadata.json`.
+- **Archivos afectados por esta revisión y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #16; hash del futuro commit de Kevin — pendiente.
+- **Verificación:** `rev-parse` confirmó rama local `Kevin-dev` y HEAD `3fa0fce36bace41f519748f3f1d72dd7ddd373de`. Comparación de hashes de los archivos rastreados mostró cambios sin stage en `docs/AI_LOG_KEVIN.md`, `docs/AI_LOG.md`, `docs/FIREBASE_SETUP.md`, `firestore.rules`, `src/context/DriverContext.js`, `src/i18n/translations.js`, `src/screens/RegistrationScreen.js` y `src/services/driverRepository.js`. `src/utils/registrationDetails.js` y `tests/registrationDetails.test.mjs` no aparecen en HEAD ni en el índice y no los excluye el `.gitignore` del proyecto. El comando `git status` no funcionó por “this operation must be run in a work tree”. Las bitácoras comunes tienen entradas consecutivas únicas del 1 al 15; las entradas de Kevin #15 están en ambos archivos. `dist/metadata.json` incluye Android e iOS. Las pruebas y la exportación se registran como reportadas por Kevin; no se repitieron ni se verificó el envío en dispositivo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #17 — Revisión del ajuste de lectura desde caché
+
+- **Fecha y hora:** 2026-11-05 21:56:08 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el ajuste local para restaurar datos desde una instantánea de caché sin permitir editar o enviar hasta confirmar la conexión, antes del commit.
+- **Prompt completo y literal:**
+
+> Revise los hallazgos de la entrada 16. Ajuste la carga para que una respuesta de cache muestre los datos disponibles sin permitir editar ni enviar hasta confirmar la conexion. Marque los bloques nuevos de restauracion y reglas con la referencia a la entrada 15. Inclui el helper y su prueba entre los archivos preparados. Ejecute las pruebas de registro y restauracion, y exporte los bundles de Android e iOS. Aun falta probar el flujo en un dispositivo con Firebase configurado y las reglas publicadas. No hice commit ni push. Puedes revisar este ajuste antes del commit.
+
+- **Resumen de la respuesta:** La lectura desde caché ahora puede restaurar el conductor y sus campos, y la pantalla bloquea edición/envío mientras Firebase no confirme conexión. La condición de envío y la protección de aprobación siguen intactas; se señaló una posible referencia AI-assisted incompleta o con número incorrecto en los bloques nuevos.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron el callback de Firestore, el bloqueo de campos y envío, el helper, las reglas, la prueba, las exportaciones y el estado del índice. No se modificó código, no se ejecutaron pruebas ni se hizo commit/push.
+- **Archivos revisados:** `src/context/DriverContext.js`, `src/screens/RegistrationScreen.js`, `src/services/driverRepository.js`, `src/utils/registrationDetails.js`, `firestore.rules`, `tests/registrationDetails.test.mjs`, `package.json`, `dist/metadata.json` y bitácoras.
+- **Archivos afectados por esta revisión y commit:** Solo esta entrada en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, con el mismo número #17; hash del futuro commit de Kevin — pendiente.
+- **Verificación:** `rev-parse` confirmó `Kevin-dev` en `3fa0fce36bace41f519748f3f1d72dd7ddd373de`. Al comparar HEAD, índice y archivos locales antes de registrar esta entrada, ocho archivos rastreados estaban staged y los dos archivos nuevos (`src/utils/registrationDetails.js`, `tests/registrationDetails.test.mjs`) también estaban staged; no se detectaron otros cambios sin stage en ese momento. Después agregué esta entrada #17 a ambas bitácoras, por lo que esos dos archivos tienen cambios adicionales sin stage. `git status` falló por “Permission denied”. Los marcadores #15 aparecen en helper, reglas y contexto; el bloque de persistencia en `driverRepository.js` no tiene marcador y el marcador del nuevo manejo de caché en contexto aún referencia #15. La pantalla bloquea inputs y envío cuando `firebaseConfigured` y no hay conexión. `dist/metadata.json` lista bundles Android/iOS y tiene fecha posterior a los archivos fuente. Las pruebas son reportadas por Kevin; no se repitieron y el dispositivo no se probó.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #18 — Persistencia y restauración del registro en Firestore
+
+- **Fecha y hora:** 2026-11-05 22:03:16 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Solicitar guardar y restaurar en Firestore los datos personales y del vehículo, y controlar la carga inicial.
+- **Prompt completo y literal:**
+
+> Guarde y restaure los datos personales y del vehiculo en Firestore y controle la carga inicial
+
+- **Resumen de la respuesta:** La revisión del estado local encontró ya preparados el guardado de campos personales y del vehículo en drivers/{uid}, la restauración al recibir el documento y una espera de carga antes de presentar el formulario. Se verificó en el código que los campos permanecen bloqueados cuando Firestore informa una lectura de caché sin conexión.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se inspeccionaron los cambios locales existentes para este alcance. En esta interacción no se modificó código ni se ejecutaron pruebas; no se hizo commit ni push.
+- **Archivos revisados:** src/services/driverRepository.js, src/utils/registrationDetails.js, src/context/DriverContext.js, src/screens/RegistrationScreen.js, firestore.rules.
+- **Archivos afectados y commit:** Solo esta entrada #18 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No se editaron archivos fuente en esta interacción. Commit del cambio de persistencia — pendiente.
+- **Verificación:** Lectura del código confirmó que createPendingDriver serializa datos personales y del vehículo; el listener restaura esos datos; registrationLoading controla la pantalla inicial; la pantalla deshabilita edición y envío hasta conexión; las reglas requieren pending_demo al crear y no permiten al conductor cambiar el estado de aprobación. La revisión local sitúa la rama en Kevin-dev, HEAD 3fa0fce36bace41f519748f3f1d72dd7ddd373de; git status falló con “this operation must be run in a work tree”. No se ejecutaron pruebas ni se verificó el flujo contra Firebase en dispositivo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

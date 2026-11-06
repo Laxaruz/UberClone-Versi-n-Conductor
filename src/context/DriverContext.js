@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initialRegistration, validateRegistration } from '../utils/validateRegistration';
 import { canEnableAvailability } from '../utils/canEnableAvailability';
+import { restoreRegistrationDetails } from '../utils/registrationDetails';
 import { firebaseConfigured, ensureDemoUser } from '../services/firebaseClient';
 import { createPendingDriver, observeDriver, saveDriverLocation, setDriverAvailability, toCoordinates } from '../services/driverRepository';
 
@@ -13,6 +14,7 @@ export function DriverProvider({ children }) {
   const [driverSession, setDriverSession] = useState(null);
   const [activeTrip, setActiveTrip] = useState(null);
   const [registration, setRegistration] = useState(initialRegistration);
+  const [registrationLoading, setRegistrationLoading] = useState(firebaseConfigured);
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
   const [requestedAvailability, setRequestedAvailability] = useState(false);
   const [driverUid, setDriverUid] = useState(null);
@@ -21,6 +23,7 @@ export function DriverProvider({ children }) {
   const [registering, setRegistering] = useState(false);
   const registrationSubmitInFlight = useRef(false);
   const registrationAlreadySaved = useRef(false);
+  const registrationRestored = useRef(false);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
   const availabilityIntent = useRef(false);
   const availabilityTask = useRef(Promise.resolve());
@@ -39,8 +42,18 @@ export function DriverProvider({ children }) {
         setDriverUid(user.uid);
         unsubscribe = observeDriver(user.uid, (driver, connected) => {
           if (!active) return;
-          setDriverSession(driver);
           setRealtimeConnected(connected);
+          // AI-assisted: see docs/AI_LOG.md #16
+          if (driver || connected) {
+            setDriverSession(driver);
+            registrationAlreadySaved.current = Boolean(driver);
+            if (driver) {
+              // AI-assisted: see docs/AI_LOG.md #15
+              registrationRestored.current = true;
+              setRegistration((current) => restoreRegistrationDetails(current, driver));
+            }
+          }
+          setRegistrationLoading(false);
           setBackendError((current) => current === 'firebaseConnectionFailed' && connected ? null : current);
           if (connected && driver?.available && !availabilityIntent.current) {
             setDriverAvailability(user.uid, false, null).catch(() => {
@@ -50,11 +63,15 @@ export function DriverProvider({ children }) {
         }, () => {
           if (!active) return;
           setRealtimeConnected(false);
+          setRegistrationLoading(false);
           setBackendError('firebaseConnectionFailed');
         });
       })
       .catch(() => {
-        if (active) setBackendError('firebaseConnectionFailed');
+        if (active) {
+          setRegistrationLoading(false);
+          setBackendError('firebaseConnectionFailed');
+        }
       });
 
     return () => {
@@ -70,7 +87,7 @@ export function DriverProvider({ children }) {
       .then((savedLanguage) => {
         if (isMounted && (savedLanguage === 'es' || savedLanguage === 'en')) {
           setLanguage(savedLanguage);
-          setRegistration((current) => ({ ...current, language: savedLanguage }));
+          setRegistration((current) => registrationRestored.current ? current : { ...current, language: savedLanguage });
         }
       })
       .catch(() => {
@@ -103,7 +120,7 @@ export function DriverProvider({ children }) {
   }
 
   async function submitRegistration() {
-    if (registrationSubmitInFlight.current || registrationAlreadySaved.current || registrationStatus !== 'not_submitted') return false;
+    if (registrationLoading || registrationSubmitInFlight.current || registrationAlreadySaved.current || registrationStatus !== 'not_submitted') return false;
     setRegistrationSubmitted(true);
     if (Object.keys(validateRegistration(registration)).length > 0) return false;
     if (!firebaseConfigured) {
@@ -180,6 +197,7 @@ export function DriverProvider({ children }) {
         activeTrip,
         setActiveTrip,
         registration,
+        registrationLoading,
         updateRegistration,
         registrationSubmitted,
         showRegistrationErrors: () => setRegistrationSubmitted(true),

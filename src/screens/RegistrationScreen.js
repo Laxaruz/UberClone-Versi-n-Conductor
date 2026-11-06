@@ -31,7 +31,7 @@ function dateString(date) {
 
 export default function RegistrationScreen({ section }) {
   const t = useTranslation();
-  const { language, updateLanguage, registration, updateRegistration, registrationSubmitted, registrationStatus,
+  const { updateLanguage, registration, registrationLoading, updateRegistration, registrationSubmitted, registrationStatus,
     submitRegistration, firebaseConfigured, realtimeConnected, backendError, registering } = useDriver();
   const [touched, setTouched] = useState({});
   const [openDate, setOpenDate] = useState(null);
@@ -39,9 +39,9 @@ export default function RegistrationScreen({ section }) {
   const [imageErrors, setImageErrors] = useState({});
   const errors = validateRegistration(registration);
   const inspectionRequired = needsInspection(registration.year);
-  const canSubmit = Object.keys(errors).length === 0 && registrationStatus === 'not_submitted'
+  const canSubmit = !registrationLoading && Object.keys(errors).length === 0 && registrationStatus === 'not_submitted'
     && (!firebaseConfigured || realtimeConnected) && !registering;
-  const locked = registrationStatus !== 'not_submitted';
+  const locked = registrationStatus !== 'not_submitted' || (firebaseConfigured && !realtimeConnected);
   const submitLabel = registering ? t('sendingRegistration') : t(firebaseConfigured ? 'submitRegistration' : 'simulateRegistration');
 
   function choiceLabel(option) {
@@ -78,7 +78,7 @@ export default function RegistrationScreen({ section }) {
   function renderField([key, type, options]) {
     if (!inspectionRequired && (key === 'inspectionPhoto' || key === 'inspectionExpiry')) return null;
     const error = (touched[key] || registrationSubmitted) && errors[key];
-    const selectedChoice = key === 'language' ? language : registration[key];
+    const selectedChoice = registration[key];
     return (
       <View key={key} style={styles.field}>
         <Text style={styles.label}>{t(key)}{key === 'inspectionPhoto' && ' *'}</Text>
@@ -139,6 +139,15 @@ export default function RegistrationScreen({ section }) {
     );
   }
 
+  if (registrationLoading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator color={colors.primary} />
+        <Text style={styles.hint}>{t('loadingRegistration')}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -174,6 +183,7 @@ export default function RegistrationScreen({ section }) {
 }
 
 const styles = StyleSheet.create({
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
   screen: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 24 },

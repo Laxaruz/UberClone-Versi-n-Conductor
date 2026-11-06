@@ -19,21 +19,49 @@ service cloud.firestore {
       allow get: if isOwner(driverId);
       allow list: if false;
 
+      // AI-assisted: see docs/AI_LOG.md #15
       allow create: if isOwner(driverId)
         && request.resource.data.keys().hasOnly([
           'displayName', 'vehicleCategory', 'approvalStatus', 'registrationMode',
           'photoStatus', 'available', 'location', 'locationUpdatedAt',
-          'createdAt', 'updatedAt'
+          'createdAt', 'updatedAt', 'identityNumber', 'phone', 'birthDate',
+          'gender', 'email', 'language', 'plate', 'brand', 'model',
+          'year', 'color', 'capacity'
         ])
         && request.resource.data.keys().hasAll([
           'displayName', 'vehicleCategory', 'approvalStatus', 'registrationMode',
           'photoStatus', 'available', 'location', 'locationUpdatedAt',
-          'createdAt', 'updatedAt'
+          'createdAt', 'updatedAt', 'identityNumber', 'phone', 'birthDate',
+          'gender', 'email', 'language', 'plate', 'brand', 'model',
+          'year', 'color', 'capacity'
         ])
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() > 0
         && request.resource.data.displayName.size() <= 50
+        && request.resource.data.identityNumber is string
+        && request.resource.data.identityNumber.matches('^[0-9]{6,10}$')
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^[0-9]{10}$')
+        && request.resource.data.birthDate is string
+        && request.resource.data.birthDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.gender in ['female', 'male', 'other']
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.language in ['es', 'en']
         && request.resource.data.vehicleCategory in ['economy', 'xl', 'premium']
+        && request.resource.data.plate is string
+        && request.resource.data.plate.matches('^[A-Z]{3}[0-9]{3}$')
+        && request.resource.data.brand is string
+        && request.resource.data.brand.size() > 0
+        && request.resource.data.brand.size() <= 30
+        && request.resource.data.model is string
+        && request.resource.data.model.size() > 0
+        && request.resource.data.model.size() <= 30
+        && request.resource.data.year is string
+        && request.resource.data.year.matches('^[0-9]{4}$')
+        && request.resource.data.color in ['white', 'black', 'gray', 'silver', 'blue', 'red', 'other']
+        && request.resource.data.capacity is string
+        && request.resource.data.capacity.matches('^[0-9]+$')
         && request.resource.data.approvalStatus == 'pending_demo'
         && request.resource.data.registrationMode == 'demo'
         && request.resource.data.photoStatus == 'local_only'

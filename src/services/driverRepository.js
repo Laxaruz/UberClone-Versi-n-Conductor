@@ -1,5 +1,6 @@
 import { doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { database } from './firebaseClient';
+import { registrationDetails } from '../utils/registrationDetails';
 
 function driverReference(uid) {
   return doc(database, 'drivers', uid);
@@ -13,8 +14,8 @@ export function observeDriver(uid, onChange, onError) {
 
 export function createPendingDriver(uid, registration) {
   return setDoc(driverReference(uid), {
-    displayName: registration.fullName.trim(),
-    vehicleCategory: registration.category,
+    // AI-assisted: see docs/AI_LOG.md #15
+    ...registrationDetails(registration),
     approvalStatus: 'pending_demo',
     registrationMode: 'demo',
     photoStatus: 'local_only',
