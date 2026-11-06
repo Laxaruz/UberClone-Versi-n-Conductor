@@ -88,3 +88,39 @@
   - Pendiente: probar la habilitación del nuevo botón, el indicador de carga y el bloqueo de envíos repetidos con un registro nuevo.
   - Alcance: la salida de Inicio y el estado remoto se probaron en iPhone; no se instrumentó directamente el número de suscripciones GPS activas. Android no se probó en dispositivo.
 - **Aprendizaje:** Una prueba del cliente de Firestore y una prueba en el teléfono aportan evidencias distintas. La aprobación `approved_demo` no representa una revisión real. Mostrar el botón en tres pestañas no debe crear tres flujos de envío ni permitir saltarse las validaciones.
+
+
+## Entrada #19 — Ocultar errores del registro enviado
+
+- **Fecha:** 2026-11-06
+- **Hora:** 10:42:29 (America/Bogota, UTC-5)
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Objetivo:** Ajustar la presentación de errores en la pantalla de registro para que un registro ya enviado no muestre errores de campos, fotografías ni aceptación de términos, sin modificar las validaciones de registros nuevos ni la integración con Firestore.
+- **Prompt:**
+
+  > Ajuste localmente la pantalla de registro para ocultar los errores de campos, fotos y terminos cuando el registro ya fue enviado. No cambie la validacion de registros nuevos ni Firestore. Pasaron 13 pruebas de registro y la exportacion de iOS. Todavia debo comprobar el ajuste en mi iPhone. ya hice commit
+
+- **Resumen de la respuesta:** ChatGPT recomendó separar las reglas de validación de un registro nuevo de la presentación de los mensajes de error en un registro ya enviado. También señaló las comprobaciones de regresión necesarias para verificar que los errores se oculten sin debilitar las validaciones existentes.
+- **Qué se usó / modificó / descartó:**
+  - Se realizó el ajuste en la pantalla de registro para ocultar los errores de campos cuando el registro ya fue enviado.
+  - Se ocultaron los mensajes de error relacionados con fotografías y aceptación de términos en ese mismo estado.
+  - Se conservaron las validaciones de los registros nuevos.
+  - No se modificó Firestore ni la información almacenada.
+  - No se cambiaron las reglas que impiden enviar registros incompletos.
+- **Archivos y commit:**
+  - Archivo modificado: `src/screens/RegistrationScreen.js`.
+  - Rama: `Jhoseth-dev`.
+  - Mensaje del commit: `Ocultar errores del registro enviado`.
+  - Hash completo: `06b9ecd7dbc48fcbc61a2a28ba2f7bce554b177f`.
+  - Fecha del commit: `2026-11-06 10:42:29` (hora de Bogotá).
+  - Estado: commit local creado.
+  - Push a GitHub: pendiente al registrar esta entrada.
+  - Integración en `main`: pendiente.
+- **Verificación:**
+  - 13 pruebas de registro aprobadas.
+  - Exportación de Expo para iOS completada.
+  - Prueba del ajuste en iPhone: pendiente.
+  - Todavía falta comprobar en el dispositivo que los errores de campos, fotografías y términos permanezcan ocultos al recuperar un registro enviado, incluyendo después de reiniciar la aplicación.
+  - No se registra una prueba móvil como completada.
+- **Aprendizaje:** Es importante separar la validación de los datos de la presentación de los errores. Un registro que ya fue enviado debe conservar su estado de solo lectura y no mostrar mensajes de campos obligatorios como si todavía estuviera en proceso de diligenciamiento. Este ajuste puede realizarse en la interfaz sin alterar las reglas de validación de los registros nuevos ni los datos de Firestore.
