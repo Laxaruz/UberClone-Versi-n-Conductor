@@ -42,6 +42,7 @@ export default function RegistrationScreen({ section }) {
   const canSubmit = !registrationLoading && Object.keys(errors).length === 0 && registrationStatus === 'not_submitted'
     && (!firebaseConfigured || realtimeConnected) && !registering;
   const locked = registrationStatus !== 'not_submitted' || (firebaseConfigured && !realtimeConnected);
+  const showValidationErrors = registrationStatus === 'not_submitted';
   const submitLabel = registering ? t('sendingRegistration') : t(firebaseConfigured ? 'submitRegistration' : 'simulateRegistration');
 
   function choiceLabel(option) {
@@ -77,7 +78,7 @@ export default function RegistrationScreen({ section }) {
 
   function renderField([key, type, options]) {
     if (!inspectionRequired && (key === 'inspectionPhoto' || key === 'inspectionExpiry')) return null;
-    const error = (touched[key] || registrationSubmitted) && errors[key];
+    const error = showValidationErrors && (touched[key] || registrationSubmitted) && errors[key];
     const selectedChoice = registration[key];
     return (
       <View key={key} style={styles.field}>
@@ -134,7 +135,7 @@ export default function RegistrationScreen({ section }) {
             maxLength={key === 'fullName' ? 50 : ['brand', 'model'].includes(key) ? 30 : undefined} />
         )}
         {error ? <Text style={styles.error}>{t(error)}</Text> : null}
-        {imageErrors[key] ? <Text style={styles.error}>{t(imageErrors[key])}</Text> : null}
+        {showValidationErrors && imageErrors[key] ? <Text style={styles.error}>{t(imageErrors[key])}</Text> : null}
       </View>
     );
   }
@@ -161,7 +162,7 @@ export default function RegistrationScreen({ section }) {
             <Text style={styles.termsText}>{t('acceptTerms')}</Text>
           </Pressable>
         )}
-        {section === 'documents' && registrationSubmitted && errors.acceptedTerms ? <Text style={styles.error}>{t('required')}</Text> : null}
+        {section === 'documents' && showValidationErrors && registrationSubmitted && errors.acceptedTerms ? <Text style={styles.error}>{t('required')}</Text> : null}
         <Text style={styles.notice}>{t(firebaseConfigured ? 'registrationCloudDemo' : 'registrationDemo')}</Text>
       </ScrollView>
       <View style={styles.footer}>
