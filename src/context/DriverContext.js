@@ -194,6 +194,7 @@ export function DriverProvider({ children }) {
         language,
         updateLanguage,
         driverSession,
+        driverUid,
         activeTrip,
         setActiveTrip,
         registration,

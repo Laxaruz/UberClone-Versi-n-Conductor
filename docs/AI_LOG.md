@@ -479,3 +479,93 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar solicitudes de prueba con temporizador`. Hash pendiente.
 - **Verificación:** Pasaron 15 casos del temporizador, 18 de validación, 14 de límites de escritura y 7 de disponibilidad. También pasó la prueba de restauración del registro. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Jhoseth reportó que la prueba manual en iPhone del temporizador, aceptar, rechazar, vencimiento y regreso desde segundo plano funcionó correctamente.
 - **Aprendizaje:** Separar la lógica de solicitudes de la interfaz permite probar las transiciones y el tiempo límite. Los resultados de una solicitud ficticia deben distinguirse de operaciones confirmadas por un backend.
+
+## Entrada #22 — Alcance para solicitudes compartidas y aceptación única
+
+- **Fecha:** 2026-11-12
+- **Hora:** Pendiente de confirmar; esta interacción anterior no pudo registrarse en el momento por falta de acceso al worktree.
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar la implementación local de solicitudes compartidas en Firestore antes del commit.
+- **Prompt completo y literal:**
+
+> Implemente en Kevin-dev las solicitudes de prueba compartidas en Firestore. Agregue los datos que necesita cada solicitud, como el origen, destino, distancia, duracion, categoria, metodo de pago, tarifa y tiempo para responder. Tambien hice que si un conductor la acepta, otro no pueda aceptar esa misma solicitud. Si la rechaza, los demas todavia pueden verla. Ademas corregi un problema que apagaba la disponibilidad al entrar a la pantalla de solicitudes y mantuve la ubicacion activa mientras esa pantalla esta abierta. Las pruebas del contrato y del temporizador pasaron, y Expo pudo generar los archivos de Android e iOS. Todavia falta probarlo con dos conductores en Firebase porque no lo tenemos configurado localmente. Podrias revisar si ves algun error antes del commit.
+
+- **Resumen de la respuesta:** No se pudo leer el worktree local por permiso denegado, por lo que no fue posible revisar ni integrar los cambios locales. La consulta remota mostró los commits de Jhoseth tres avances por delante de Kevin-dev publicado; se recomendó que el contrato distinguiera el rechazo individual de los estados globales y que la aceptación única se hiciera con transacción.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se consultaron solo los metadatos y diffs publicados de GitHub. Las sugerencias de contrato y transacción fueron recomendaciones, no una implementación comprobada. No se modificó código ni Git; las pruebas/exportación se registraron como reportadas por Kevin, no ejecutadas por Codex.
+- **Archivos revisados:** Diffs publicados de `87960e85d9417fd8b9898a4aa0588f1c54535d82`, `31b209f097a2ef8de888ff33d3df54b73523298e` y `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`.
+- **Archivos afectados y commit:** Ningún archivo de proyecto se modificó en esa interacción. El commit de Kevin para las solicitudes compartidas estaba pendiente.
+- **Verificación:** GitHub reportó Kevin-dev en `06b9ecd7dbc48fcbc61a2a28ba2f7bce554b177f` y Jhoseth-dev en `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`; la comparación indicó tres commits por delante y cero por detrás. El acceso al worktree local falló con “Permission denied”. No se ejecutaron pruebas ni se verificó Firebase en dos conductores.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #23 — Revisión local de solicitudes compartidas antes del commit
+
+- **Fecha y hora:** 2026-11-12 13:07:47 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar los cambios locales de Kevin-dev con permisos autorizados, sin modificar el código, e identificar errores antes del commit.
+- **Prompt completo y literal:**
+
+> El proyecto esta en la carpeta ProyectoFinal. Ya comprobe que los archivos se pueden leer ahi y que Git funciona cuando la consulta se ejecuta con permisos elevados. Tienes mi autorizacion para usar ese permiso al revisar git status y git diff en Kevin-dev, y para actualizar las dos bitacoras. Revisa los cambios locales antes del commit, pero no modifiques el codigo. Si el permiso vuelve a ser rechazado, lee directamente los archivos cambiados y dime cual operacion no pudiste hacer.
+
+- **Resumen de la respuesta:** El worktree local se pudo leer con permisos elevados: la rama es Kevin-dev, HEAD `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`, tres commits adelante de origin/Kevin-dev, y hay doce archivos de avance sin stage. La revisión confirmó que la transacción y reglas limitan la aceptación a un conductor; también encontró que el validador no aplica el máximo contractual de 15 segundos y que el estado de vencimiento puede quedar sin actualizar si no hay cliente activo.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se inspeccionaron git status, los diffs rastreados y el contenido de archivos nuevos. No se modificó código, no se ejecutaron pruebas y no se hizo commit ni push. Se actualizan solo estas dos bitácoras; los resultados de pruebas y exportación siguen siendo reportados por Kevin.
+- **Archivos revisados:** `firebase.json`, `firestore.rules`, `src/context/DriverContext.js`, `src/hooks/useTripRequests.js`, `src/i18n/translations.js`, `src/screens/HomeScreen.js`, `src/screens/IncomingRequestScreen.js`, `docs/TRIP_REQUESTS.md`, `firestore.indexes.json`, `src/services/firestoreTripRequests.js`, `src/utils/tripRequestContract.js`, `tests/tripRequestContract.test.mjs`.
+- **Archivos afectados y commit:** Solo esta entrada #23, y la entrada #22 pendiente, en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. El commit del avance actual sigue pendiente; HEAD revisado `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`.
+- **Verificación:** `git rev-parse` y `git status` ejecutados con permisos elevados confirmaron `Kevin-dev`, HEAD `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`, estado ahead 3, siete archivos modificados y cinco sin seguimiento; `git diff --cached` no mostró cambios staged. Se revisaron las reglas, transacción, contrato, suscripción, rechazo y ciclo de disponibilidad/ubicación. No se ejecutaron pruebas ni se probó con Firebase o dos conductores.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #24 — Revisión de correcciones de solicitudes compartidas
+
+- **Fecha y hora:** 2026-11-12 13:26:06 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el límite exacto de 15 segundos, la selección de otra solicitud después de rechazar y la documentación del vencimiento antes del commit.
+- **Prompt completo y literal:**
+
+> Revise lo que encontraste y corregi el tiempo para que cada solicitud dure exactamente 15 segundos. Tambien cambie el rechazo para que la app busque la siguiente solicitud disponible sin esperar otro cambio en Firestore. Ademas deje explicado que, si nadie tiene la app abierta cuando se acaba el tiempo, el documento puede seguir diciendo requested, aunque ya no se pueda aceptar. Las pruebas pasaron y Expo pudo exportar Android e iOS. Todavia falta probar dos conductores al mismo tiempo en Firebase. Podrias revisar estas correcciones antes del commit.
+
+- **Resumen de la respuesta:** La lectura de los archivos locales confirma que el contrato y la comprobación de aceptación ahora exigen una diferencia exacta de 15 segundos, y que al rechazar se busca otra solicitud disponible. La documentación explica que el estado puede quedar como `requested` cuando ningún cliente está conectado; queda un riesgo porque las reglas no hacen cumplir el mismo límite de 15 segundos.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron los diffs y archivos nuevos con permisos elevados. No se modificó código ni se ejecutaron pruebas; las pruebas y exportación se registran como reportadas por Kevin. No se hizo commit ni push. Se añadió esta entrada a ambas bitácoras.
+- **Archivos revisados:** `firebase.json`, `firestore.rules`, `src/context/DriverContext.js`, `src/hooks/useTripRequests.js`, `src/i18n/translations.js`, `src/screens/HomeScreen.js`, `src/screens/IncomingRequestScreen.js`, `docs/TRIP_REQUESTS.md`, `firestore.indexes.json`, `src/services/firestoreTripRequests.js`, `src/utils/tripRequestContract.js`, `tests/tripRequestContract.test.mjs`.
+- **Archivos afectados y commit:** Solo esta entrada #24 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. El commit del avance sigue pendiente; HEAD base revisado `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`.
+- **Verificación:** `git status` confirmó `Kevin-dev`, HEAD `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`, tres commits adelante de origin, y sin cambios staged. El contrato implementa y sus pruebas contienen casos de 14, 15 y 16 segundos; el rechazo llama a `selectRequest(true)`; la documentación registra el vencimiento sin cliente. Las pruebas no se repitieron y sigue pendiente la prueba simultánea en Firebase.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #25 — Revisión de la regla para vigencia exacta
+
+- **Fecha y hora:** 2026-11-12 13:48:58 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar la regla de Firestore que comprueba la duración exacta de 15 segundos antes de aceptar una solicitud.
+- **Prompt completo y literal:**
+
+> Revise el ultimo riesgo que encontraste y agregue a las reglas la comprobacion de los 15 segundos antes de aceptar una solicitud. Tambien revise la documentacion de Firebase para confirmar como se compara ese tiempo. El diff no muestra errores de formato, pero todavia falta probar las reglas en Firebase y hacer la prueba con dos conductores. Podrias revisar este ultimo cambio antes del commit.
+
+- **Resumen de la respuesta:** La regla exige que `expiresAt` sea exactamente `createdAt + duration.value(15, 's')` y siga en el futuro para aceptar. La documentación oficial de Firebase confirma la suma timestamp + duration y la función `duration.value`; falta compilar/probar las reglas y probar la aceptación simultánea con dos conductores.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron git status, el diff y el archivo de reglas, y se contrastó la expresión con documentación oficial de Firebase. No se modificó código ni se ejecutaron pruebas. La escritura de esta entrada se retrasó por rechazo de aprobación automática por límite de uso; ahora se registra sin alterar los archivos de código.
+- **Archivos revisados:** `firestore.rules`.
+- **Archivos afectados y commit:** Solo esta entrada #25 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Commit del avance pendiente.
+- **Verificación:** `git status` y `git diff` con permisos elevados confirmaron `Kevin-dev`, HEAD `69a52aa472ed3fe855a1bd6cdb22df058f7c577e`, tres commits adelante de origin y la comparación `resource.data.expiresAt == resource.data.createdAt + duration.value(15, 's')` en la rama de aceptación. Firebase documenta que `duration.value` crea la duración y que timestamp + duration resulta en timestamp. No se ejecutaron reglas en Firebase ni la prueba de dos conductores.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #26 — Reintento de escritura de bitácora
+
+- **Fecha y hora:** 2026-11-12 16:34:46 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Reintentar el registro de la revisión #25 en las dos bitácoras después del rechazo por límite de uso.
+- **Prompt completo y literal:**
+
+> Reintenta la escritura
+
+- **Resumen de la respuesta:** Se comprobó que la hora indicada por el rechazo de aprobación ya había pasado y se reintentó la escritura autorizada. Se registraron las entradas #25 y #26 en la bitácora de Kevin y el registro común, sin cambios de código.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se añadió la entrada #26 como solicitud de reintento y se completó la entrada #25 pendiente. No se modificó código, no se ejecutaron pruebas ni se hizo commit o push.
+- **Archivos afectados y commit:** `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, entradas #25 y #26 idénticas. Commit del avance de solicitudes pendiente.
+- **Verificación:** La herramienta informó que ambas entradas se añadieron una vez a cada archivo. Se comprobarán las cantidades y sincronización al terminar esta escritura.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

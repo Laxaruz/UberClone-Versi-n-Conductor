@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { AppState, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AvailabilityToggle from '../components/AvailabilityToggle';
@@ -17,6 +17,7 @@ export default function HomeScreen({ navigation }) {
   if (registrationStatus === 'approved_demo') statusMessage = t('approvedDemo');
   if (registrationStatus === 'approved') statusMessage = t('approved');
   const isFocused = useIsFocused();
+  const enteringTripFlow = useRef(false);
   const [appActive, setAppActive] = useState(AppState.currentState === 'active');
   const { location, loading, error } = useDriverLocation({
     isFocused: isFocused && appActive,
@@ -30,7 +31,8 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    if (!isFocused || !appActive) updateAvailability(false);
+    if (isFocused) enteringTripFlow.current = false;
+    else if (!appActive || !enteringTripFlow.current) updateAvailability(false);
   }, [isFocused, appActive, updateAvailability]);
 
   useEffect(() => {
@@ -72,7 +74,10 @@ export default function HomeScreen({ navigation }) {
       </Pressable>
       <Pressable
         style={styles.secondaryButton}
-        onPress={() => navigation.getParent()?.navigate('TripFlow')}
+        onPress={() => {
+          enteringTripFlow.current = true;
+          navigation.getParent()?.navigate('TripFlow');
+        }}
       >
         <Text style={styles.secondaryButtonText}>{t('openDemoRequest')}</Text>
       </Pressable>

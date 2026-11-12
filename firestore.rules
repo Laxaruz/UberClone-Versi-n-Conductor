@@ -15,6 +15,13 @@ service cloud.firestore {
         && value.longitude >= -180 && value.longitude <= 180;
     }
 
+    function canReceiveRequests() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/drivers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.approvalStatus in ['approved', 'approved_demo']
+        && get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.available == true;
+    }
+
     match /drivers/{driverId} {
       allow get: if isOwner(driverId);
       allow list: if false;
@@ -88,6 +95,48 @@ service cloud.firestore {
         );
 
       allow delete: if false;
+    }
+
+    // AI-assisted: see docs/AI_LOG.md #22
+    match /tripRequests/{requestId} {
+      allow get: if request.auth != null
+        && (resource.data.acceptedBy == request.auth.uid
+          || (canReceiveRequests() && resource.data.status == 'requested'));
+      allow list: if canReceiveRequests()
+        && resource.data.status == 'requested'
+        && request.query.limit <= 20;
+      allow create, delete: if false;
+      // AI-assisted: see docs/AI_LOG.md #24
+      allow update: if canReceiveRequests()
+        && resource.data.status == 'requested'
+        && resource.data.expiresAt is timestamp
+        && (
+          (resource.data.createdAt is timestamp
+            && resource.data.expiresAt == resource.data.createdAt + duration.value(15, 's')
+            && resource.data.expiresAt > request.time
+            && resource.data.acceptedBy == null
+            && !exists(/databases/$(database)/documents/tripRequests/$(requestId)/responses/$(request.auth.uid))
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedBy', 'acceptedAt'])
+            && request.resource.data.status == 'accepted'
+            && request.resource.data.acceptedBy == request.auth.uid
+            && request.resource.data.acceptedAt == request.time)
+          || (resource.data.expiresAt <= request.time
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            && request.resource.data.status == 'expired')
+        );
+
+      match /responses/{driverUid} {
+        allow get: if request.auth != null && request.auth.uid == driverUid;
+        allow list, update, delete: if false;
+        allow create: if canReceiveRequests()
+          && request.auth.uid == driverUid
+          && get(/databases/$(database)/documents/tripRequests/$(requestId)).data.status == 'requested'
+          && get(/databases/$(database)/documents/tripRequests/$(requestId)).data.expiresAt > request.time
+          && request.resource.data.keys().hasOnly(['status', 'respondedAt'])
+          && request.resource.data.keys().hasAll(['status', 'respondedAt'])
+          && request.resource.data.status == 'rejected'
+          && request.resource.data.respondedAt == request.time;
+      }
     }
   }
 }
