@@ -74,7 +74,7 @@ export default function HomeScreen({ navigation }) {
         style={styles.secondaryButton}
         onPress={() => navigation.getParent()?.navigate('TripFlow')}
       >
-        <Text style={styles.secondaryButtonText}>{t('openTrip')}</Text>
+        <Text style={styles.secondaryButtonText}>{t('openDemoRequest')}</Text>
       </Pressable>
     </ScrollView>
   );

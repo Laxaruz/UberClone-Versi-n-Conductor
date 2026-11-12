@@ -5,6 +5,7 @@ import FeaturePreview from '../components/FeaturePreview';
 import { colors } from '../config/theme';
 import useTranslation from '../i18n/useTranslation';
 import HomeScreen from '../screens/HomeScreen';
+import IncomingRequestScreen from '../screens/IncomingRequestScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
 import RegistrationScreen from '../screens/RegistrationScreen';
@@ -86,6 +87,7 @@ function TripStack() {
   const t = useTranslation();
   return (
     <Stack.Navigator screenOptions={{ headerTintColor: colors.text }}>
+      <Stack.Screen name="IncomingRequest" component={IncomingRequestScreen} options={{ title: t('incomingRequest') }} />
       <Stack.Screen name="TripPreview" component={TripPreviewScreen} options={{ title: t('trip') }} />
       <Stack.Screen
         name="PaymentPreview"

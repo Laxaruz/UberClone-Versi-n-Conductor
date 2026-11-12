@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "check": "expo install --check",
     "test:registration": "node tests/validateRegistration.test.mjs",
-    "test:availability": "node tests/availability.test.mjs"
+    "test:availability": "node tests/availability.test.mjs",
+    "test:requests": "node tests/tripRequestTimer.test.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

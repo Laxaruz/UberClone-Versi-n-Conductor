@@ -459,3 +459,23 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Commit:** Pendiente. Mensaje propuesto: `Limitar la escritura en los campos del registro`. Hash pendiente.
 - **Verificación:** 18 casos de validación, 14 casos de límites de escritura y 7 casos de disponibilidad aprobados. La exportación de JavaScript y recursos de Expo para Android e iOS terminó correctamente. Jhoseth reportó que la prueba manual de los límites en su iPhone funcionó bien.
 - **Aprendizaje:** Los límites de escritura restringen la entrada y las validaciones comprueban los datos antes de enviarlos. La guía no fija un máximo para el número de licencia.
++
+
+## Entrada #21 — Implementación de solicitudes entrantes de demostración
+
+- **Fecha:** 2026-11-12
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Implementar y probar solicitudes entrantes de demostración con un temporizador de 15 segundos, manteniendo separado el futuro origen de datos en Firestore.
+- **Prompt:**
+
+  > Termine mi avance local de solicitudes de prueba en Jhoseth-dev. La pantalla muestra los datos del viaje, la tarifa y la ganancia calculadas con la funcion existente. Probe en mi iPhone el temporizador de 15 segundos, aceptar, rechazar, el vencimiento y el regreso desde segundo plano. Las pruebas funcionaron. Pasaron 15 casos del temporizador, 18 de validacion, 14 de limites y 7 de disponibilidad. Expo exporto Android e iOS. Las solicitudes son de demostracion, no llegan de Firestore y aceptarlas no inicia un viaje real. Todavia no hice el commit. Ayudame a registrar este resultado.
+
+- **Resumen de la respuesta:** Se recomendó separar la pantalla, el hook `useTripRequests`, el modelo de solicitud y los datos de demostración. Se propuso medir los 15 segundos con una hora de vencimiento, impedir decisiones incompatibles y limpiar el temporizador al abandonar la pantalla o pasar a segundo plano.
+- **Qué se usó / modificó / descartó:** Se implementaron la pantalla, la tarjeta, el hook, la fuente de datos ficticios y las transiciones de aceptar, rechazar y vencer. La tarifa y la ganancia usan la función existente. Se descartó presentar este flujo como una conexión real: las solicitudes no vienen de Firestore y aceptarlas no inicia un viaje. La integración en tiempo real queda pendiente del avance de Kevin.
+- **Archivos afectados por el avance:** `package.json`, `src/i18n/translations.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`, `src/components/IncomingTripCard.js`, `src/hooks/useTripRequests.js`, `src/screens/IncomingRequestScreen.js`, `src/services/demoTripRequests.js`, `src/utils/tripRequestTimer.js` y `tests/tripRequestTimer.test.mjs`.
+- **Bitácora:** Esta entrada se incorpora en `docs/AI_LOG.md` y `docs/AI_LOG_JHOSETH.md`.
+- **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar solicitudes de prueba con temporizador`. Hash pendiente.
+- **Verificación:** Pasaron 15 casos del temporizador, 18 de validación, 14 de límites de escritura y 7 de disponibilidad. También pasó la prueba de restauración del registro. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Jhoseth reportó que la prueba manual en iPhone del temporizador, aceptar, rechazar, vencimiento y regreso desde segundo plano funcionó correctamente.
+- **Aprendizaje:** Separar la lógica de solicitudes de la interfaz permite probar las transiciones y el tiempo límite. Los resultados de una solicitud ficticia deben distinguirse de operaciones confirmadas por un backend.
