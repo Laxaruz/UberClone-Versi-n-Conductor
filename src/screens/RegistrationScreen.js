@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
-import { needsInspection, validateRegistration } from '../utils/validateRegistration';
+import { needsInspection, normalizeRegistrationInput, registrationInputLimits, validateRegistration } from '../utils/validateRegistration';
 
 const sections = {
   personal: [
@@ -127,12 +127,12 @@ export default function RegistrationScreen({ section }) {
           </View>
         )}
         {['text', 'number', 'phone', 'email', 'plate'].includes(type) && (
-          <TextInput style={styles.input} value={registration[key]} onChangeText={(value) => updateRegistration(key, type === 'plate' ? value.toUpperCase().replace(/\s+/g, '') : value)}
+          <TextInput style={styles.input} value={registration[key]} onChangeText={(value) => updateRegistration(key, normalizeRegistrationInput(key, value))}
             editable={!locked}
             onBlur={() => setTouched((current) => ({ ...current, [key]: true }))}
             keyboardType={type === 'email' ? 'email-address' : type === 'phone' ? 'phone-pad' : type === 'number' ? 'numeric' : 'default'}
             autoCapitalize={type === 'email' ? 'none' : type === 'plate' ? 'characters' : 'sentences'}
-            maxLength={key === 'fullName' ? 50 : ['brand', 'model'].includes(key) ? 30 : undefined} />
+            maxLength={registrationInputLimits[key]} />
         )}
         {error ? <Text style={styles.error}>{t(error)}</Text> : null}
         {showValidationErrors && imageErrors[key] ? <Text style={styles.error}>{t(imageErrors[key])}</Text> : null}

@@ -124,3 +124,22 @@
   - Todavía falta comprobar en el dispositivo que los errores de campos, fotografías y términos permanezcan ocultos al recuperar un registro enviado, incluyendo después de reiniciar la aplicación.
   - No se registra una prueba móvil como completada.
 - **Aprendizaje:** Es importante separar la validación de los datos de la presentación de los errores. Un registro que ya fue enviado debe conservar su estado de solo lectura y no mostrar mensajes de campos obligatorios como si todavía estuviera en proceso de diligenciamiento. Este ajuste puede realizarse en la interfaz sin alterar las reglas de validación de los registros nuevos ni los datos de Firestore.
++
+
+## Entrada #20 — Ajuste de límites de escritura en el registro del conductor
+
+- **Fecha:** 2026-11-12
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Impedir que los campos del registro superen los máximos establecidos en la guía sin cambiar la validación antes del envío.
+- **Prompt:**
+
+  > Ya ajuste los limites de escritura del registro en Jhoseth-dev. Los campos con un maximo indicado en la guia dejan de aceptar caracteres adicionales y los campos numericos filtran letras y simbolos. Conserve las validaciones antes del envio. Pasaron 18 casos de validacion, 14 de limites y 7 de disponibilidad. Ya probe en mi iPhone los limites de escritura del registro y funcionaron bien. Los campos con un maximo definido dejan de aceptar mas caracteres. Los campos numericos no conservan letras ni simbolos. El numero de licencia permite seguir escribiendo digitos porque la guia no fija un maximo. ya ha´re el commit
+
+- **Resumen de la respuesta:** Se recomendó aplicar los límites de escritura establecidos en la guía, filtrar letras y símbolos en los campos numéricos y conservar las validaciones existentes. Se indicó comprobar el máximo permitido y el intento de introducir caracteres adicionales.
+- **Qué se usó / modificó / descartó:** Los campos con máximo definido dejan de aceptar caracteres adicionales y los campos numéricos filtran letras y símbolos. El número de licencia sigue sin límite de longitud porque la guía no lo establece. Se conservaron las validaciones antes del envío.
+- **Archivos afectados:** `src/screens/RegistrationScreen.js`, `src/utils/validateRegistration.js` y `tests/validateRegistration.test.mjs`.
+- **Commit:** Pendiente. Mensaje propuesto: `Limitar la escritura en los campos del registro`. Hash pendiente.
+- **Verificación:** 18 casos de validación, 14 casos de límites de escritura y 7 casos de disponibilidad aprobados. La exportación de JavaScript y recursos de Expo para Android e iOS terminó correctamente. Jhoseth reportó que la prueba manual de los límites en su iPhone funcionó bien.
+- **Aprendizaje:** Los límites de escritura restringen la entrada y las validaciones comprueban los datos antes de enviarlos. La guía no fija un máximo para el número de licencia.
