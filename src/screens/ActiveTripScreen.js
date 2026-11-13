@@ -30,8 +30,8 @@ export default function ActiveTripScreen({ navigation }) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>{t('trip')}</Text>
-        <Text style={styles.notice}>{t(status === 'completed' ? 'tripAlreadyCompleted' : 'noTrip')}</Text>
-        {status === 'completed' ? <Pressable style={styles.button} onPress={() => navigation.navigate('TripCompleted')}>
+        <Text style={styles.notice}>{t(['completed', 'paid'].includes(status) ? 'tripAlreadyCompleted' : 'noTrip')}</Text>
+        {['completed', 'paid'].includes(status) ? <Pressable style={styles.button} onPress={() => navigation.navigate('TripCompleted')}>
           <Text style={styles.buttonText}>{t('viewTripSummary')}</Text>
         </Pressable> : null}
       </View>

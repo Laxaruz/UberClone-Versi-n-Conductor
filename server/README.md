@@ -8,6 +8,14 @@ Los viajes actuales quedan bloqueados para checkout. Su estado `completed` se cr
 
 El webhook exige una firma valida, consulta el pago y la orden comercial directamente a Mercado Pago y compara referencia, preferencia, monto en COP, estado aprobado y modo de prueba. Una transaccion de Firebase Admin actualiza `paymentStatus`, `paymentId` y `paymentUpdatedAt`; el estado del viaje permanece en `completed`. El retorno del navegador por si solo no aprueba un pago. El flujo de efectivo y la pantalla de checkout de la app quedan separados.
 
+## Cobro en efectivo
+
+`POST /api/trips/:tripId/cash-receipt` requiere el ID token del conductor. El telefono envia solo el ID del viaje. El servidor comprueba que sea un viaje propio, terminado, con metodo `cash`, importes enteros coherentes y pago pendiente. Una transaccion registra `cashReceipts/{tripId}`, cambia el viaje a `status: paid` y `paymentStatus: cash_received`, y descuenta la comision de `driverBalances/{driverId}`. Un reintento del mismo viaje devuelve el saldo actual sin aplicar otro descuento. El saldo puede ser negativo.
+
+Esta confirmacion registra la declaracion del conductor de que recibio el efectivo; el servidor no puede verificar la entrega fisica. La app solo muestra un resultado confirmado cuando el servidor responde correctamente. Para probarlo desde el iPhone se necesitan Firebase Admin y una URL de servidor accesible desde el telefono en `EXPO_PUBLIC_API_BASE_URL`. No requiere credenciales de Mercado Pago.
+
+Si falta esa configuracion, el resumen mantiene el pago pendiente y explica que el servidor no esta disponible. Las solicitudes locales de demostracion no generan un viaje guardado en Firestore, por lo que no habilitan el registro de efectivo.
+
 ## Configuracion local
 
 Desde `server/`, ejecuta `npm install`, `npm test` y `npm start`. Configura en el `.env` de la raiz los valores del servidor. `.gitignore` excluye ese archivo y cualquier `.env.*` salvo `.env.example`.

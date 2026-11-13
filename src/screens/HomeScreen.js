@@ -79,7 +79,7 @@ export default function HomeScreen({ navigation }) {
         onPress={() => {
           enteringTripFlow.current = true;
           navigation.getParent()?.navigate('TripFlow', activeTrip ? {
-            screen: activeTrip.status === 'completed' ? 'TripCompleted'
+            screen: ['completed', 'paid'].includes(activeTrip.status) ? 'TripCompleted'
               : activeTrip.status === 'accepted' ? 'TripPreview' : 'ActiveTrip',
           } : { screen: 'IncomingRequest' });
         }}

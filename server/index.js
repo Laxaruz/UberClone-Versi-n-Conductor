@@ -7,6 +7,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 const { createApp } = require('./app');
 const { createMercadoPagoClient } = require('./mercadoPagoClient');
 const { createPaymentRepository } = require('./paymentRepository');
+const { createCashRepository } = require('./cashRepository');
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const host = process.env.SERVER_HOST || '127.0.0.1';
@@ -21,6 +22,7 @@ const firebaseApp = initializeApp({ credential: applicationDefault(), projectId 
 const auth = getAuth(firebaseApp);
 const database = getFirestore(firebaseApp);
 const paymentRepository = createPaymentRepository(database);
+const cashRepository = createCashRepository(database);
 const paymentsTestMode = process.env.MERCADOPAGO_TEST_MODE === 'true';
 const notificationUrl = process.env.MERCADOPAGO_NOTIFICATION_URL;
 if (notificationUrl && !/^https:\/\/[^\s/]+\//.test(notificationUrl)) {
@@ -36,6 +38,7 @@ const app = createApp({
     return snapshot.exists ? snapshot.data() : null;
   },
   ...paymentRepository,
+  ...cashRepository,
   mercadoPago,
   webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET,
   notificationUrl,

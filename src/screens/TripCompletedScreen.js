@@ -1,8 +1,10 @@
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppIcon from '../components/AppIcon';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
+import { cashServiceConfigured, recordCashReceipt } from '../services/cashPaymentService';
 
 function formatCop(amount) {
   return `$${String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} COP`;
@@ -17,8 +19,33 @@ function Amount({ label, amount }) {
 
 export default function TripCompletedScreen({ navigation }) {
   const t = useTranslation();
-  const { activeTrip } = useDriver();
-  const completed = activeTrip?.status === 'completed';
+  const { activeTrip, setActiveTrip } = useDriver();
+  const [cashBusy, setCashBusy] = useState(false);
+  const [cashError, setCashError] = useState(false);
+  const cashInFlight = useRef(false);
+  const completed = activeTrip?.status === 'completed' || activeTrip?.status === 'paid';
+  const cashTrip = activeTrip?.paymentMethod === 'cash';
+  const cashRecorded = activeTrip?.paymentStatus === 'cash_received';
+  const cashCanSubmit = cashTrip && !cashRecorded && activeTrip?.source === 'firestore_test'
+    && cashServiceConfigured;
+
+  async function confirmCash() {
+    if (!cashCanSubmit || cashInFlight.current) return;
+    cashInFlight.current = true;
+    setCashBusy(true);
+    setCashError(false);
+    try {
+      const result = await recordCashReceipt(activeTrip.id);
+      setActiveTrip((current) => current?.id === activeTrip.id
+        ? { ...current, status: 'paid', paymentStatus: result.paymentStatus,
+          cashBalance: result.balance } : current);
+    } catch {
+      setCashError(true);
+    } finally {
+      cashInFlight.current = false;
+      setCashBusy(false);
+    }
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
@@ -35,9 +62,21 @@ export default function TripCompletedScreen({ navigation }) {
           <Amount label={t('commission')} amount={activeTrip.finalCommission} />
           <Amount label={t('netEarnings')} amount={activeTrip.finalDriverEarnings} />
           <View style={styles.paymentRow}><Text style={styles.label}>{t('paymentStatus')}</Text>
-            <Text style={styles.paymentPending}>{t('paymentPending')}</Text></View>
+            <Text style={styles.paymentPending}>{t(cashRecorded ? 'cashReceived' : 'paymentPending')}</Text></View>
         </View>
-        <Text style={styles.notice}>{t('paymentNotProcessed')}</Text>
+        {cashTrip && cashRecorded ? <>
+          <Text style={styles.notice}>{t('cashReceiptDemo')}</Text>
+          <Amount label={t('driverBalance')} amount={activeTrip.cashBalance} />
+        </> : <Text style={styles.notice}>{t(cashTrip ? 'cashPending' : 'paymentNotProcessed')}</Text>}
+        {cashTrip && !cashRecorded ? <>
+          {!cashCanSubmit && <Text style={styles.notice}>{t('cashBackendRequired')}</Text>}
+          {cashError && <Text style={styles.notice}>{t('cashSaveFailed')}</Text>}
+          <Pressable accessibilityRole="button" disabled={!cashCanSubmit || cashBusy}
+            style={[styles.button, (!cashCanSubmit || cashBusy) && styles.buttonDisabled]}
+            onPress={confirmCash}>
+            <Text style={styles.buttonText}>{t(cashBusy ? 'savingCash' : 'confirmCash')}</Text>
+          </Pressable>
+        </> : null}
       </> : <Text style={styles.notice}>{t('noCompletedTrip')}</Text>}
       <Pressable accessibilityRole="button" style={styles.button} onPress={() => navigation.getParent()?.navigate('MainDrawer')}>
         <Text style={styles.buttonText}>{t('backHome')}</Text>
@@ -66,5 +105,6 @@ const styles = StyleSheet.create({
   paymentPending: { color: colors.warning, backgroundColor: colors.warningSoft, paddingHorizontal: 12,
     paddingVertical: 7, borderRadius: 10, fontWeight: '700' },
   button: { marginTop: 24, padding: 17, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary },
+  buttonDisabled: { opacity: 0.45 },
   buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
 });

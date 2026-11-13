@@ -1,7 +1,7 @@
 const express = require('express');
 const { canStartCheckout, validWebhookSignature, matchesApprovedTestPayment } = require('./paymentChecks');
 
-function createApp({ verifyIdToken, findTrip, savePreference, markPaid, mercadoPago, webhookSecret, notificationUrl, paymentsTestMode = false }) {
+function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCashReceipt, mercadoPago, webhookSecret, notificationUrl, paymentsTestMode = false }) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json());
@@ -62,6 +62,21 @@ function createApp({ verifyIdToken, findTrip, savePreference, markPaid, mercadoP
       fare: trip.fare,
       paymentStatus: trip.paymentStatus,
     });
+  });
+
+  app.post('/api/trips/:tripId/cash-receipt', async (request, response) => {
+    const found = await authenticatedTrip(request, response);
+    if (!found) return;
+    if (found.trip.paymentMethod !== 'cash') {
+      return response.status(409).json({ error: 'Trip is not a cash trip' });
+    }
+    if (!recordCashReceipt) return response.status(503).json({ error: 'Cash service unavailable' });
+    try {
+      const receipt = await recordCashReceipt(found.tripId, found.trip.driverId);
+      return response.json(receipt);
+    } catch {
+      return response.status(409).json({ error: 'Cash receipt could not be recorded' });
+    }
   });
 
   // AI-assisted: see docs/AI_LOG.md #40

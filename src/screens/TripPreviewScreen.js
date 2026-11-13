@@ -27,7 +27,7 @@ export default function TripPreviewScreen({ navigation }) {
           <Text style={styles.notice}>{t(activeTrip.source === 'demo' ? 'requestAcceptedDemo' : 'requestAcceptedTest')}</Text>
           <Text style={styles.notice}>{t('tripLocalOnly')}</Text>
           <Pressable accessibilityRole="button" style={styles.button}
-            onPress={activeTrip.status === 'accepted' ? startPickup : () => navigation.navigate(activeTrip.status === 'completed' ? 'TripCompleted' : 'ActiveTrip')}>
+            onPress={activeTrip.status === 'accepted' ? startPickup : () => navigation.navigate(['completed', 'paid'].includes(activeTrip.status) ? 'TripCompleted' : 'ActiveTrip')}>
             <AppIcon name="route" size={21} color={colors.surface} />
             <Text style={styles.buttonText}>{t(activeTrip.status === 'accepted' ? 'startPickup' : 'continueTrip')}</Text>
           </Pressable>
