@@ -496,3 +496,182 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y commit:** Solo esta entrada #31 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Código local sin commit: los tres archivos revisados. HEAD base `c05c4acefc7e67274f6543b288662709bd089714`.
 - **Verificación:** `git status` confirmó `Kevin-dev`, HEAD `c05c4acefc7e67274f6543b288662709bd089714`, tres archivos de código y las dos bitácoras modificadas. `git diff --check` no reportó errores de whitespace. En el diff no aparecen comentarios de referencia IA junto a las nuevas líneas revisadas. No se verificó el resultado en iPhone ni en Firestore de forma independiente; restauración tras reinicio no se probó según Kevin.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #33 — Revisión del alcance de rutas con OSRM
+
+- **Fecha y hora:** 2026-11-12 21:07:49 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Confirmar si el repositorio ya tiene un servicio de rutas, evaluar el alcance OSRM y detectar dependencias con el flujo de viaje de Jhoseth.
+- **Prompt completo y literal:**
+
+> Revise mi proyecto y confirme que todavia no tenemos servicio de rutas. Comprobe que Google Maps Platform me pide registrar una tarjeta para usar Routes API, por eso quiero usar la opcion OSRM que permite la guia para esta entrega. Pienso mostrar la ruta desde mi ubicacion hasta la recogida y luego hacia el destino, con la distancia y el tiempo del servicio y la linea en el mapa. Tambien voy a dejar claro que las solicitudes de prueba tienen datos estimados y que la ruta no es navegacion paso a paso. Podrias revisar si este alcance corresponde a mi siguiente commit y si ves algun problema con el flujo que ya hizo Jhoseth?
+
+- **Resumen de la respuesta:** La búsqueda local confirma que aún no hay servicio OSRM/rutas ni dibujo `Polyline`; el flujo actual de Jhoseth sí tiene estados locales `accepted`, `driver_arriving`, `in_progress` y `completed`. El alcance cabe como ruta visual de prueba, pero requiere coordinar cambios en `ActiveTripScreen` y resolver cómo obtener GPS allí; el servidor demo público de OSRM limita uso razonable no comercial a una solicitud por segundo y no garantiza disponibilidad.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron `git status`, búsqueda en fuentes, lectura de pantallas, transiciones, contexto y navegador, además de documentación oficial de OSRM y la guía del proyecto. No se modificó código ni se ejecutaron pruebas. Se distingue la ruta visual de las estimaciones ya guardadas en la solicitud, sin presentarla como navegación paso a paso. Se añadió esta entrada a ambas bitácoras.
+- **Archivos revisados:** Guía PDF; `package.json`, `src/components/DriverMap.js`, `src/hooks/useDriverLocation.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/TripPreviewScreen.js`, `src/screens/ActiveTripScreen.js`, `src/screens/TripCompletedScreen.js`, `src/context/DriverContext.js`, `src/utils/tripTransitions.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`.
+- **Archivos afectados y commit:** Solo esta entrada #33 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. HEAD revisado `818179cee7cf0c5ac1d0b0057f07f8c37796f029` (`Implementar flujo de viaje y renovar registro`); no hay commit para esta consulta.
+- **Verificación:** `git status` confirmó el árbol de trabajo limpio en `Kevin-dev`, una confirmación adelante de `origin/Kevin-dev`; HEAD coincide con `origin/Jhoseth-dev`. `rg` no encontró OSRM, OpenRouteService, Directions, Distance Matrix, `Polyline`, ni llamadas HTTP de ruta en `src`/`package.json`; `DriverMap` solo muestra la ubicación actual. El código confirma que la aceptación apaga disponibilidad, `ActiveTripScreen` no llama a `useDriverLocation`, y `advanceTrip` usa estado local. La documentación OSRM indica que `Route` devuelve trayecto/duración/distancia/geometría y el servidor demo público no ofrece SLA. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #34 — Revisión de la integración de rutas OSRM
+
+- **Fecha y hora:** 2026-11-12 21:27:33 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el servicio OSRM, el dibujo de las rutas por tramo, la separación de estimaciones y tarifas, y su compatibilidad con los estados actuales del viaje antes del commit.
+- **Prompt completo y literal:**
+
+> Conecte el mapa del viaje con OSRM y mostre una ruta desde mi ubicacion hasta la recogida. Ademas, cuando el pasajero sube, el mapa cambia la ruta hacia el destino. La distancia y el tiempo de cada tramo se muestran aparte de los valores estimados de la solicitud. Tambien agregue mensajes para cuando falten coordenadas o falle la ruta, sin cambiar la tarifa ni los estados del viaje. Comprobe las pruebas del servicio de rutas y del flujo de viaje, y Expo exporto para Android e iOS. En mi iPhone vi la ruta hacia la recogida y despues hacia el destino. Tambien confirme en Firestore que la solicitud quedo aceptada. Podrias revisar si ves algun error antes del commit y si este avance cumple con el alcance que acordamos?
+
+- **Resumen de la respuesta:** La lectura confirma que OSRM construye rutas de conducción, transforma la geometría para `Polyline` y muestra métricas por tramo según los estados existentes, sin modificar tarifa ni transiciones. No encontré un error funcional comprobado en el diff; antes del commit falta añadir las referencias IA de la guía a los bloques asistidos, y la prueba de iPhone/Firestore, las pruebas automatizadas y las exportaciones se registran como reportadas por Kevin.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el diff y los archivos nuevos de servicio, mapa y prueba, además de pantalla y traducciones. No se modificó código ni se ejecutaron pruebas o exportaciones. Se registra como reporte de Kevin la comprobación en iPhone, Firestore, pruebas y exportaciones.
+- **Archivos revisados:** `src/services/routeService.js`, `src/components/TripRouteMap.js`, `src/screens/ActiveTripScreen.js`, `src/i18n/translations.js`, `tests/routeService.test.mjs`, `src/context/DriverContext.js`, `src/utils/tripTransitions.js`, `src/screens/TripPreviewScreen.js`.
+- **Archivos afectados y commit:** Solo esta entrada #34 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Código local sin commit: `src/i18n/translations.js`, `src/screens/ActiveTripScreen.js`, `src/components/TripRouteMap.js`, `src/services/routeService.js`, `tests/routeService.test.mjs`. HEAD base `818179cee7cf0c5ac1d0b0057f07f8c37796f029`.
+- **Verificación:** `git status` confirmó `Kevin-dev` una confirmación adelante de `origin/Kevin-dev`, HEAD `818179cee7cf0c5ac1d0b0057f07f8c37796f029`, y los cinco archivos de código listados como modificados o nuevos. La lectura confirma que el destino cambia entre `origin` y `destination` según `driver_arriving`/`in_progress`, que distancia y duración OSRM se muestran separadas, y que `DriverContext`/`tripTransitions` no están modificados. `git diff --check` no reportó whitespace en los diffs rastreados. `rg` no encontró comentarios `AI-assisted` en el servicio, componente, pantalla, traducciones ni prueba nueva. No se ejecutaron pruebas ni se repitieron verificaciones de iPhone, Firestore o Expo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #35 — Alcance seguro para Checkout Pro y persistencia del viaje
+
+- **Fecha y hora:** 2026-11-12 21:50:35 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el alcance del próximo avance de pagos con Mercado Pago Checkout Pro, la necesidad de persistir viajes terminados y la separación con el avance de efectivo y resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Revise la guia para empezar mi siguiente avance de pagos. La guia recomienda Mercado Pago Checkout Pro en modo de prueba y pide que la llave secreta quede solo en un backend. En el proyecto ya existe la tarifa final y una pantalla de resumen, pero el viaje activo aun vive solo en memoria. Tampoco hay un documento de viajes en Firestore ni un servidor de pagos. Estoy pensando hacer primero un backend con Node y Express que cree una preferencia de prueba, usando el ID y el monto del viaje, y dejando el token en un archivo .env fuera de Git. Tambien quiero evitar que el telefono pueda inventar el monto o marcar el pago como aprobado. Podrias revisar si este alcance corresponde a mi siguiente commit o si primero debo guardar el viaje terminado en Firestore? Como separarias ese trabajo del avance de efectivo y resumen que hara Jhoseth?
+
+- **Resumen de la respuesta:** El backend Node/Express y Checkout Pro de prueba encajan con la guía, pero hoy el cierre, la tarifa final y paymentStatus solo viven en activeTrip; no existe persistencia de viaje ni backend. Recomiendo que la API reciba el ID, derive y valide el monto desde datos persistidos de confianza, y que solo el backend confirme el pago tras verificar el webhook y consultar el pago en Mercado Pago.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron la guía, la lectura de los archivos actuales y documentación oficial de Mercado Pago y Firebase. Se recomendó acordar con Jhoseth el contrato de viaje; su avance conserva efectivo y presentación del resumen, mientras Kevin puede llevar API de pagos y estados autoritativos del proveedor. No se modificó código ni se ejecutaron pruebas.
+- **Archivos revisados:** Guía PDF; src/context/DriverContext.js, src/utils/tripTransitions.js, src/screens/TripCompletedScreen.js, src/navigation/RootNavigator.js, firestore.rules, src/services/firebaseClient.js, .env.example, .gitignore, package.json.
+- **Archivos afectados y commit:** Solo esta entrada #35 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Hash de commit para esta consulta: pendiente. HEAD leído: f895dd608e9534e0d63e4976c4daa382fda4a7ac.
+- **Verificación:** La lectura confirma que DriverContext.js:193-200 actualiza el viaje con estado local; tripTransitions.js:17-22 asigna estado terminado, valores y pago pendiente; las reglas contienen drivers y tripRequests, no trips; y la pantalla de pago sigue siendo un marcador de función. package.json no declara Express ni un SDK de pagos. Se consultaron las documentaciones oficiales de [preferencias](https://www.mercadopago.com.co/developers/es/docs/checkout-pro-preferences/create-payment-preference), [webhooks](https://www.mercadopago.com.co/developers/es/docs/checkout-pro-preferences/additional-content/notifications/webhooks?scope=prod) y [verificación de Firebase ID tokens](https://firebase.google.com/docs/auth/admin/verify-id-tokens). No se ejecutaron pruebas. git status no se pudo verificar en esta llamada: Git respondió que la operación debe ejecutarse dentro de un work tree.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #36 — Revisión de persistencia del viaje terminado
+
+- **Fecha y hora:** 2026-11-12 22:16:05 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar la creación en Firestore de viajes terminados, las reglas de acceso, el reintento del guardado y las pruebas reportadas antes del commit.
+- **Prompt completo y literal:**
+
+> Complete el guardado del viaje terminado en trips usando el mismo ID de la solicitud aceptada. El documento toma los datos y los montos de esa solicitud y deja el pago pendiente. Tambien cambie Finalizar viaje para que espere el guardado y permita reintentar si falla. Agregue reglas para que solo el conductor asignado pueda crear el viaje y no pueda cambiar el monto ni marcar el pago como aprobado. Comprobe la logica con una prueba local, exporte Expo para Android e iOS y use el emulador de Firestore. En el emulador pude guardar el viaje con el conductor asignado y confirme que otro conductor no puede leerlo ni crearlo, y que el telefono no puede cambiar el monto ni aprobar el pago. Aun no publique las reglas ni probe este flujo en el celular. Podrias revisar el avance y decirme si ves algun error antes del commit?
+
+- **Resumen de la respuesta:** La transacción usa el ID de la solicitud, reconstruye los montos desde el documento aceptado y las reglas restringen creación, lectura y modificaciones del viaje. No encontré un error comprobado en el reintento; señalé como riesgo que el estado completed aún es local y como sugerencias cubrir las reglas con pruebas reproducibles y completar referencias IA donde correspondan.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se inspeccionaron las reglas, el helper de viaje, el repositorio, el flujo de cierre, la pantalla, el contrato de solicitud, las pruebas y la documentación. No se modificó código ni se ejecutaron pruebas. La prueba local, emulador y exportaciones se registran como resultados reportados por Kevin, no reproducidos por esta revisión.
+- **Archivos revisados:** firestore.rules, src/utils/completedTrip.js, src/services/tripRepository.js, src/context/DriverContext.js, src/screens/ActiveTripScreen.js, src/utils/tripRequestContract.js, src/config/pricing.js, src/utils/calculateFare.js, src/i18n/translations.js, tests/completedTrip.test.mjs, docs/TRIPS.md.
+- **Archivos afectados y commit:** Solo esta entrada #36 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. El hash del commit del avance queda pendiente. HEAD leído: f895dd608e9534e0d63e4976c4daa382fda4a7ac.
+- **Verificación:** La lectura confirma que completeTrip espera saveCompletedTrip antes de actualizar el estado local, que el repositorio comprueba el documento de solicitud y usa una transacción con el mismo ID, y que las reglas no permiten actualizar ni borrar trips. El test fuente cubre el helper y valores/propietario, pero no ejecuta las reglas; el uso del emulador y los exports son reportados por Kevin. git ls-files --modified enumeró los archivos locales modificados; git status y git diff fallaron con “this operation must be run in a work tree”. No se ejecutaron pruebas ni exports.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #37 — Alcance mínimo para el backend de pagos
+
+- **Fecha y hora:** 2026-11-12 22:33:31 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir un alcance mínimo para preparar el backend y la lectura de viajes sin habilitar cobros ni aprobaciones, separándolo del avance de efectivo y resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Publique el commit del guardado de viajes y desplegue las reglas de Firestore. Las reglas compilaron y las comprobe en el emulador, pero voy a dejar para despues la prueba de Finalizar viaje en el celular porque necesitamos avanzar. Ahora quiero empezar el backend de pagos de prueba. Todavia no tengo credenciales de Mercado Pago y el estado completed se crea desde el telefono, asi que no quiero tratarlo como prueba segura de que el viaje termino. Estoy pensando dejar el servidor y la lectura del viaje preparados, pero sin permitir un cobro real ni marcar un pago como aprobado hasta tener credenciales y una forma confiable de validar el viaje. Podrias revisar cual seria el alcance minimo y seguro para este commit, y que parte debe quedar separada del efectivo y resumen que hara Jhoseth?
+
+- **Resumen de la respuesta:** GitHub confirma Kevin-dev en el commit a1ca65e, cuyo árbol contiene la persistencia de trips pero todavía no tiene servidor ni dependencias backend; las variables de Mercado Pago son solo nombres vacíos en .env.example. Recomiendo limitar este avance a un servidor Express con lectura autenticada y de solo lectura del viaje propio; sin preferencia, cobro ni cambios de pago hasta tener una señal de finalización confiable y credenciales de prueba.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se consultaron el estado remoto de Kevin-dev, los archivos del contrato de viaje y de configuración, además de documentación oficial de Mercado Pago y Firebase. Se separó el backend de lectura de los componentes de efectivo y resumen de Jhoseth. No se modificó código, no se instalaron dependencias, no se leyeron ni registraron credenciales, y no se ejecutaron pruebas.
+- **Archivos revisados:** package.json, .gitignore, .env.example, docs/TRIPS.md, firestore.rules, src/services/tripRepository.js, src/services/firebaseClient.js y árbol de archivos del commit de Kevin-dev.
+- **Archivos afectados y commit:** Solo esta entrada #37 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No hay commit para esta consulta; hash base remoto a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Verificación:** La API de GitHub devuelve Kevin-dev en a1ca65e con padre f895dd6; el árbol de ese commit no contiene directorio de servidor. package.json conserva únicamente el conjunto Expo/React Native y .env.example tiene variables vacías para Mercado Pago. docs/TRIPS.md ya aclara que completed se crea desde el teléfono y no prueba por sí solo elegibilidad de cobro. El despliegue de reglas y las pruebas del emulador se registran como reportados por Kevin, no verificados en la consola. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #38 — Alcance preparatorio del backend de pagos
+
+- **Fecha y hora:** 2026-11-12 22:35:26 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir el mínimo seguro para preparar el servidor y la lectura de viajes sin crear cobros ni aprobar pagos, y separar el trabajo de efectivo y resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Publique el commit del guardado de viajes y desplegue las reglas de Firestore. Las reglas compilaron y las comprobe en el emulador, pero voy a dejar para despues la prueba de Finalizar viaje en el celular porque necesitamos avanzar. Ahora quiero empezar el backend de pagos de prueba. Todavia no tengo credenciales de Mercado Pago y el estado completed se crea desde el telefono, asi que no quiero tratarlo como prueba segura de que el viaje termino. Estoy pensando dejar el servidor y la lectura del viaje preparados, pero sin permitir un cobro real ni marcar un pago como aprobado hasta tener credenciales y una forma confiable de validar el viaje. Podrias revisar cual seria el alcance minimo y seguro para este commit, y que parte debe quedar separada del efectivo y resumen que hara Jhoseth?
+
+- **Resumen de la respuesta:** Se verificó Kevin-dev en a1ca65e; el árbol remoto no tiene servidor ni dependencias backend y docs/TRIPS.md advierte que completed se crea desde el teléfono y no prueba elegibilidad de cobro. Se recomienda un commit solo de backend Express y lectura autenticada de viajes propios, sin preferencia ni cambios de estado de pago; efectivo y resumen permanecen con Jhoseth.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el commit remoto, el árbol de archivos, package.json, .gitignore, .env.example, docs/TRIPS.md, reglas y el contrato existente; se consultaron fuentes oficiales de Mercado Pago y Firebase. No se modificó código, no se instalaron dependencias, no se leyeron ni registraron credenciales y no se ejecutaron pruebas.
+- **Archivos revisados:** package.json, .gitignore, .env.example, docs/TRIPS.md, firestore.rules, src/services/tripRepository.js, src/services/firebaseClient.js y el árbol del commit a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Archivos afectados y commit:** Solo esta entrada #38 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No hay commit para esta consulta; hash base remoto a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Verificación:** La API de GitHub confirma que Kevin-dev apunta a a1ca65ea7675a519cd1ca4b7859f683b71fef962, cuyo padre es f895dd608e9534e0d63e4976c4daa382fda4a7ac. El árbol no contiene server/; package.json es el de Expo; .gitignore excluye .env; .env.example solo contiene nombres de variables vacíos; docs/TRIPS.md aclara que completed no valida por sí solo el cierre. GitHub no permite verificar el despliegue real de reglas; los resultados del emulador son reportados por Kevin. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #39 — Revisión del servidor de lectura de viajes
+
+- **Fecha y hora:** 2026-11-12 22:48:42 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el backend Express de lectura de viajes, la verificación del token, el control de propietario, el manejo de errores y las pruebas locales antes del commit.
+- **Prompt completo y literal:**
+
+> Cree server como paquete separado de Expo y agregue GET /health y GET /api/trips/:tripId. La consulta verifica el ID token con Firebase Admin, compara el UID con driverId y devuelve solo ID, estado, metodo de pago, tarifa y estado del pago. Tambien agregue los nombres de configuracion vacios en .env.example y deje documentado que el servidor aun no crea preferencias ni aprueba pagos. Probe la ruta con peticiones HTTP para token ausente o invalido, viaje inexistente, conductor diferente, ID invalido, error de lectura y conductor propietario. Las pruebas pasaron, y git diff --check no encontro errores. No tengo credenciales del servidor ni de Mercado Pago, por eso no hice una prueba contra Firebase real ni cambie el flujo de efectivo de Jhoseth. Podrias revisar el codigo y decirme si ves un error antes del commit?
+
+- **Resumen de la respuesta:** La ruta verifica el token antes de consultar Firestore, limita la respuesta a campos del viaje propio y devuelve errores genéricos; no encontré un error funcional comprobado en este flujo. El servidor escucha solo en 127.0.0.1 y las pruebas HTTP usan dependencias simuladas, por lo que no prueban conectividad desde el teléfono ni acceso con credenciales reales de Firebase.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron los archivos nuevos de server, la configuración de entorno, pruebas y documentación, y documentación oficial de Firebase Admin/ID tokens. No se modificó código, no se leyeron credenciales y no se ejecutaron pruebas. Los casos HTTP y git diff --check se anotan como reportados por Kevin.
+- **Archivos revisados:** server/package.json, server/app.js, server/index.js, server/test/app.test.js, server/README.md, .env.example, .gitignore.
+- **Archivos afectados y commit:** Solo esta entrada #39 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Hash del commit del avance: pendiente. HEAD base local: a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Verificación:** git rev-parse confirma HEAD a1ca65ea7675a519cd1ca4b7859f683b71fef962 y la rama Kevin-dev. git ls-files muestra .env.example modificado, y los seis archivos de server sin seguimiento. git status y git diff --check no pudieron ejecutarse en esta llamada porque Git respondió “this operation must be run in a work tree”; las pruebas HTTP y diff check quedan como reportadas por Kevin. La lectura confirma que applicationDefault y verifyIdToken usan Firebase Admin y que la ruta compara driverId con el UID verificado. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #40 — Alcance de pagos de prueba y finalización confiable
+
+- **Fecha y hora:** 2026-11-12 23:01:14 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir cómo preparar el avance de pagos de prueba sin tratar el estado completed creado por el teléfono como prueba segura del viaje, y separar Checkout de la app y efectivo/resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Ya subi el servidor de lectura y ahora necesito terminar mi avance de pagos de prueba para que Jhoseth pueda seguir. Revise la guia y el repositorio, y todavia no tenemos credenciales de Mercado Pago ni un pago conectado a la app. Pienso hacer en el servidor la creacion de la preferencia de Checkout Pro con el monto guardado del viaje, y despues recibir la notificacion, verificarla con Mercado Pago y actualizar el pago en Firestore. Tambien comprobare el conductor con su token y dejare las llaves solo en el servidor. Me preocupa que el estado completed del viaje aun se crea desde el telefono. Como podemos terminar este avance de prueba sin presentar ese estado como una prueba segura de que el viaje ocurrio? Y que debe quedar para el siguiente commit de checkout en la app y para el efectivo de Jhoseth?
+
+- **Resumen de la respuesta:** GitHub confirma Kevin-dev en afa9c1d y el servidor actual sigue siendo de lectura; docs/TRIPS reconoce que completed viene del teléfono y no prueba por sí solo que el viaje ocurrió. Recomiendo separar una prueba de proveedor con datos sintéticos del cobro de viajes reales; sin credenciales y señal confiable solo se puede dejar código deshabilitado o probado con mocks, no afirmar Checkout Pro integrado.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el estado remoto, servidor, reglas y contrato de trips, además de documentación oficial de Mercado Pago y Firebase. Se propuso que el siguiente commit de app consuma el endpoint solo cuando la preferencia y el checkout de prueba estén configurados; Jhoseth conserva efectivo y resumen. No se modificó código, no se usaron credenciales y no se ejecutaron pruebas.
+- **Archivos revisados:** Guía PDF, server/app.js, server/index.js, server/package.json, server/README.md, docs/TRIPS.md, firestore.rules, .env.example, src/context/DriverContext.js, src/services/tripRepository.js, src/screens/TripCompletedScreen.js.
+- **Archivos afectados y commit:** Solo esta entrada #40 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No hay commit para esta consulta; hash base remoto afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab.
+- **Verificación:** La API de GitHub confirma Kevin-dev en afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab, padre a1ca65ea7675a519cd1ca4b7859f683b71fef962. El servidor ofrece health y lectura autenticada, sin endpoints de pago; el documento y firestore.rules aún permiten crear completed desde el cliente después de que la solicitud esté accepted. .env.example contiene nombres vacíos. Se consultó la documentación oficial actual de preferencia Checkout Pro, webhooks, cuentas de prueba y verificación de Firebase ID tokens. No se ejecutaron pruebas ni se verificó la consola de Firebase.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #41 — Revisión de preferencias y webhook de pago de prueba
+
+- **Fecha y hora:** 2026-11-12 23:24:53 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el código local del servidor que crea preferencias Checkout Pro, valida webhooks y actualiza Firestore antes del commit.
+- **Prompt completo y literal:**
+
+> Preparé en el servidor la creación de preferencias de Mercado Pago usando el monto guardado del viaje. Además, agregué la verificación de la firma del webhook y la consulta del pago y la orden antes de actualizar Firestore. Los viajes actuales siguen bloqueados para checkout porque la finalización todavía se controla desde el teléfono. Creé la aplicación de Checkout Pro con credenciales de prueba, guardé el token fuera de Git y comprobé con una consulta de solo lectura que funciona. También creé una preferencia sintética de prueba y Mercado Pago respondió 201 con una URL de sandbox, pero no hice ningún pago. Las cinco pruebas locales del servidor pasaron. Aún faltan las credenciales locales de Firebase Admin, una URL HTTPS pública y el secreto del webhook, por eso no probé una notificación real ni la app. ¿Podrías revisar el código y decirme si ves un error que deba corregir antes del commit?
+
+- **Resumen de la respuesta:** Error comprobado: markPaid reemplaza status: completed por paid, aunque el modelo/documentación del proyecto separa el estado del viaje y el del pago. Recomiendo conservar completed, actualizar solo los campos del pago y corregir la prueba y el README; las pruebas, la consulta de solo lectura y el HTTP 201 se registran como reportados por Kevin, no reproducidos.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron lecturas de código local y documentación oficial de Mercado Pago. No se modificó código ni se leyeron credenciales; las pruebas locales, la consulta de solo lectura y la creación de preferencia quedan como reportadas por Kevin. Se señaló además el riesgo de que solicitudes concurrentes puedan crear preferencias duplicadas antes de guardar una en Firestore.
+- **Archivos revisados:** server/app.js, server/index.js, server/mercadoPagoClient.js, server/paymentChecks.js, server/paymentRepository.js, server/test/payments.test.js, server/README.md, docs/TRIPS.md, .env.example; documentación oficial de webhooks y Merchant Orders de Mercado Pago.
+- **Archivos afectados y hash del commit:** Solo esta entrada #41 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. El commit de este avance está pendiente; HEAD base local afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab.
+- **Verificación:** Se confirmó rama Kevin-dev y HEAD con git rev-parse; git status --short --branch falló con “this operation must be run in a work tree”, así que no se verificó el diff/estado con ese comando. La lectura confirma status: 'paid' en server/paymentRepository.js líneas 29-31 y la misma transición simulada por el test en server/test/payments.test.js líneas 65-68; docs/TRIPS.md líneas 5-9 documenta completed como estado del viaje y campos de pago separados. No se ejecutaron pruebas, no se llamó a Mercado Pago y no se inspeccionaron secretos. Los cinco tests, el HTTP 201 y la consulta de solo lectura son resultados reportados por Kevin.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #42 — Verificación de la corrección del estado del viaje y la orden de pago
+
+- **Fecha y hora:** 2026-11-12 23:29:27 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Confirmar que la corrección de markPaid conserva el estado completed, que la prueba de repositorio verifica idempotencia y que la orden comercial se valida antes de actualizar Firestore.
+- **Prompt completo y literal:**
+
+> Corregí el error que encontraste. Ahora, cuando Mercado Pago confirma un pago de prueba, el repositorio conserva el viaje en completed y cambia solo los datos del pago. También hice que la prueba use el repositorio para comprobarlo y que un aviso repetido no vuelva a escribir el pago. Además, el servidor exige que la orden comercial esté cerrada, que el monto pagado coincida con la tarifa y que el pago figure en esa orden. Las seis pruebas locales pasan y git diff --check no muestra errores. La preferencia sintética real ya había respondido 201, pero sigo sin probar el webhook con Mercado Pago ni Firebase Admin porque falta una URL pública y las credenciales de Admin. ¿Podrías confirmar si la corrección resuelve el error antes del commit?
+
+- **Resumen de la respuesta:** La lectura confirma que markPaid conserva status: completed y cambia paymentStatus, paymentId y paymentUpdatedAt; la prueba nueva llama al repositorio y comprueba el estado y que la segunda llamada no repita la escritura. También se validan el estado closed, los montos, el reembolso en cero y que la orden incluya el pago aprobado. No se confirma ejecución independiente de las seis pruebas ni una notificación real.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron los archivos locales y la documentación oficial de Merchant Orders de Mercado Pago. No se modificó código ni se leyeron secretos. Las seis pruebas, git diff --check y la respuesta HTTP 201 quedan como reportados por Kevin; no se ejecutaron pruebas ni se hizo una llamada al proveedor.
+- **Archivos revisados:** server/paymentChecks.js, server/paymentRepository.js, server/app.js, server/test/payments.test.js, server/README.md y docs/TRIPS.md; documentación oficial de Merchant Orders de Mercado Pago.
+- **Archivos afectados y hash del commit:** Solo esta entrada #42 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. El commit del avance sigue pendiente; HEAD base local afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab.
+- **Verificación:** La lectura confirma que server/paymentRepository.js líneas 20-32 conserva el estado del viaje y tiene salida idempotente; server/test/payments.test.js líneas 134-163 llama createPaymentRepository.markPaid dos veces y comprueba status === completed y una sola actualización. server/paymentChecks.js líneas 23-42 comprueba pago aprobado de prueba, referencias, orden cerrada, total y monto pagado iguales a la tarifa, reembolso en cero y pago aprobado incluido. La referencia oficial de Mercado Pago documenta closed como orden cuyos pagos cubren el total. Se confirmó rama Kevin-dev y HEAD afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab; git status --short --branch y git diff --check respondieron “this operation must be run in a work tree”, por lo que no se verificó el diff de Git. No se ejecutaron pruebas, no se validó Firebase Admin ni se probó el webhook real.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
