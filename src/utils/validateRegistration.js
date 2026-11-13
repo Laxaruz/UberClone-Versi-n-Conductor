@@ -5,6 +5,26 @@ export const initialRegistration = {
   inspectionPhoto: '', inspectionExpiry: '', paymentEmail: '', acceptedTerms: false,
 };
 
+export const registrationInputLimits = {
+  fullName: 50,
+  identityNumber: 10,
+  phone: 10,
+  plate: 6,
+  brand: 30,
+  model: 30,
+  year: 4,
+};
+
+const numericInputFields = new Set(['identityNumber', 'phone', 'year', 'capacity', 'licenseNumber']);
+
+export function normalizeRegistrationInput(key, value) {
+  const input = String(value ?? '');
+  const normalized = key === 'plate'
+    ? input.toUpperCase().replace(/[^A-Z0-9]/g, '')
+    : numericInputFields.has(key) ? input.replace(/\D/g, '') : input;
+  return normalized.slice(0, registrationInputLimits[key] ?? normalized.length);
+}
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const required = (value) => Boolean(String(value ?? '').trim());
 const localDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -48,6 +68,7 @@ export function validateRegistration(form, today = new Date()) {
   for (const key of ['licenseExpiry', 'soatExpiry']) {
     if (required(form[key]) && !futureDate(form[key], today)) errors[key] = 'expiredDocument';
   }
+  if (required(form.licenseNumber) && !/^\d+$/.test(form.licenseNumber)) errors.licenseNumber = 'required';
   if (needsInspection(form.year, today)) {
     if (!required(form.inspectionPhoto)) errors.inspectionPhoto = 'required';
     if (!required(form.inspectionExpiry)) errors.inspectionExpiry = 'required';

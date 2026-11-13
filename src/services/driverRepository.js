@@ -16,6 +16,11 @@ export function createPendingDriver(uid, registration) {
   return setDoc(driverReference(uid), {
     // AI-assisted: see docs/AI_LOG.md #15
     ...registrationDetails(registration),
+    licenseNumber: registration.licenseNumber,
+    licenseExpiry: registration.licenseExpiry,
+    soatExpiry: registration.soatExpiry,
+    inspectionExpiry: registration.inspectionExpiry,
+    paymentEmail: registration.paymentEmail.trim(),
     approvalStatus: 'pending_demo',
     registrationMode: 'demo',
     photoStatus: 'local_only',
@@ -23,6 +28,17 @@ export function createPendingDriver(uid, registration) {
     location: null,
     locationUpdatedAt: null,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export function saveDriverProfile(uid, fields) {
+  return updateDoc(driverReference(uid), {
+    ...fields,
+    approvalStatus: 'pending_demo',
+    available: false,
+    location: null,
+    locationUpdatedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 }

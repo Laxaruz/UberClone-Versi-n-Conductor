@@ -15,6 +15,45 @@ service cloud.firestore {
         && value.longitude >= -180 && value.longitude <= 180;
     }
 
+    function canReceiveRequests() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/drivers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.approvalStatus in ['approved', 'approved_demo']
+        && get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.available == true;
+    }
+
+    function validProfileFields(data) {
+      return data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 50
+        && data.displayName.matches('^[^0-9]+$')
+        && data.identityNumber is string && data.identityNumber.matches('^[0-9]{6,10}$')
+        && data.phone is string && data.phone.matches('^[0-9]{10}$')
+        && data.birthDate is string && data.birthDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.gender in ['female', 'male', 'other']
+        && data.email is string && data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && data.language in ['es', 'en']
+        && data.vehicleCategory in ['economy', 'xl', 'premium']
+        && data.plate is string && data.plate.matches('^[A-Z]{3}[0-9]{3}$')
+        && data.brand is string && data.brand.size() > 0 && data.brand.size() <= 30
+        && data.model is string && data.model.size() > 0 && data.model.size() <= 30
+        && data.year is string && data.year.matches('^[0-9]{4}$')
+        && data.color in ['white', 'black', 'gray', 'silver', 'blue', 'red', 'other']
+        && data.capacity is string && data.capacity.matches('^[0-9]+$');
+    }
+
+    function validDocumentFields(data) {
+      return data.get('licenseNumber', '0') is string
+        && data.get('licenseNumber', '0').matches('^[0-9]+$')
+        && data.get('licenseExpiry', '2000-01-01') is string
+        && data.get('licenseExpiry', '2000-01-01').matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.get('soatExpiry', '2000-01-01') is string
+        && data.get('soatExpiry', '2000-01-01').matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.get('inspectionExpiry', '') is string
+        && (data.get('inspectionExpiry', '') == ''
+          || data.get('inspectionExpiry', '').matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && data.get('paymentEmail', 'example@example.com') is string
+        && data.get('paymentEmail', 'example@example.com').matches('^[^@ ]+@[^@ ]+[.][^@ ]+$');
+    }
+
     match /drivers/{driverId} {
       allow get: if isOwner(driverId);
       allow list: if false;
@@ -26,7 +65,8 @@ service cloud.firestore {
           'photoStatus', 'available', 'location', 'locationUpdatedAt',
           'createdAt', 'updatedAt', 'identityNumber', 'phone', 'birthDate',
           'gender', 'email', 'language', 'plate', 'brand', 'model',
-          'year', 'color', 'capacity'
+          'year', 'color', 'capacity', 'licenseNumber', 'licenseExpiry',
+          'soatExpiry', 'inspectionExpiry', 'paymentEmail'
         ])
         && request.resource.data.keys().hasAll([
           'displayName', 'vehicleCategory', 'approvalStatus', 'registrationMode',
@@ -35,6 +75,7 @@ service cloud.firestore {
           'gender', 'email', 'language', 'plate', 'brand', 'model',
           'year', 'color', 'capacity'
         ])
+        && validDocumentFields(request.resource.data)
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() > 0
         && request.resource.data.displayName.size() <= 50
@@ -71,23 +112,143 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time;
 
-      allow update: if isOwner(driverId)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'available', 'location', 'locationUpdatedAt', 'updatedAt'
-        ])
-        && request.resource.data.available is bool
-        && request.resource.data.locationUpdatedAt == request.time
-        && request.resource.data.updatedAt == request.time
-        && (
-          (request.resource.data.available == false && request.resource.data.location == null)
-          || (
-            resource.data.approvalStatus in ['approved_demo', 'approved']
-            && request.resource.data.available == true
-            && validCoordinates(request.resource.data.location)
-          )
-        );
+      allow update: if isOwner(driverId) && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'available', 'location', 'locationUpdatedAt', 'updatedAt'
+          ])
+          && request.resource.data.available is bool
+          && request.resource.data.locationUpdatedAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && (
+            (request.resource.data.available == false && request.resource.data.location == null)
+            || (resource.data.approvalStatus in ['approved_demo', 'approved']
+              && request.resource.data.available == true
+              && validCoordinates(request.resource.data.location))
+          ))
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'displayName', 'identityNumber', 'phone', 'birthDate', 'gender', 'email',
+            'vehicleCategory', 'plate', 'brand', 'model', 'year', 'color', 'capacity',
+            'licenseNumber', 'licenseExpiry', 'soatExpiry', 'inspectionExpiry', 'paymentEmail',
+            'approvalStatus', 'available', 'location', 'locationUpdatedAt', 'updatedAt'
+          ])
+          && request.resource.data.approvalStatus == 'pending_demo'
+          && request.resource.data.available == false
+          && request.resource.data.location == null
+          && request.resource.data.locationUpdatedAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && validProfileFields(request.resource.data)
+          && validDocumentFields(request.resource.data))
+      );
 
       allow delete: if false;
+
+      match /devices/{deviceId} {
+        allow read: if isOwner(driverId);
+        allow create, update: if isOwner(driverId)
+          && exists(/databases/$(database)/documents/drivers/$(driverId))
+          && request.resource.data.keys().hasOnly(['fid', 'platform', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['fid', 'platform', 'updatedAt'])
+          && request.resource.data.fid is string
+          && request.resource.data.fid.size() > 0
+          && request.resource.data.fid.size() <= 256
+          && request.resource.data.platform in ['ios', 'android']
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isOwner(driverId);
+      }
+    }
+
+    // AI-assisted: see docs/AI_LOG.md #22
+    match /tripRequests/{requestId} {
+      allow get: if request.auth != null
+        && (resource.data.acceptedBy == request.auth.uid
+          || (canReceiveRequests() && resource.data.status == 'requested'));
+      allow list: if canReceiveRequests()
+        && resource.data.status == 'requested'
+        && request.query.limit <= 20;
+      allow create, delete: if false;
+      // AI-assisted: see docs/AI_LOG.md #24
+      allow update: if canReceiveRequests()
+        && resource.data.status == 'requested'
+        && resource.data.expiresAt is timestamp
+        && (
+          (resource.data.createdAt is timestamp
+            && resource.data.expiresAt == resource.data.createdAt + duration.value(15, 's')
+            && resource.data.expiresAt > request.time
+            && resource.data.acceptedBy == null
+            && !exists(/databases/$(database)/documents/tripRequests/$(requestId)/responses/$(request.auth.uid))
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedBy', 'acceptedAt'])
+            && request.resource.data.status == 'accepted'
+            && request.resource.data.acceptedBy == request.auth.uid
+            && request.resource.data.acceptedAt == request.time)
+          || (resource.data.expiresAt <= request.time
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            && request.resource.data.status == 'expired')
+        );
+
+      match /responses/{driverUid} {
+        allow get: if request.auth != null && request.auth.uid == driverUid;
+        allow list, update, delete: if false;
+        allow create: if canReceiveRequests()
+          && request.auth.uid == driverUid
+          && get(/databases/$(database)/documents/tripRequests/$(requestId)).data.status == 'requested'
+          && get(/databases/$(database)/documents/tripRequests/$(requestId)).data.expiresAt > request.time
+          && request.resource.data.keys().hasOnly(['status', 'respondedAt'])
+          && request.resource.data.keys().hasAll(['status', 'respondedAt'])
+          && request.resource.data.status == 'rejected'
+          && request.resource.data.respondedAt == request.time;
+      }
+    }
+
+    function completedTripFields() {
+      return [
+        'requestId', 'driverId', 'passengerName', 'origin', 'destination',
+        'distanceKm', 'durationMin', 'category', 'paymentMethod',
+        'fare', 'commission', 'driverEarnings', 'commissionRate', 'tip',
+        'status', 'paymentStatus', 'paymentId', 'createdAt', 'completedAt'
+      ];
+    }
+
+    // AI-assisted: see docs/AI_LOG.md #35
+    match /trips/{tripId} {
+      allow get: if request.auth != null
+        && ((resource != null && resource.data.driverId == request.auth.uid)
+          || (resource == null
+            && exists(/databases/$(database)/documents/tripRequests/$(tripId))
+            && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.acceptedBy == request.auth.uid));
+      allow list: if request.auth != null
+        && resource.data.driverId == request.auth.uid
+        && request.query.limit <= 20;
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/tripRequests/$(tripId))
+        && request.resource.data.keys().hasOnly(completedTripFields())
+        && request.resource.data.keys().hasAll(completedTripFields())
+        && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.status == 'accepted'
+        && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.acceptedBy == request.auth.uid
+        && request.resource.data.requestId == tripId
+        && request.resource.data.driverId == request.auth.uid
+        && request.resource.data.passengerName == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.passengerName
+        && request.resource.data.origin == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.origin
+        && request.resource.data.destination == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.destination
+        && request.resource.data.distanceKm == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.distanceKm
+        && request.resource.data.durationMin == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.durationMin
+        && request.resource.data.category == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.category
+        && request.resource.data.paymentMethod == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.paymentMethod
+        && request.resource.data.fare == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.fare
+        && request.resource.data.commission == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.commission
+        && request.resource.data.driverEarnings == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.driverEarnings
+        && request.resource.data.createdAt == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.createdAt
+        && request.resource.data.commissionRate == 0.2
+        && request.resource.data.tip == 0
+        && request.resource.data.status == 'completed'
+        && request.resource.data.paymentStatus == 'pending'
+        && request.resource.data.paymentId == null
+        && request.resource.data.completedAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /driverBalances/{driverId} {
+      allow get: if isOwner(driverId);
+      allow list, create, update, delete: if false;
     }
   }
 }

@@ -124,3 +124,141 @@
   - Todavía falta comprobar en el dispositivo que los errores de campos, fotografías y términos permanezcan ocultos al recuperar un registro enviado, incluyendo después de reiniciar la aplicación.
   - No se registra una prueba móvil como completada.
 - **Aprendizaje:** Es importante separar la validación de los datos de la presentación de los errores. Un registro que ya fue enviado debe conservar su estado de solo lectura y no mostrar mensajes de campos obligatorios como si todavía estuviera en proceso de diligenciamiento. Este ajuste puede realizarse en la interfaz sin alterar las reglas de validación de los registros nuevos ni los datos de Firestore.
++
+
+## Entrada #20 — Ajuste de límites de escritura en el registro del conductor
+
+- **Fecha:** 2026-11-12
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Impedir que los campos del registro superen los máximos establecidos en la guía sin cambiar la validación antes del envío.
+- **Prompt:**
+
+  > Ya ajuste los limites de escritura del registro en Jhoseth-dev. Los campos con un maximo indicado en la guia dejan de aceptar caracteres adicionales y los campos numericos filtran letras y simbolos. Conserve las validaciones antes del envio. Pasaron 18 casos de validacion, 14 de limites y 7 de disponibilidad. Ya probe en mi iPhone los limites de escritura del registro y funcionaron bien. Los campos con un maximo definido dejan de aceptar mas caracteres. Los campos numericos no conservan letras ni simbolos. El numero de licencia permite seguir escribiendo digitos porque la guia no fija un maximo. ya ha´re el commit
+
+- **Resumen de la respuesta:** Se recomendó aplicar los límites de escritura establecidos en la guía, filtrar letras y símbolos en los campos numéricos y conservar las validaciones existentes. Se indicó comprobar el máximo permitido y el intento de introducir caracteres adicionales.
+- **Qué se usó / modificó / descartó:** Los campos con máximo definido dejan de aceptar caracteres adicionales y los campos numéricos filtran letras y símbolos. El número de licencia sigue sin límite de longitud porque la guía no lo establece. Se conservaron las validaciones antes del envío.
+- **Archivos afectados:** `src/screens/RegistrationScreen.js`, `src/utils/validateRegistration.js` y `tests/validateRegistration.test.mjs`.
+- **Commit:** Pendiente. Mensaje propuesto: `Limitar la escritura en los campos del registro`. Hash pendiente.
+- **Verificación:** 18 casos de validación, 14 casos de límites de escritura y 7 casos de disponibilidad aprobados. La exportación de JavaScript y recursos de Expo para Android e iOS terminó correctamente. Jhoseth reportó que la prueba manual de los límites en su iPhone funcionó bien.
+- **Aprendizaje:** Los límites de escritura restringen la entrada y las validaciones comprueban los datos antes de enviarlos. La guía no fija un máximo para el número de licencia.
++
+
+## Entrada #21 — Implementación de solicitudes entrantes de demostración
+
+- **Fecha:** 2026-11-12
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Implementar y probar solicitudes entrantes de demostración con un temporizador de 15 segundos, manteniendo separado el futuro origen de datos en Firestore.
+- **Prompt:**
+
+  > Termine mi avance local de solicitudes de prueba en Jhoseth-dev. La pantalla muestra los datos del viaje, la tarifa y la ganancia calculadas con la funcion existente. Probe en mi iPhone el temporizador de 15 segundos, aceptar, rechazar, el vencimiento y el regreso desde segundo plano. Las pruebas funcionaron. Pasaron 15 casos del temporizador, 18 de validacion, 14 de limites y 7 de disponibilidad. Expo exporto Android e iOS. Las solicitudes son de demostracion, no llegan de Firestore y aceptarlas no inicia un viaje real. Todavia no hice el commit. Ayudame a registrar este resultado.
+
+- **Resumen de la respuesta:** Se recomendó separar la pantalla, el hook `useTripRequests`, el modelo de solicitud y los datos de demostración. Se propuso medir los 15 segundos con una hora de vencimiento, impedir decisiones incompatibles y limpiar el temporizador al abandonar la pantalla o pasar a segundo plano.
+- **Qué se usó / modificó / descartó:** Se implementaron la pantalla, la tarjeta, el hook, la fuente de datos ficticios y las transiciones de aceptar, rechazar y vencer. La tarifa y la ganancia usan la función existente. Se descartó presentar este flujo como una conexión real: las solicitudes no vienen de Firestore y aceptarlas no inicia un viaje. La integración en tiempo real queda pendiente del avance de Kevin.
+- **Archivos afectados por el avance:** `package.json`, `src/i18n/translations.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`, `src/components/IncomingTripCard.js`, `src/hooks/useTripRequests.js`, `src/screens/IncomingRequestScreen.js`, `src/services/demoTripRequests.js`, `src/utils/tripRequestTimer.js` y `tests/tripRequestTimer.test.mjs`.
+- **Bitácora:** Esta entrada se incorpora en `docs/AI_LOG.md` y `docs/AI_LOG_JHOSETH.md`.
+- **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar solicitudes de prueba con temporizador`. Hash pendiente.
+- **Verificación:** Pasaron 15 casos del temporizador, 18 de validación, 14 de límites de escritura y 7 de disponibilidad. También pasó la prueba de restauración del registro. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Jhoseth reportó que la prueba manual en iPhone del temporizador, aceptar, rechazar, vencimiento y regreso desde segundo plano funcionó correctamente.
+- **Aprendizaje:** Separar la lógica de solicitudes de la interfaz permite probar las transiciones y el tiempo límite. Los resultados de una solicitud ficticia deben distinguirse de operaciones confirmadas por un backend.
+## Entrada #32 — Flujo de viaje y ampliacion de interfaz
+
+- **Fecha:** 2026-11-12
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Desarrollar el flujo local desde una solicitud aceptada hasta el resumen del viaje y mejorar el registro, las fechas, las fotos, los iconos y la navegacion.
+- **Prompt inicial:**
+
+  > Quiero iniciar mi siguiente avance en Jhoseth-dev. Ya traje el cambio de Kevin que muestra la solicitud aceptada en una vista previa de solo lectura. Voy a trabajar los estados del viaje, la recogida, el boton Pasajero a bordo, el trayecto al destino y la finalizacion. La guia pide usar Stack y calcular la tarifa final con la misma funcion de la estimacion. Todavia no hay ruta real ni backend de pagos, por lo que identificare este flujo como demostracion. La vista previa conserva activeTrip solo mientras la app esta abierta y aun no dibuja una ruta real. Que estructura y pruebas me recomiendas antes de programar?
+
+- **Ampliacion del avance:**
+
+  > Ya implemente localmente en Jhoseth-dev el flujo de viaje desde la solicitud aceptada. Puedo iniciar la recogida, confirmar la llegada, marcar al pasajero a bordo y finalizar. El resumen calcula la tarifa con la misma funcion usada en la estimacion. Pasaron las pruebas automatizadas y la exportacion de Android e iOS. El flujo sigue en memoria y no tiene ruta real ni procesa pagos. Todavia debo probarlo en mi iPhone y no he hecho el commit. Ayudame a registrar este estado como avance local pendiente. Amplie mi avance local en Jhoseth-dev. Ademas del flujo de recogida y finalizacion, cambie el diseño del registro, las fechas, las fotos, los iconos y la navegacion que me corresponden. La fecha se puede escribir por dia, mes y año o elegir en el calendario. Pasaron las pruebas automatizadas y la exportacion de Android e iOS. Todavia debo comprobar el diseño y el flujo en mi iPhone. No he hecho el commit.
+
+- **Resumen de la respuesta:** Se recomendo controlar las transiciones del viaje, usar el Stack existente y reutilizar la funcion de tarifa. Se separaron las comprobaciones automatizadas de la prueba visual y funcional pendiente en iPhone.
+- **Que se uso / modifico / descarto:** Se implementaron recogida, llegada, pasajero a bordo, finalizacion y resumen local; se mejoraron registro, fechas, fotos, iconos y navegacion. No se presentaron como implementadas una ruta real ni el procesamiento de pagos.
+- **Archivos afectados:** `package.json`, `package-lock.json`, `src/context/DriverContext.js`, `src/i18n/translations.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/RegistrationScreen.js`, `src/screens/TripPreviewScreen.js`, `src/screens/ActiveTripScreen.js`, `src/screens/TripCompletedScreen.js`, `src/components/AppIcon.js`, `src/components/ChoiceSelector.js`, `src/components/DateSelector.js`, `src/utils/dateInput.js`, `src/utils/tripTransitions.js`, `tests/dateInput.test.mjs` y `tests/tripFlow.test.mjs`.
+- **Bitacora:** Esta entrada se incorpora en `docs/AI_LOG.md` y `docs/AI_LOG_JHOSETH.md`.
+- **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar flujo de viaje y renovar registro`.
+- **Verificacion:** Pasaron las pruebas de fechas, transiciones y tarifa del viaje, 18 casos de validacion y 14 de limites del registro, 7 de disponibilidad, 15 del temporizador de solicitudes y el contrato de solicitudes. Expo exporto JavaScript y recursos para Android e iOS; no genera APK ni IPA. La comprobacion visual y funcional de este avance en iPhone sigue pendiente.
+- **Aprendizaje:** Los estados del viaje impiden saltar etapas y la tarifa final puede usar la misma funcion pura de la estimacion. El selector de fecha permite escribir una fecha sin recorrer muchos años. Una exportacion y las pruebas automatizadas no sustituyen la prueba en dispositivo.
+
+## Entrada #52 — Integración local del checkout de prueba
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Preparar la pantalla de cobro de prueba, consultar el estado confirmado por el servidor y escuchar los cambios del viaje en Firestore.
+- **Prompts completos y literales:**
+
+> Prepare en Jhoseth-dev la pantalla de cobro de prueba. La app consulta al servidor el estado del viaje, abre solo el enlace de prueba y vuelve a consultar al regresar. El telefono no aprueba pagos. El servidor marca el viaje como pagado solo despues de verificar la notificacion y evita actualizarlo dos veces. Pasaron 9 pruebas del servidor, las pruebas de la app y la exportacion de Android e iOS. Todavia faltan la URL publica, Firebase Admin, las credenciales de prueba y la prueba completa en mi iPhone. No hice commit ni push. Ayudame a registrar este estado como avance local pendiente.
+
+> Despues de mi mensaje anterior revise el PDF y ajuste el avance local. La guia pide que el viaje pase a status paid cuando el servidor confirme el pago y que la app escuche el cambio en tiempo real. Agregue esa escucha en Firestore a la pantalla Cobro. La app vuelve a consultar el estado al servidor cuando detecta el cambio. Repeti la exportacion de Android e iOS y termino bien. El flujo completo en iPhone, la URL publica y la configuracion de prueba siguen pendientes. No hice commit ni push. Actualiza la entrada pendiente con esta informacion.
+
+- **Resumen de la respuesta:** Se recomendó separar las responsabilidades de la app y del servidor. Abrir el checkout o regresar de él no confirma un pago. La respuesta actualizada incorporó la escucha de Firestore y la nueva consulta al servidor cuando cambia el estado del viaje.
+- **Qué se usó y modificó:** Se preparó la pantalla Cobro y su servicio de consulta autenticada. La app abre únicamente enlaces de prueba, escucha el documento del viaje y vuelve a consultar al servidor al detectar un cambio confirmado. El servidor valida el enlace de sandbox y, tras verificar el webhook, cambia el viaje a `status: paid` y `paymentStatus: approved` sin repetir la actualización. El teléfono no escribe la aprobación. Este ajuste sigue lo indicado en la sección 4 del PDF.
+- **Archivos del avance:** `src/screens/PaymentScreen.js`, `src/services/checkoutService.js`, `src/context/DriverContext.js`, `src/screens/TripCompletedScreen.js`, `src/navigation/RootNavigator.js`, `src/components/AppIcon.js`, `src/i18n/translations.js`, `server/app.js`, `server/paymentChecks.js`, `server/paymentRepository.js`, `server/test/app.test.js`, `server/test/payments.test.js`, `server/README.md` y `docs/TRIPS.md`. La actualización local de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasaron 9 pruebas del servidor; también las pruebas existentes de registro, límites de escritura, disponibilidad, solicitudes, flujo de viaje y fechas. `npm run check` indicó dependencias al día usando el mapa local de Expo porque no hubo consulta de red. La exportación de JavaScript y recursos para Android e iOS se repitió después de añadir la escucha y terminó correctamente. No equivale a una compilación instalable ni a una prueba del checkout en el teléfono.
+- **Pendientes:** URL pública HTTPS del webhook, Firebase Admin, configuración segura de credenciales de prueba de Mercado Pago, habilitación de un viaje de prueba elegible y verificación completa de checkout, webhook, estado `paid` y escucha en iPhone. No se activaron pagos ni servicios con gasto.
+- **Commit, push y hash al redactar esta entrada:** Pendientes. Los cambios estaban locales en `Jhoseth-dev` y no se habian integrado en `main`.
+- **Aprendizaje:** El regreso del navegador no prueba que el pago fue aprobado. La confirmación procede del servidor; Firestore avisa a la app del cambio y la app consulta de nuevo el estado verificado.
+
+## Entrada #54 — Implementación local de la pantalla Ganancias
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Consultar y mostrar el saldo de demostración del conductor, los totales de hoy, semana y mes, los pagos pendientes y las comisiones de efectivo.
+- **Prompt completo y literal:**
+
+> Ya prepare Ganancias en Jhoseth-dev. Traje los cambios de Kevin y agregue useEarnings con los totales de hoy, semana y mes. La pantalla consulta viajes y saldo en Firestore y separa pagos pendientes y comisiones de efectivo. Publique las reglas de lectura y cree el indice, que seguia en construccion en la ultima revision. Pasaron las pruebas de calculos, las pruebas existentes y la exportacion de Android e iOS. Todavia no he probado Ganancias en mi iPhone ni he creado el commit. Ayudame a registrar este avance como trabajo local pendiente.
+
+- **Resumen de la respuesta:** Se recomendó mostrar el saldo y los totales por período, separar pagos confirmados y pendientes, evitar descontar dos veces la comisión de efectivo y comprobar los cálculos antes del commit.
+- **Qué se usó y modificó:** Se trajeron a `Jhoseth-dev` los commits publicados de Kevin como base, sin atribuirle a Jhoseth esos cambios. Se prepararon `useEarnings`, la consulta paginada de viajes y saldo en Firestore, los cálculos por período y la pantalla Ganancias. El servidor acredita la ganancia de un pago de prueba confirmado una sola vez. El saldo mostrado es de demostración y no representa una transferencia real.
+- **Archivos del avance:** `src/hooks/useEarnings.js`, `src/screens/EarningsScreen.js`, `src/services/earningsRepository.js`, `src/utils/earningsSummary.js`, `src/navigation/RootNavigator.js`, `src/i18n/translations.js`, `server/paymentRepository.js`, `server/test/payments.test.js`, `firestore.rules`, `firestore.indexes.json`, `tests/earningsSummary.test.mjs`, `docs/TRIPS.md` y `server/README.md`. Esta entrada se incorpora en `docs/AI_LOG.md` y `docs/AI_LOG_JHOSETH.md`. La actualización anterior de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasó la prueba de cálculos de Ganancias, las 11 pruebas del servidor y las pruebas existentes de registro, disponibilidad, solicitudes, viaje y fechas. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Se publicaron las reglas de lectura en Firestore y se creó el índice `trips` por `driverId` y `completedAt`; al cierre de esta revisión, Firestore todavía lo mostraba en construcción. No se ha probado la pantalla en iPhone ni un cobro completo de Mercado Pago con este cambio.
+- **Commit, push y hash:** Pendientes. Los cambios de Ganancias permanecen locales en `Jhoseth-dev` y `main` no se modificó en este avance.
+- **Aprendizaje:** Los ingresos de un período y el saldo acumulado son cifras distintas. Los pagos pendientes se muestran aparte; la comisión del efectivo se descuenta del saldo una sola vez cuando el servidor registra ese cobro.
+
+## Entrada #59 — Perfil y Configuración del conductor
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Completar Perfil y Configuración, permitir editar datos propios y recuperar la misma cuenta después de cerrar sesión.
+- **Prompt completo y literal:**
+
+> Ya prepare Perfil y Configuracion en Jhoseth-dev despues de traer el Historial de Kevin. Habilite Correo y Contrasena en Firebase y publique las reglas para editar el perfil propio. La cuenta anonima se puede vincular antes de cerrar sesion para recuperar el mismo perfil. Pasaron las pruebas automaticas y la exportacion de Android e iOS. Todavia debo probar el flujo completo en mi iPhone. No hice commit ni push. Ayudame a actualizar este avance como pendiente de prueba en dispositivo.
+
+- **Resumen de la respuesta:** Se recomendó separar la consulta y edición del perfil, la configuración y la gestión de sesión. Se señaló que cerrar una cuenta anónima sin vincularla podría impedir recuperar el UID y sus datos.
+- **Qué se usó y modificó:** Se completaron Perfil y la pantalla de acceso, se agregó la vinculación de la cuenta anónima con correo y contraseña antes de cerrar sesión, y se mantuvo el selector de idioma. La edición del perfil propio devuelve la aprobación de demostración a pendiente y desactiva la disponibilidad. La aplicación no puede aprobar al conductor ni cambiar pagos. Se incorporó Historial desde la rama de Kevin como base, sin atribuir sus cambios a este avance.
+- **Archivos del avance:** `src/screens/ProfileScreen.js`, `src/screens/LoginScreen.js`, `src/screens/SettingsScreen.js`, `src/context/DriverContext.js`, `src/services/firebaseClient.js`, `src/services/driverRepository.js`, `src/services/checkoutService.js`, `src/utils/profileDetails.js`, `src/utils/registrationDetails.js`, `src/utils/validateRegistration.js`, `src/navigation/RootNavigator.js`, `src/i18n/translations.js`, `firestore.rules`, `docs/FIREBASE_SETUP.md` y las pruebas correspondientes. Esta entrada se agrega también a `docs/AI_LOG.md`. La actualización local de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasaron las pruebas automáticas del proyecto, incluidas las de perfil, vinculación y recuperación de la cuenta. `npm run check` indicó dependencias al día usando el mapa local de Expo, sin consulta de red. La exportación de JavaScript y recursos para Android e iOS terminó correctamente. En Firebase se habilitó Correo/Contraseña y se publicaron las reglas de Perfil. Falta probar el flujo completo en iPhone; no se presenta la exportación como prueba en dispositivo.
+- **Commit y hash al redactar esta entrada:** Pendientes. `main` no se modificó.
+- **Aprendizaje:** Vincular la cuenta anónima antes de salir conserva el UID usado por los documentos de Firestore y permite recuperar el perfil con correo y contraseña.
+
+## Entrada #63 — Rediseño visual de la aplicación (avance personal #16)
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Mejorar la presentación del registro, la navegación, las solicitudes, el viaje, el cobro, las ganancias y el historial sin cambiar sus funciones.
+- **Prompt completo y literal de la primera etapa:**
+
+> Voy a iniciar el rediseño visual del registro y la navegacion en Jhoseth-dev. Quiero mejorar los iconos, los formularios y la presentacion del selector de fecha. Mantendre las tres pestañas y las reglas actuales de validacion y envio. Kevin trabajara el diseño de las otras pantallas. Que aspectos visuales me recomiendas priorizar y como puedo comprobar que el cambio no afecta el funcionamiento?
+
+- **Ampliación del alcance:** Antes de publicar el commit, Jhoseth asumió también el rediseño de solicitudes, viaje, cobro, ganancias e historial porque Kevin no podía realizar esa parte. La respuesta compartida para esta segunda etapa recomendó una identidad visual común, destacar el temporizador y las etapas del viaje, separar los estados de pago y conservar filtros y cálculos.
+- **Qué se usó / modificó / descartó:** Se unificaron colores, iconos, tarjetas, botones y estados visuales. Se mejoraron los formularios, las tres pestañas y el selector de fecha; en iPhone se fijó el tema claro del calendario para que los días fueran legibles sobre fondo blanco. Se conservaron las validaciones, el envío, las rutas, las consultas, los cálculos y las acciones de pago.
+- **Integración previa:** El commit de notificaciones de Kevin `fad61119e33b112230b8c8b06c391637b24f9a76` llegó mediante la unión `9001b4026c29ab45c6f79cde96e8b0df59a2daf1`. No forma parte del trabajo visual propio.
+- **Archivos del rediseño:** `src/navigation/RootNavigator.js`; `src/config/appVisuals.js` (antes `registrationVisuals.js`); `src/components/AppIcon.js`, `ChoiceSelector.js`, `DateSelector.js`, `IncomingTripCard.js` y `ScreenHero.js`; las pantallas `RegistrationScreen.js`, `IncomingRequestScreen.js`, `TripPreviewScreen.js`, `ActiveTripScreen.js`, `TripCompletedScreen.js`, `PaymentScreen.js`, `EarningsScreen.js`, `HistoryScreen.js` y `HistoryDetailScreen.js`; y esta entrada en ambas bitácoras.
+- **Commit propio:** `Mejorar diseno visual de la aplicacion` en `Jhoseth-dev`. El hash definitivo se consulta con `git rev-parse HEAD`, pues esta entrada está dentro del mismo commit.
+- **Verificación:** Pasaron las pruebas de registro, disponibilidad, solicitudes, estados del viaje y fechas; también las 16 pruebas del servidor. `npm run check` indicó dependencias al día usando el mapa local de Expo. Expo exportó JavaScript y recursos para Android e iOS, y se repitió la exportación de iOS tras corregir el calendario. Esto no equivale a una compilación instalable ni verifica visualmente todas las pantallas en iPhone.
+- **Pendiente:** Comprobar en iPhone la legibilidad del calendario tras la corrección y recorrer visualmente las pantallas rediseñadas.
+- **Aprendizaje:** Los cambios visuales pueden compartir una misma identidad sin alterar las reglas que determinan estados, pagos y ganancias. La apariencia del selector nativo también depende del tema del dispositivo.

@@ -36,5 +36,10 @@ export function restoreRegistrationDetails(current, driver) {
     year: driver.year ?? current.year,
     color: driver.color ?? current.color,
     capacity: driver.capacity ?? current.capacity,
+    licenseNumber: driver.licenseNumber ?? current.licenseNumber,
+    licenseExpiry: driver.licenseExpiry ?? current.licenseExpiry,
+    soatExpiry: driver.soatExpiry ?? current.soatExpiry,
+    inspectionExpiry: driver.inspectionExpiry ?? current.inspectionExpiry,
+    paymentEmail: driver.paymentEmail ?? current.paymentEmail,
   };
 }

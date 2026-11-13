@@ -3,8 +3,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initialRegistration, validateRegistration } from '../utils/validateRegistration';
 import { canEnableAvailability } from '../utils/canEnableAvailability';
 import { restoreRegistrationDetails } from '../utils/registrationDetails';
-import { firebaseConfigured, ensureDemoUser } from '../services/firebaseClient';
-import { createPendingDriver, observeDriver, saveDriverLocation, setDriverAvailability, toCoordinates } from '../services/driverRepository';
+import { firebaseConfigured, linkDriverAccount, logInDriver, logOutDriver, restoreDriverUser } from '../services/firebaseClient';
+import { createPendingDriver, observeDriver, saveDriverLocation, saveDriverProfile,
+  setDriverAvailability, toCoordinates } from '../services/driverRepository';
+import { calculateFare } from '../utils/calculateFare';
+import { transitionTrip } from '../utils/tripTransitions';
+import { saveCompletedTrip } from '../services/tripRepository';
+import { clearCheckoutTrip, rememberCheckoutTrip } from '../services/checkoutService';
+import { storedDocumentDetails, storedProfileDetails, validateProfileDetails,
+  validateProfileDocuments } from '../utils/profileDetails';
+import { registerDriverNotifications, removeDriverNotifications } from '../services/pushNotifications';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -18,6 +26,15 @@ export function DriverProvider({ children }) {
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
   const [requestedAvailability, setRequestedAvailability] = useState(false);
   const [driverUid, setDriverUid] = useState(null);
+  const [accountLinked, setAccountLinked] = useState(false);
+  const [accountEmail, setAccountEmail] = useState(null);
+  const [sessionClosed, setSessionClosed] = useState(false);
+  const [authLoading, setAuthLoading] = useState(firebaseConfigured);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState(null);
+  const [sessionEpoch, setSessionEpoch] = useState(0);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [backendError, setBackendError] = useState(null);
   const [registering, setRegistering] = useState(false);
@@ -25,6 +42,9 @@ export function DriverProvider({ children }) {
   const registrationAlreadySaved = useRef(false);
   const registrationRestored = useRef(false);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
+  const [tripSaving, setTripSaving] = useState(false);
+  const [tripSaveError, setTripSaveError] = useState(null);
+  const tripCompleteInFlight = useRef(false);
   const availabilityIntent = useRef(false);
   const availabilityTask = useRef(Promise.resolve());
   const registrationStatus = driverSession?.approvalStatus ?? 'not_submitted';
@@ -36,9 +56,18 @@ export function DriverProvider({ children }) {
     let active = true;
     let unsubscribe = null;
 
-    ensureDemoUser()
+    restoreDriverUser()
       .then((user) => {
         if (!active) return;
+        setAuthLoading(false);
+        if (!user) {
+          setSessionClosed(true);
+          setRegistrationLoading(false);
+          return;
+        }
+        setSessionClosed(false);
+        setAccountLinked(!user.isAnonymous);
+        setAccountEmail(user.email ?? null);
         setDriverUid(user.uid);
         unsubscribe = observeDriver(user.uid, (driver, connected) => {
           if (!active) return;
@@ -69,6 +98,7 @@ export function DriverProvider({ children }) {
       })
       .catch(() => {
         if (active) {
+          setAuthLoading(false);
           setRegistrationLoading(false);
           setBackendError('firebaseConnectionFailed');
         }
@@ -78,7 +108,23 @@ export function DriverProvider({ children }) {
       active = false;
       unsubscribe?.();
     };
-  }, []);
+  }, [sessionEpoch]);
+
+  useEffect(() => {
+    if (!driverUid || !['approved_demo', 'approved'].includes(registrationStatus) || sessionClosed) return undefined;
+    let active = true;
+    let unsubscribe = null;
+    registerDriverNotifications(driverUid)
+      .then((stop) => {
+        if (active) unsubscribe = stop;
+        else stop();
+      })
+      .catch(() => console.warn('No se pudo activar FCM en este dispositivo.'));
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, [driverUid, registrationStatus, sessionClosed]);
 
   useEffect(() => {
     let isMounted = true;
@@ -117,6 +163,97 @@ export function DriverProvider({ children }) {
 
   function updateRegistration(key, value) {
     setRegistration((current) => ({ ...current, [key]: value }));
+  }
+
+  async function saveProfile(form, section) {
+    if (!firebaseConfigured || !driverUid || !driverSession || !realtimeConnected) {
+      setProfileError('profileSaveFailed');
+      return false;
+    }
+    const errors = section === 'documents' ? validateProfileDocuments(form) : validateProfileDetails(form);
+    if (Object.keys(errors).length > 0) return false;
+    setProfileSaving(true);
+    setProfileError(null);
+    try {
+      const fields = section === 'documents' ? storedDocumentDetails(form) : storedProfileDetails(form);
+      await saveDriverProfile(driverUid, fields);
+      availabilityIntent.current = false;
+      setRequestedAvailability(false);
+      setRegistration((current) => ({ ...current, ...form, language: current.language }));
+      return true;
+    } catch {
+      setProfileError('profileSaveFailed');
+      return false;
+    } finally {
+      setProfileSaving(false);
+    }
+  }
+
+  async function linkAccount(email, password) {
+    setAuthBusy(true);
+    setAuthError(null);
+    try {
+      const user = await linkDriverAccount(email, password);
+      setAccountLinked(true);
+      setAccountEmail(user.email ?? email.trim());
+      return true;
+    } catch {
+      setAuthError('accountLinkFailed');
+      return false;
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function logout() {
+    if (!accountLinked || authBusy) return false;
+    setAuthBusy(true);
+    setAuthError(null);
+    try {
+      availabilityIntent.current = false;
+      setRequestedAvailability(false);
+      await availabilityTask.current.catch(() => {});
+      if (driverSession && driverUid) await setDriverAvailability(driverUid, false, null);
+      if (driverUid) await removeDriverNotifications(driverUid).catch(() => {});
+      await logOutDriver();
+      await clearCheckoutTrip().catch(() => {});
+      availabilityIntent.current = false;
+      setRequestedAvailability(false);
+      setDriverUid(null);
+      setDriverSession(null);
+      setActiveTrip(null);
+      setRegistration(initialRegistration);
+      setRegistrationSubmitted(false);
+      registrationAlreadySaved.current = false;
+      registrationRestored.current = false;
+      setRealtimeConnected(false);
+      setAccountLinked(false);
+      setAccountEmail(null);
+      setSessionClosed(true);
+      setSessionEpoch((current) => current + 1);
+      return true;
+    } catch {
+      setAuthError('logoutFailed');
+      return false;
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function login(email, password) {
+    setAuthBusy(true);
+    setAuthError(null);
+    try {
+      await logInDriver(email, password);
+      setAuthLoading(true);
+      setSessionEpoch((current) => current + 1);
+      return true;
+    } catch {
+      setAuthError('loginFailed');
+      return false;
+    } finally {
+      setAuthBusy(false);
+    }
   }
 
   async function submitRegistration() {
@@ -188,14 +325,67 @@ export function DriverProvider({ children }) {
     }
   }, [driverUid, updateAvailability]);
 
+  const advanceTrip = useCallback((action) => {
+    if (action === 'complete') return;
+    setActiveTrip((current) => {
+      if (!current) return current;
+      return transitionTrip(current, action, Date.now());
+    });
+  }, []);
+
+  const completeTrip = useCallback(async () => {
+    if (tripCompleteInFlight.current || activeTrip?.status !== 'in_progress') return false;
+    tripCompleteInFlight.current = true;
+    setTripSaving(true);
+    setTripSaveError(null);
+    try {
+      const amounts = calculateFare({ distanceKm: activeTrip.distanceKm, durationMin: activeTrip.durationMin,
+        category: activeTrip.category, tip: activeTrip.tip ?? 0 });
+      const completed = transitionTrip(activeTrip, 'complete', Date.now(), amounts);
+      if (completed.status !== 'completed') throw new Error('Trip cannot be completed');
+      if (firebaseConfigured) {
+        if (activeTrip.source !== 'firestore_test' || !driverUid) throw new Error('Trip has no driver');
+        await saveCompletedTrip(driverUid, completed);
+        if (completed.paymentMethod === 'mercadopago') {
+          await rememberCheckoutTrip(completed.id).catch(() => {});
+        }
+      }
+      setActiveTrip(completed);
+      return true;
+    } catch {
+      setTripSaveError('tripSaveFailed');
+      return false;
+    } finally {
+      tripCompleteInFlight.current = false;
+      setTripSaving(false);
+    }
+  }, [activeTrip, driverUid]);
+
   return (
     <DriverContext.Provider
       value={{
         language,
         updateLanguage,
         driverSession,
+        driverUid,
+        accountLinked,
+        accountEmail,
+        sessionClosed,
+        authLoading,
+        authBusy,
+        authError,
+        linkAccount,
+        logout,
+        login,
+        saveProfile,
+        profileSaving,
+        profileError,
         activeTrip,
         setActiveTrip,
+        advanceTrip,
+        completeTrip,
+        tripSaving,
+        tripSaveError,
         registration,
         registrationLoading,
         updateRegistration,
