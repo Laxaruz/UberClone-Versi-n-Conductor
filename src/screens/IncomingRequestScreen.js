@@ -10,10 +10,10 @@ import useTranslation from '../i18n/useTranslation';
 import { createDemoTripRequestSource } from '../services/demoTripRequests';
 import { createFirestoreTripRequestSource } from '../services/firestoreTripRequests';
 
-export default function IncomingRequestScreen() {
+export default function IncomingRequestScreen({ navigation }) {
   const t = useTranslation();
   const isFocused = useIsFocused();
-  const { driverUid, available, firebaseConfigured, saveCurrentLocation, updateAvailability } = useDriver();
+  const { driverUid, available, firebaseConfigured, saveCurrentLocation, updateAvailability, setActiveTrip } = useDriver();
   const [demoSource] = useState(createDemoTripRequestSource);
   const liveSource = useMemo(() => firebaseConfigured && driverUid
     ? createFirestoreTripRequestSource(driverUid) : null, [firebaseConfigured, driverUid]);
@@ -37,6 +37,14 @@ export default function IncomingRequestScreen() {
     expired: 'requestExpiredDemo',
   }[request?.status];
 
+  // AI-assisted: see docs/AI_LOG.md #29
+  async function handleAccept() {
+    const acceptedRequest = await accept();
+    if (acceptedRequest?.status !== 'accepted') return;
+    setActiveTrip(acceptedRequest);
+    navigation.navigate('TripPreview');
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('incomingRequest')}</Text>
@@ -50,7 +58,7 @@ export default function IncomingRequestScreen() {
           <Text style={styles.status}>{statusKey ? t(statusKey) : null}</Text>
           <View style={styles.actions}>
             <Pressable accessibilityRole="button" disabled={!canDecide}
-              style={[styles.action, styles.accept, !canDecide && styles.disabled]} onPress={accept}>
+              style={[styles.action, styles.accept, !canDecide && styles.disabled]} onPress={handleAccept}>
               <Text style={styles.acceptText}>{t('acceptRequest')}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" disabled={!canDecide}

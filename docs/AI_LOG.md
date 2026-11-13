@@ -569,3 +569,93 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y commit:** `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`, entradas #25 y #26 idénticas. Commit del avance de solicitudes pendiente.
 - **Verificación:** La herramienta informó que ambas entradas se añadieron una vez a cada archivo. Se comprobarán las cantidades y sincronización al terminar esta escritura.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #27 — Confirmación del commit de solicitudes compartidas
+
+- **Fecha y hora:** 2026-11-12 16:45:10 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Registrar el commit publicado de solicitudes compartidas y dejar constancia de que la prueba simultánea en dos teléfonos sigue pendiente.
+- **Prompt completo y literal:**
+
+> Hice el commit c05c4ac y lo subi a Kevin-dev. Incluye las solicitudes de prueba compartidas en Firestore y los ajustes que revisamos. Tambien confirme que la rama quedo sincronizada y sin cambios pendientes. Ahora voy a configurar los dos telefonos con el mismo proyecto Firebase para probar si solo uno puede aceptar una solicitud. Esa prueba todavia esta pendiente.
+
+- **Resumen de la respuesta:** La verificación local confirmó que Kevin-dev y origin/Kevin-dev apuntan al commit `c05c4acefc7e67274f6543b288662709bd089714`, sin cambios de código pendientes. La prueba con dos teléfonos continúa pendiente según lo reportado por Kevin.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se verificó el estado de Git y se registra esta interacción en ambas bitácoras. No se modificó código ni se ejecutaron pruebas de Firebase; no se hizo otro commit ni push.
+- **Archivos afectados y commit:** Solo esta entrada #27 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Commit del avance: `c05c4acefc7e67274f6543b288662709bd089714`.
+- **Verificación:** `git branch --show-current` confirmó `Kevin-dev`; `git rev-parse HEAD` y `git rev-parse origin/Kevin-dev` devolvieron el mismo SHA completo; `git status --short --branch` no mostró modificaciones ni divergencia antes de escribir esta bitácora. La prueba con dos teléfonos no se ejecutó.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #28 — Alcance para distancia, duración y rutas
+
+- **Fecha y hora:** 2026-11-12 18:50:36 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Recomendar el alcance de un commit de rutas ajustado a la guía y revisar qué validar antes de elegir un proveedor.
+- **Prompt completo y literal:**
+
+> Probe una solicitud compartida con dos celulares. Los dos intentamos aceptarla y Firestore guardo un solo conductor. Como mañana entregamos, voy a dejar las demas pruebas para cuando tengamos mas partes de la app listas. Ahora quiero avanzar con distancia, duracion y rutas usando el mapa y el codigo que ya tenemos. Que alcance me recomiendas para este commit segun la guia, y que debo revisar antes de usar un servicio de rutas?
+
+- **Resumen de la respuesta:** La guía pide navegación del viaje hacia recogida y destino, muestra distancia/duración en solicitudes, y recomienda dibujar la ruta con `Polyline`. El mapa actual solo centra y marca la ubicación del conductor; propuse un alcance acotado de ruta activa, con distancia/duración y polilínea reales, además de verificar facturación, restricciones de claves, cuotas, políticas de almacenamiento y atribución, y compatibilidad antes de integrar Google Routes API.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usó la revisión de la guía, los archivos locales de mapa, ubicación, modelo/contrato y solicitudes, y documentación oficial de Google Maps Platform. No se modificó código; la prueba en dos celulares se consigna como reportada por Kevin, no reproducida por Codex. No se eligió ni integró un proveedor.
+- **Archivos revisados:** Guía PDF; `src/components/DriverMap.js`, `src/hooks/useDriverLocation.js`, `src/models/trip.js`, `src/utils/tripRequestContract.js`, `src/services/firestoreTripRequests.js`, `src/services/demoTripRequests.js`, `package.json`.
+- **Archivos afectados y commit:** Solo esta entrada #28 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. El commit de código base es `c05c4acefc7e67274f6543b288662709bd089714`; no hay commit para esta consulta.
+- **Verificación:** Se confirmó con Git que la rama actual es `Kevin-dev` y HEAD es `c05c4acefc7e67274f6543b288662709bd089714`; el estado ya contenía modificaciones previas de ambas bitácoras. Se leyeron los archivos enumerados y se consultó la documentación oficial de Routes API, facturación, seguridad de claves y políticas de uso/atribución. No se ejecutaron pruebas ni se verificó de forma independiente el resultado de los dos celulares.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #29 — Limitar la vista previa antes del flujo de viaje
+
+- **Fecha y hora:** 2026-11-12 19:15:06 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Evaluar si conectar la solicitud aceptada con la vista previa se cruza con el avance de Jhoseth sobre pantallas y estados del viaje, y delimitar el trabajo independiente de Kevin.
+- **Prompt completo y literal:**
+
+> Ya terminé mi avance #5, donde conecté las solicitudes de prueba a Firestore y comprobamos con dos celulares que solo un conductor pudo aceptar la misma solicitud. Según nuestro plan, mi avance #6 es distancia, duración y rutas. Después Jhoseth hará su avance #8 con las pantallas y los estados del viaje, desde la recogida hasta la finalización.
+>
+> Revisé Google Cloud y vi que Routes API no está habilitada. Además, el proyecto sigue en Spark sin facturación. Como entregamos mañana, estoy pensando usar mi siguiente commit para conectar la solicitud aceptada con la vista previa del viaje y mostrar los datos que ya trae, sin dibujar una ruta inventada. La ruta real quedaría pendiente. Con este orden de commits, ¿crees que ese cambio se cruza con lo que hará Jhoseth? Si se cruza, ¿qué parte concreta puedo avanzar yo sin cambiar su trabajo?
+
+- **Resumen de la respuesta:** La vista previa ya existe, pero hoy solo muestra el identificador que reciba en `activeTrip`; el flujo de aceptar no guarda el resultado en ese contexto. Recomiendo que Kevin limite el #6 a transferir la solicitud aceptada y mostrar sus datos existentes en una vista previa de solo lectura; Jhoseth debería ser dueño de los estados posteriores y sus pantallas, con acuerdo explícito sobre el punto de handoff.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usó la guía, el estado local de Git y la lectura de las pantallas, el navegador, el contexto, el hook/servicio de solicitudes y el contrato. No se modificó código ni se ejecutaron pruebas; la aceptación concurrente en dos teléfonos se registra como reportada por Kevin. Se añadió esta entrada a ambas bitácoras.
+- **Archivos revisados:** Guía PDF; `src/screens/TripPreviewScreen.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/HomeScreen.js`, `src/navigation/RootNavigator.js`, `src/context/DriverContext.js`, `src/hooks/useTripRequests.js`, `src/services/firestoreTripRequests.js`, `src/components/IncomingTripCard.js`, `src/models/trip.js`, `src/utils/tripRequestContract.js`.
+- **Archivos afectados y commit:** Solo esta entrada #29 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. HEAD revisado `c05c4acefc7e67274f6543b288662709bd089714`; no hay commit para esta consulta.
+- **Verificación:** Se confirmó `Kevin-dev` en HEAD `c05c4acefc7e67274f6543b288662709bd089714`; el estado mostraba modificaciones previas solo en las dos bitácoras. La lectura confirma que `TripPreviewScreen` muestra `activeTrip?.id`, que `DriverContext` expone `setActiveTrip` sin llamadas desde el flujo de aceptación y que `useTripRequests` no conserva el objeto retornado por `source.resolve`. No se volvió a ejecutar la prueba en dos teléfonos.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #30 — Revisión de aceptación y vista previa del viaje
+
+- **Fecha y hora:** 2026-11-12 19:26:57 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el handoff de una solicitud aceptada a `activeTrip` y `TripPreview`, y detectar errores o solapamientos con el avance de Jhoseth.
+- **Prompt completo y literal:**
+
+> Implemente mi avance #6 con el alcance que acordamos. Ahora el resultado de aceptar vuelve desde el hook y solo cuando la solicitud queda aceptada guardo sus datos en activeTrip y abro TripPreview. En esa pantalla reutilice la tarjeta que ya teniamos para mostrar recogida, destino, distancia, duracion y valores de tarifa. Tambien quite el acceso a pagos porque esta vista previa es solo de lectura. No agregue estados del viaje ni una ruta dibujada. Pase los 15 casos del temporizador y el bundle de iOS, pero todavia no hice la prueba de este cambio en el celular. Puedes revisar si hay algun error o cruce con el trabajo que seguira Jhoseth?
+
+- **Resumen de la respuesta:** La lectura del diff confirma que el hook devuelve el resultado, `IncomingRequestScreen` navega solo si el estado recibido es `accepted`, y `TripPreviewScreen` reutiliza la tarjeta para mostrar los datos existentes sin ruta ni acceso a pagos. No encontré un error comprobado; el cruce concreto es `TripPreviewScreen.js`, que Jhoseth podría querer modificar para sus pantallas, por lo que deben acordar la propiedad de ese archivo o que su flujo posterior use una pantalla separada.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron `git status`, `git diff`, el hook, la pantalla de solicitud, la vista previa, el contexto, el servicio de solicitudes, el contrato, la tarjeta y el navegador. No se modificó código. Los 15 casos y el bundle iOS se registran como reportados por Kevin; no se repitieron y queda pendiente la prueba del cambio en un celular. Se añadió esta entrada a ambas bitácoras.
+- **Archivos afectados y commit:** Código local sin commit: `src/hooks/useTripRequests.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/TripPreviewScreen.js`. Bitácoras: esta entrada #30 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. HEAD base revisado `c05c4acefc7e67274f6543b288662709bd089714`.
+- **Verificación:** Se confirmó `Kevin-dev`, HEAD `c05c4acefc7e67274f6543b288662709bd089714`, y los cinco archivos modificados reportados por `git status` (tres de código y dos bitácoras). El diff muestra que `accept` devuelve lo que entrega `source.resolve`; el handler solo asigna `activeTrip` y navega con estado `accepted`; la pantalla muestra la tarjeta; y `TripPreview` sigue en la pila. `git diff --check` no reportó errores de whitespace. No se ejecutaron pruebas ni bundle en esta revisión y no se verificó el cambio en dispositivo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #31 — Reporte de prueba en iPhone y revisión precommit
+
+- **Fecha y hora:** 2026-11-12 19:37:10 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Registrar la prueba de aceptación y vista previa en iPhone y revisar pendientes antes del commit.
+- **Prompt completo y literal:**
+
+> Probe el cambio en mi iPhone con una solicitud nueva. Al pulsar Aceptar se abrio TripPreview y vi la recogida, el destino, la distancia, la duracion y los valores de tarifa de la misma solicitud. Tambien comprobe en Firestore que quedo aceptada y asignada a mi conductor. No probe todavia que la vista se restaure al cerrar la app. Con esta prueba, ves algun pendiente antes de mi commit?
+
+- **Resumen de la respuesta:** El diff actual coincide con el flujo descrito y la prueba en iPhone/Firestore se registra como reportada por Kevin, no repetida por Codex. Antes del commit falta añadir referencias `// AI-assisted: see docs/AI_LOG.md #29` a los bloques cambiados con asistencia de IA; la restauración después de cerrar la app sigue como riesgo diferido.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron el estado y el diff local. No se modificó código ni se ejecutaron pruebas; la prueba en iPhone y la comprobación en Firestore se consignan como reportadas por Kevin. Se añadió esta entrada a ambas bitácoras.
+- **Archivos revisados:** `src/hooks/useTripRequests.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/TripPreviewScreen.js` y diffs relacionados.
+- **Archivos afectados y commit:** Solo esta entrada #31 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Código local sin commit: los tres archivos revisados. HEAD base `c05c4acefc7e67274f6543b288662709bd089714`.
+- **Verificación:** `git status` confirmó `Kevin-dev`, HEAD `c05c4acefc7e67274f6543b288662709bd089714`, tres archivos de código y las dos bitácoras modificadas. `git diff --check` no reportó errores de whitespace. En el diff no aparecen comentarios de referencia IA junto a las nuevas líneas revisadas. No se verificó el resultado en iPhone ni en Firestore de forma independiente; restauración tras reinicio no se probó según Kevin.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

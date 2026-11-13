@@ -56,8 +56,10 @@ export default function useTripRequests(source, isFocused) {
     resolvingRef.current = true;
     setResolving(true);
     try {
-      await source.resolve(request.id, action, Date.now());
+      // AI-assisted: see docs/AI_LOG.md #29
+      const resolvedRequest = await source.resolve(request.id, action, Date.now());
       setError(null);
+      return resolvedRequest;
     } catch {
       setError('requestActionFailed');
     } finally {
