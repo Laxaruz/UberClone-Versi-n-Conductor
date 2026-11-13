@@ -1,7 +1,7 @@
 const express = require('express');
 const { canStartCheckout, validWebhookSignature, matchesApprovedTestPayment } = require('./paymentChecks');
 
-function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCashReceipt, mercadoPago, webhookSecret, notificationUrl, paymentsTestMode = false }) {
+function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCashReceipt, mercadoPago, webhookSecret, notificationUrl, paymentsTestMode = false, testAccounts }) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json());
@@ -141,7 +141,7 @@ function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCa
     }
     try {
       const trip = await findTrip(tripId);
-      if (!trip || !matchesApprovedTestPayment(payment, order, tripId, trip)) {
+      if (!trip || !matchesApprovedTestPayment(payment, order, tripId, trip, testAccounts)) {
         return response.status(422).json({ error: 'Payment does not match trip' });
       }
       await markPaid(tripId, paymentId, payment, order);

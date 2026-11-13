@@ -20,10 +20,24 @@ function validWebhookSignature({ signature, requestId, dataId, secret }) {
   return timingSafeEqual(expected, Buffer.from(values.v1, 'hex'));
 }
 
-function matchesApprovedTestPayment(payment, order, tripId, trip) {
+function matchesTestEnvironment(payment, order, tripId, trip, testAccounts) {
+  if (payment?.live_mode === false) return order?.is_test !== false;
+  return payment?.live_mode === true
+    && order?.is_test === true
+    && trip?.testFixture === true
+    && tripId.startsWith('sandbox_')
+    && /^[0-9]+$/.test(testAccounts?.sellerId || '')
+    && /^[0-9]+$/.test(testAccounts?.buyerId || '')
+    && String(payment.collector_id) === testAccounts.sellerId
+    && String(payment.payer?.id) === testAccounts.buyerId
+    && String(order.collector?.id) === testAccounts.sellerId
+    && String(order.payer?.id) === testAccounts.buyerId;
+}
+
+function matchesApprovedTestPayment(payment, order, tripId, trip, testAccounts) {
   return Boolean(trip)
     && payment?.status === 'approved'
-    && payment.live_mode === false
+    && matchesTestEnvironment(payment, order, tripId, trip, testAccounts)
     && payment.external_reference === tripId
     && payment.currency_id === 'COP'
     && payment.transaction_amount === trip.fare
@@ -38,7 +52,7 @@ function matchesApprovedTestPayment(payment, order, tripId, trip) {
     && order?.preference_id === trip.paymentPreferenceId
     && order?.external_reference === tripId
     && (canStartCheckout(trip)
-      || (trip.status === 'completed' && trip.paymentStatus === 'approved'
+      || (trip.status === 'paid' && trip.paymentStatus === 'approved'
         && String(trip.paymentId) === String(payment.id)));
 }
 

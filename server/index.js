@@ -21,7 +21,11 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
 const firebaseApp = initializeApp({ credential: applicationDefault(), projectId });
 const auth = getAuth(firebaseApp);
 const database = getFirestore(firebaseApp);
-const paymentRepository = createPaymentRepository(database);
+const testAccounts = {
+  sellerId: process.env.MERCADOPAGO_TEST_SELLER_ID,
+  buyerId: process.env.MERCADOPAGO_TEST_BUYER_ID,
+};
+const paymentRepository = createPaymentRepository(database, testAccounts);
 const cashRepository = createCashRepository(database);
 const paymentsTestMode = process.env.MERCADOPAGO_TEST_MODE === 'true';
 const notificationUrl = process.env.MERCADOPAGO_NOTIFICATION_URL;
@@ -43,6 +47,7 @@ const app = createApp({
   webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET,
   notificationUrl,
   paymentsTestMode,
+  testAccounts,
 });
 
 app.listen(port, host, () => {

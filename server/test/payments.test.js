@@ -61,6 +61,7 @@ test('webhook requires a signed matching payment and handles repeats', async () 
   };
   const order = {
     id: 456, external_reference: 'trip-1', preference_id: 'pref-1', status: 'closed',
+    is_test: true,
     total_amount: 19200, paid_amount: 19200, refunded_amount: 0,
     payments: [{ id: 123, status: 'approved' }],
   };
@@ -69,7 +70,7 @@ test('webhook requires a signed matching payment and handles repeats', async () 
     mercadoPago: { getPayment: async () => payment, getMerchantOrder: async () => order },
     markPaid: async () => {
       updates += 1;
-      Object.assign(trip, { paymentStatus: 'approved', paymentId: '123' });
+      Object.assign(trip, { status: 'paid', paymentStatus: 'approved', paymentId: '123' });
     },
     webhookSecret: 'test-secret', paymentsTestMode: true,
   });
@@ -88,7 +89,51 @@ test('webhook requires a signed matching payment and handles repeats', async () 
     payment.transaction_amount = 19200;
     assert.equal((await post(`ts=1700000000,v1=${signature}`)).status, 200);
     assert.equal(updates, 1);
+    assert.equal(trip.status, 'paid');
     assert.equal((await post(`ts=1700000000,v1=${signature}`)).status, 200);
+  } finally {
+    await server.close();
+  }
+});
+
+test('signed sandbox webhook accepts only the configured test accounts', async () => {
+  const tripId = 'sandbox_trip-1';
+  const trip = {
+    status: 'completed', paymentMethod: 'mercadopago', paymentStatus: 'pending',
+    paymentEligible: true, testFixture: true, fare: 19200, paymentPreferenceId: 'pref-1',
+  };
+  const payment = {
+    id: 123, status: 'approved', live_mode: true, external_reference: tripId,
+    currency_id: 'COP', transaction_amount: 19200, order: { id: 456 },
+    collector_id: 11, payer: { id: 22 },
+  };
+  const order = {
+    id: 456, external_reference: tripId, preference_id: 'pref-1', status: 'closed',
+    is_test: true, collector: { id: 11 }, payer: { id: 22 },
+    total_amount: 19200, paid_amount: 19200, refunded_amount: 0,
+    payments: [{ id: 123, status: 'approved' }],
+  };
+  let updates = 0;
+  const app = createApp({
+    verifyIdToken: async () => ({ uid: 'driver-1' }),
+    findTrip: async () => trip,
+    mercadoPago: { getPayment: async () => payment, getMerchantOrder: async () => order },
+    markPaid: async () => { updates += 1; },
+    webhookSecret: 'test-secret', paymentsTestMode: true,
+    testAccounts: { sellerId: '11', buyerId: '22' },
+  });
+  const server = await start(app);
+  const signature = createHmac('sha256', 'test-secret')
+    .update('id:123;request-id:req-1;ts:1700000000;').digest('hex');
+  try {
+    const response = await fetch(`${server.base}/api/payments/webhook?data.id=123`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-request-id': 'req-1',
+        'x-signature': `ts=1700000000,v1=${signature}` },
+      body: JSON.stringify({ type: 'payment', data: { id: '123' } }),
+    });
+    assert.equal(response.status, 200);
+    assert.equal(updates, 1);
   } finally {
     await server.close();
   }
@@ -118,12 +163,15 @@ test('payment checks reject live and mismatched provider data', () => {
   };
   const order = {
     id: 456, external_reference: 'trip-1', preference_id: 'pref-1', status: 'closed',
+    is_test: true,
     total_amount: 19200, paid_amount: 19200, refunded_amount: 0,
     payments: [{ id: 123, status: 'approved' }],
   };
   assert.equal(canStartCheckout(trip), true);
   assert.equal(matchesApprovedTestPayment(payment, order, 'trip-1', trip), true);
+  assert.equal(matchesApprovedTestPayment(payment, { ...order, is_test: undefined }, 'trip-1', trip), true);
   assert.equal(matchesApprovedTestPayment({ ...payment, live_mode: true }, order, 'trip-1', trip), false);
+  assert.equal(matchesApprovedTestPayment(payment, { ...order, is_test: false }, 'trip-1', trip), false);
   assert.equal(matchesApprovedTestPayment(payment, { ...order, preference_id: 'other' }, 'trip-1', trip), false);
   assert.equal(matchesApprovedTestPayment({ ...payment, currency_id: 'USD' }, order, 'trip-1', trip), false);
   assert.equal(matchesApprovedTestPayment(payment, { ...order, status: 'opened' }, 'trip-1', trip), false);
@@ -131,17 +179,46 @@ test('payment checks reject live and mismatched provider data', () => {
   assert.equal(canStartCheckout({ ...trip, paymentEligible: undefined }), false);
 });
 
-test('repository approves payment without changing the completed trip status', async () => {
+test('sandbox payment with live_mode true needs the Admin fixture and both test accounts', () => {
+  const tripId = 'sandbox_trip-1';
   const trip = {
     status: 'completed', paymentMethod: 'mercadopago', paymentStatus: 'pending',
-    paymentEligible: true, fare: 19200, paymentPreferenceId: 'pref-1',
+    paymentEligible: true, testFixture: true, fare: 19200, paymentPreferenceId: 'pref-1',
   };
   const payment = {
-    id: 123, status: 'approved', live_mode: false, external_reference: 'trip-1',
+    id: 123, status: 'approved', live_mode: true, external_reference: tripId,
     currency_id: 'COP', transaction_amount: 19200, order: { id: 456 },
+    collector_id: 11, payer: { id: '22' },
   };
   const order = {
-    id: 456, external_reference: 'trip-1', preference_id: 'pref-1', status: 'closed',
+    id: 456, external_reference: tripId, preference_id: 'pref-1', status: 'closed',
+    is_test: true, collector: { id: 11 }, payer: { id: 22 },
+    total_amount: 19200, paid_amount: 19200, refunded_amount: 0,
+    payments: [{ id: 123, status: 'approved' }],
+  };
+  const accounts = { sellerId: '11', buyerId: '22' };
+  assert.equal(matchesApprovedTestPayment(payment, order, tripId, trip, accounts), true);
+  assert.equal(matchesApprovedTestPayment(payment, order, tripId, { ...trip, testFixture: false }, accounts), false);
+  assert.equal(matchesApprovedTestPayment(payment, { ...order, is_test: false }, tripId, trip, accounts), false);
+  assert.equal(matchesApprovedTestPayment(payment, order, tripId, trip, { ...accounts, buyerId: '33' }), false);
+  assert.equal(matchesApprovedTestPayment({ ...payment, collector_id: 44 }, order, tripId, trip, accounts), false);
+  assert.equal(matchesApprovedTestPayment(payment, { ...order, payer: { id: 33 } }, tripId, trip, accounts), false);
+  assert.equal(matchesApprovedTestPayment({ ...payment, transaction_amount: 1 }, order, tripId, trip, accounts), false);
+  assert.equal(matchesApprovedTestPayment(payment, { ...order, preference_id: 'other' }, tripId, trip, accounts), false);
+});
+
+test('repository marks an approved trip paid without applying the same payment twice', async () => {
+  const trip = {
+    status: 'completed', paymentMethod: 'mercadopago', paymentStatus: 'pending',
+    paymentEligible: true, testFixture: true, fare: 19200, paymentPreferenceId: 'pref-1',
+  };
+  const payment = {
+    id: 123, status: 'approved', live_mode: true, external_reference: 'sandbox_trip-1',
+    currency_id: 'COP', transaction_amount: 19200, order: { id: 456 }, collector_id: 11, payer: { id: 22 },
+  };
+  const order = {
+    id: 456, external_reference: 'sandbox_trip-1', preference_id: 'pref-1', status: 'closed',
+    is_test: true, collector: { id: 11 }, payer: { id: 22 },
     total_amount: 19200, paid_amount: 19200, refunded_amount: 0,
     payments: [{ id: 123, status: 'approved' }],
   };
@@ -153,11 +230,13 @@ test('repository approves payment without changing the completed trip status', a
       update: (_ref, fields) => { updates += 1; Object.assign(trip, fields); },
     }),
   };
-  const repository = createPaymentRepository(database);
-  await repository.markPaid('trip-1', 123, payment, order);
-  assert.equal(trip.status, 'completed');
+  const repository = createPaymentRepository(database, { sellerId: '11', buyerId: '22' });
+  await repository.markPaid('sandbox_trip-1', 123, payment, order);
+  assert.equal(trip.status, 'paid');
   assert.equal(trip.paymentStatus, 'approved');
   assert.equal(trip.paymentId, '123');
-  await repository.markPaid('trip-1', 123, payment, order);
+  await repository.markPaid('sandbox_trip-1', 123, payment, order);
+  assert.equal(updates, 1);
+  await assert.rejects(repository.markPaid('sandbox_trip-1', 456, { ...payment, id: 456 }, order));
   assert.equal(updates, 1);
 });

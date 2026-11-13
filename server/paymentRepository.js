@@ -1,7 +1,7 @@
 const { canStartCheckout, matchesApprovedTestPayment } = require('./paymentChecks');
 
 // AI-assisted: see docs/AI_LOG.md #40
-function createPaymentRepository(database) {
+function createPaymentRepository(database, testAccounts) {
   const tripRef = (tripId) => database.collection('trips').doc(tripId);
 
   return {
@@ -21,13 +21,13 @@ function createPaymentRepository(database) {
       const ref = tripRef(tripId);
       const snapshot = await transaction.get(ref);
       const trip = snapshot.data();
-      if (!matchesApprovedTestPayment(payment, order, tripId, trip)) {
+      if (!matchesApprovedTestPayment(payment, order, tripId, trip, testAccounts)) {
         throw new Error('Payment does not match trip');
       }
-      if (trip.paymentStatus === 'approved'
+      if (trip.status === 'paid' && trip.paymentStatus === 'approved'
         && String(trip.paymentId) === String(paymentId)) return;
       transaction.update(ref, {
-        paymentStatus: 'approved', paymentId: String(paymentId),
+        status: 'paid', paymentStatus: 'approved', paymentId: String(paymentId),
         paymentUpdatedAt: new Date(),
       });
     }),

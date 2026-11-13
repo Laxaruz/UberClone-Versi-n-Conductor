@@ -2,11 +2,11 @@
 
 Este paquete es independiente de Expo. `GET /health` y `GET /api/trips/:tripId` conservan la consulta de viajes propios. `POST /api/trips/:tripId/checkout` prepara Checkout Pro de prueba y `POST /api/payments/webhook` verifica una notificacion antes de marcar el pago en Firestore.
 
-El checkout recibe solo el ID del viaje. El servidor verifica el ID token de Firebase, comprueba que el conductor sea el propietario y toma `fare` del documento guardado. Nunca usa un monto enviado por el telefono. Solo devuelve una URL de `sandbox_init_point`.
+El checkout recibe solo el ID del viaje. El servidor verifica el ID token de Firebase, comprueba que el conductor sea el propietario y toma `fare` del documento guardado. Nunca usa un monto enviado por el telefono. Devuelve `sandbox_init_point` de una preferencia creada con credenciales de prueba. La compra debe hacerse con una cuenta compradora y una tarjeta de prueba.
 
 Los viajes actuales quedan bloqueados para checkout. Su estado `completed` se crea desde el telefono, asi que no prueba que haya ocurrido el recorrido. El servidor exige `paymentEligible: true`, un campo que la app no puede escribir y que este avance no establece. La elegibilidad requiere un flujo posterior controlado por servidor. Tampoco se debe presentar la autenticacion anonima como identificacion real del conductor.
 
-El webhook exige una firma valida, consulta el pago y la orden comercial directamente a Mercado Pago y compara referencia, preferencia, monto en COP, estado aprobado y modo de prueba. Una transaccion de Firebase Admin actualiza `paymentStatus`, `paymentId` y `paymentUpdatedAt`; el estado del viaje permanece en `completed`. El retorno del navegador por si solo no aprueba un pago. El flujo de efectivo y la pantalla de checkout de la app quedan separados.
+El webhook exige una firma valida, consulta el pago y la orden comercial directamente a Mercado Pago y compara referencia, preferencia, monto en COP y estado aprobado. En la prueba de Checkout Pro, Mercado Pago devolvio `payment.live_mode: true` pese a mostrar Sandbox. Ese caso se acepta solo si la orden confirma `is_test: true`, el viaje fue creado por Admin como `testFixture`, su ID comienza con `sandbox_` y los IDs de comprador y vendedor coinciden con los configurados en el servidor. Si `live_mode` es `false`, una orden sin campo `is_test` se puede procesar, pero `is_test: false` se rechaza. Sin la configuracion de las cuentas, un pago con `live_mode: true` queda pendiente. Una transaccion de Firebase Admin cambia `status` a `paid` y actualiza `paymentStatus`, `paymentId` y `paymentUpdatedAt`. El retorno del navegador por si solo no aprueba un pago. El flujo de efectivo y la pantalla de checkout de la app quedan separados.
 
 ## Cobro en efectivo
 
@@ -23,6 +23,7 @@ Desde `server/`, ejecuta `npm install`, `npm test` y `npm start`. Configura en e
 - `FIREBASE_PROJECT_ID`: ID del proyecto compartido.
 - `GOOGLE_APPLICATION_CREDENTIALS`: ruta de credenciales de Firebase Admin fuera del repositorio.
 - `MERCADOPAGO_TEST_MODE=true`: activa exclusivamente las rutas de prueba.
+- `MERCADOPAGO_TEST_SELLER_ID` y `MERCADOPAGO_TEST_BUYER_ID`: IDs de las cuentas de prueba usados para comprobar pagos Sandbox que Mercado Pago reporta con `live_mode: true`.
 - `MERCADOPAGO_ACCESS_TOKEN`: Access Token del entorno de prueba de la aplicacion Checkout Pro.
 - `MERCADOPAGO_WEBHOOK_SECRET`: firma secreta de los webhooks de esa aplicacion.
 - `MERCADOPAGO_NOTIFICATION_URL`: URL HTTPS publica que apunte a `/api/payments/webhook`.
