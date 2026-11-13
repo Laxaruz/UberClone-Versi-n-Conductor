@@ -141,6 +141,20 @@ service cloud.firestore {
       );
 
       allow delete: if false;
+
+      match /devices/{deviceId} {
+        allow read: if isOwner(driverId);
+        allow create, update: if isOwner(driverId)
+          && exists(/databases/$(database)/documents/drivers/$(driverId))
+          && request.resource.data.keys().hasOnly(['fid', 'platform', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['fid', 'platform', 'updatedAt'])
+          && request.resource.data.fid is string
+          && request.resource.data.fid.size() > 0
+          && request.resource.data.fid.size() <= 256
+          && request.resource.data.platform in ['ios', 'android']
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isOwner(driverId);
+      }
     }
 
     // AI-assisted: see docs/AI_LOG.md #22

@@ -1,5 +1,7 @@
 # Servidor de viajes y pagos de prueba
 
+El servidor tambien escucha solicitudes nuevas de Firestore y envia avisos FCM solo a conductores aprobados y disponibles con un dispositivo registrado. Consulta [la configuracion de notificaciones](../docs/NOTIFICATIONS.md). El envio depende de que este servidor siga encendido; no usa Cloud Functions.
+
 Este paquete es independiente de Expo. `GET /health` y `GET /api/trips/:tripId` conservan la consulta de viajes propios. `POST /api/trips/:tripId/checkout` prepara Checkout Pro de prueba y `POST /api/payments/webhook` verifica una notificacion antes de marcar el pago en Firestore.
 
 El checkout recibe solo el ID del viaje. El servidor verifica el ID token de Firebase, comprueba que el conductor sea el propietario y toma `fare` del documento guardado. Nunca usa un monto enviado por el telefono. Devuelve `sandbox_init_point` de una preferencia creada con credenciales de prueba. La compra debe hacerse con una cuenta compradora y una tarjeta de prueba.

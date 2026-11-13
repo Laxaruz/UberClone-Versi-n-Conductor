@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "444895417214",
+    "project_id": "uberclone-conductor-93a68",
+    "storage_bucket": "uberclone-conductor-93a68.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:444895417214:android:e860fe0778a833f662592f",
+        "android_client_info": {
+          "package_name": "com.laxaruz.uberclonedriver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5Q-ZsZIKLiQHZRx_BvZwf8c2CEMstnNY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

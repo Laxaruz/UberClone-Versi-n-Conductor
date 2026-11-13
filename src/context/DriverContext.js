@@ -12,6 +12,7 @@ import { saveCompletedTrip } from '../services/tripRepository';
 import { clearCheckoutTrip, rememberCheckoutTrip } from '../services/checkoutService';
 import { storedDocumentDetails, storedProfileDetails, validateProfileDetails,
   validateProfileDocuments } from '../utils/profileDetails';
+import { registerDriverNotifications, removeDriverNotifications } from '../services/pushNotifications';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -110,6 +111,22 @@ export function DriverProvider({ children }) {
   }, [sessionEpoch]);
 
   useEffect(() => {
+    if (!driverUid || !['approved_demo', 'approved'].includes(registrationStatus) || sessionClosed) return undefined;
+    let active = true;
+    let unsubscribe = null;
+    registerDriverNotifications(driverUid)
+      .then((stop) => {
+        if (active) unsubscribe = stop;
+        else stop();
+      })
+      .catch(() => console.warn('No se pudo activar FCM en este dispositivo.'));
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, [driverUid, registrationStatus, sessionClosed]);
+
+  useEffect(() => {
     let isMounted = true;
 
     AsyncStorage.getItem(LANGUAGE_KEY)
@@ -197,6 +214,7 @@ export function DriverProvider({ children }) {
       setRequestedAvailability(false);
       await availabilityTask.current.catch(() => {});
       if (driverSession && driverUid) await setDriverAvailability(driverUid, false, null);
+      if (driverUid) await removeDriverNotifications(driverUid).catch(() => {});
       await logOutDriver();
       await clearCheckoutTrip().catch(() => {});
       availabilityIntent.current = false;

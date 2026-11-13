@@ -10,7 +10,7 @@ const requestRef = (id) => doc(database, 'tripRequests', id);
 const responseRef = (id, uid) => doc(database, 'tripRequests', id, 'responses', uid);
 
 // AI-assisted: see docs/AI_LOG.md #22
-export function createFirestoreTripRequestSource(uid) {
+export function createFirestoreTripRequestSource(uid, preferredId = null) {
   let current = null;
   let candidates = [];
   let listener = null;
@@ -66,6 +66,7 @@ export function createFirestoreTripRequestSource(uid) {
         candidates = snapshot.docs
           .map((item) => mapTripRequest(item.id, item.data()))
           .filter(Boolean);
+        if (preferredId) candidates.sort((a, b) => Number(b.id === preferredId) - Number(a.id === preferredId));
         if (current?.status === 'accepted') publish();
         else selectRequest();
       }, () => {
