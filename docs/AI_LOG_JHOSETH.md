@@ -206,3 +206,21 @@
 - **Pendientes:** URL pública HTTPS del webhook, Firebase Admin, configuración segura de credenciales de prueba de Mercado Pago, habilitación de un viaje de prueba elegible y verificación completa de checkout, webhook, estado `paid` y escucha en iPhone. No se activaron pagos ni servicios con gasto.
 - **Commit, push y hash al redactar esta entrada:** Pendientes. Los cambios estaban locales en `Jhoseth-dev` y no se habian integrado en `main`.
 - **Aprendizaje:** El regreso del navegador no prueba que el pago fue aprobado. La confirmación procede del servidor; Firestore avisa a la app del cambio y la app consulta de nuevo el estado verificado.
+
+## Entrada #54 — Implementación local de la pantalla Ganancias
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Consultar y mostrar el saldo de demostración del conductor, los totales de hoy, semana y mes, los pagos pendientes y las comisiones de efectivo.
+- **Prompt completo y literal:**
+
+> Ya prepare Ganancias en Jhoseth-dev. Traje los cambios de Kevin y agregue useEarnings con los totales de hoy, semana y mes. La pantalla consulta viajes y saldo en Firestore y separa pagos pendientes y comisiones de efectivo. Publique las reglas de lectura y cree el indice, que seguia en construccion en la ultima revision. Pasaron las pruebas de calculos, las pruebas existentes y la exportacion de Android e iOS. Todavia no he probado Ganancias en mi iPhone ni he creado el commit. Ayudame a registrar este avance como trabajo local pendiente.
+
+- **Resumen de la respuesta:** Se recomendó mostrar el saldo y los totales por período, separar pagos confirmados y pendientes, evitar descontar dos veces la comisión de efectivo y comprobar los cálculos antes del commit.
+- **Qué se usó y modificó:** Se trajeron a `Jhoseth-dev` los commits publicados de Kevin como base, sin atribuirle a Jhoseth esos cambios. Se prepararon `useEarnings`, la consulta paginada de viajes y saldo en Firestore, los cálculos por período y la pantalla Ganancias. El servidor acredita la ganancia de un pago de prueba confirmado una sola vez. El saldo mostrado es de demostración y no representa una transferencia real.
+- **Archivos del avance:** `src/hooks/useEarnings.js`, `src/screens/EarningsScreen.js`, `src/services/earningsRepository.js`, `src/utils/earningsSummary.js`, `src/navigation/RootNavigator.js`, `src/i18n/translations.js`, `server/paymentRepository.js`, `server/test/payments.test.js`, `firestore.rules`, `firestore.indexes.json`, `tests/earningsSummary.test.mjs`, `docs/TRIPS.md` y `server/README.md`. Esta entrada se incorpora en `docs/AI_LOG.md` y `docs/AI_LOG_JHOSETH.md`. La actualización anterior de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasó la prueba de cálculos de Ganancias, las 11 pruebas del servidor y las pruebas existentes de registro, disponibilidad, solicitudes, viaje y fechas. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Se publicaron las reglas de lectura en Firestore y se creó el índice `trips` por `driverId` y `completedAt`; al cierre de esta revisión, Firestore todavía lo mostraba en construcción. No se ha probado la pantalla en iPhone ni un cobro completo de Mercado Pago con este cambio.
+- **Commit, push y hash:** Pendientes. Los cambios de Ganancias permanecen locales en `Jhoseth-dev` y `main` no se modificó en este avance.
+- **Aprendizaje:** Los ingresos de un período y el saldo acumulado son cifras distintas. Los pagos pendientes se muestran aparte; la comisión del efectivo se descuenta del saldo una sola vez cuando el servidor registra ese cobro.

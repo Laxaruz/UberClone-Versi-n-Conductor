@@ -155,7 +155,9 @@ service cloud.firestore {
           || (resource == null
             && exists(/databases/$(database)/documents/tripRequests/$(tripId))
             && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.acceptedBy == request.auth.uid));
-      allow list: if false;
+      allow list: if request.auth != null
+        && resource.data.driverId == request.auth.uid
+        && request.query.limit <= 20;
       allow create: if request.auth != null
         && exists(/databases/$(database)/documents/tripRequests/$(tripId))
         && request.resource.data.keys().hasOnly(completedTripFields())
@@ -182,6 +184,11 @@ service cloud.firestore {
         && request.resource.data.paymentId == null
         && request.resource.data.completedAt == request.time;
       allow update, delete: if false;
+    }
+
+    match /driverBalances/{driverId} {
+      allow get: if isOwner(driverId);
+      allow list, create, update, delete: if false;
     }
   }
 }

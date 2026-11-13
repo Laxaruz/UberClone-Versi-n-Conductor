@@ -215,8 +215,10 @@ test('sandbox payment with live_mode true needs the Admin fixture and both test 
 
 test('repository marks an approved trip paid without applying the same payment twice', async () => {
   const trip = {
+    driverId: 'driver-1',
     status: 'completed', paymentMethod: 'mercadopago', paymentStatus: 'pending',
-    paymentEligible: true, testFixture: true, fare: 19200, paymentPreferenceId: 'pref-1',
+    paymentEligible: true, testFixture: true, fare: 19200, commission: 3840, commissionRate: 0.2,
+    tip: 0, driverEarnings: 15360, paymentPreferenceId: 'pref-1',
   };
   const payment = {
     id: 123, status: 'approved', live_mode: true, external_reference: 'sandbox_trip-1',
@@ -229,11 +231,14 @@ test('repository marks an approved trip paid without applying the same payment t
     payments: [{ id: 123, status: 'approved' }],
   };
   let updates = 0;
+  let balanceWrites = 0;
+  const balance = { balance: -1000 };
   const database = {
-    collection: () => ({ doc: () => ({}) }),
+    collection: (name) => ({ doc: (id) => ({ path: `${name}/${id}` }) }),
     runTransaction: async (callback) => callback({
-      get: async () => ({ data: () => trip }),
+      get: async (ref) => ({ data: () => ref.path.startsWith('trips/') ? trip : balance }),
       update: (_ref, fields) => { updates += 1; Object.assign(trip, fields); },
+      set: (_ref, fields) => { balanceWrites += 1; Object.assign(balance, fields); },
     }),
   };
   const repository = createPaymentRepository(database, { sellerId: '11', buyerId: '22' });
@@ -241,8 +246,15 @@ test('repository marks an approved trip paid without applying the same payment t
   assert.equal(trip.status, 'paid');
   assert.equal(trip.paymentStatus, 'approved');
   assert.equal(trip.paymentId, '123');
+  assert.equal(balance.balance, 14360);
   await repository.markPaid('sandbox_trip-1', 123, payment, order);
   assert.equal(updates, 1);
+  assert.equal(balanceWrites, 1);
   await assert.rejects(repository.markPaid('sandbox_trip-1', 456, { ...payment, id: 456 }, order));
   assert.equal(updates, 1);
+  assert.equal(balance.balance, 14360);
+  Object.assign(trip, { status: 'completed', paymentStatus: 'pending', driverEarnings: 1 });
+  await assert.rejects(repository.markPaid('sandbox_trip-1', 123, payment, order));
+  assert.equal(balanceWrites, 1);
+  assert.equal(balance.balance, 14360);
 });

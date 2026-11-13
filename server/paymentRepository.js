@@ -26,9 +26,28 @@ function createPaymentRepository(database, testAccounts) {
       }
       if (trip.status === 'paid' && trip.paymentStatus === 'approved'
         && String(trip.paymentId) === String(paymentId)) return;
+      if (typeof trip.driverId !== 'string' || !trip.driverId
+        || !Number.isSafeInteger(trip.commission) || trip.commission < 0
+        || !Number.isFinite(trip.commissionRate) || trip.commissionRate < 0
+        || trip.commissionRate > 1
+        || trip.commission !== Math.round(trip.fare * trip.commissionRate)
+        || !Number.isSafeInteger(trip.tip) || trip.tip < 0
+        || !Number.isSafeInteger(trip.driverEarnings)
+        || trip.driverEarnings !== trip.fare - trip.commission + trip.tip) {
+        throw new Error('Invalid trip earnings');
+      }
+      const balanceRef = database.collection('driverBalances').doc(trip.driverId);
+      const balanceSnapshot = await transaction.get(balanceRef);
+      const balance = balanceSnapshot.data()?.balance ?? 0;
+      const nextBalance = balance + trip.driverEarnings;
+      if (!Number.isSafeInteger(balance) || !Number.isSafeInteger(nextBalance)) {
+        throw new Error('Invalid driver balance');
+      }
+      const now = new Date();
+      transaction.set(balanceRef, { balance: nextBalance, updatedAt: now }, { merge: true });
       transaction.update(ref, {
         status: 'paid', paymentStatus: 'approved', paymentId: String(paymentId),
-        paymentUpdatedAt: new Date(),
+        paymentUpdatedAt: now,
       });
     }),
   };

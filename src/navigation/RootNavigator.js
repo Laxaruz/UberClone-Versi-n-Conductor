@@ -6,6 +6,7 @@ import AppIcon from '../components/AppIcon';
 import { colors } from '../config/theme';
 import useTranslation from '../i18n/useTranslation';
 import HomeScreen from '../screens/HomeScreen';
+import EarningsScreen from '../screens/EarningsScreen';
 import IncomingRequestScreen from '../screens/IncomingRequestScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
@@ -29,11 +30,6 @@ function VehicleScreen() {
 
 function DocumentsScreen() {
   return <RegistrationScreen section="documents" />;
-}
-
-function EarningsScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('earnings')} />;
 }
 
 function HistoryScreen() {
