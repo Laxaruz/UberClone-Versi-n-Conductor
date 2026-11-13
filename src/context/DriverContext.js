@@ -8,6 +8,7 @@ import { createPendingDriver, observeDriver, saveDriverLocation, setDriverAvaila
 import { calculateFare } from '../utils/calculateFare';
 import { transitionTrip } from '../utils/tripTransitions';
 import { saveCompletedTrip } from '../services/tripRepository';
+import { rememberCheckoutTrip } from '../services/checkoutService';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -215,6 +216,9 @@ export function DriverProvider({ children }) {
       if (firebaseConfigured) {
         if (activeTrip.source !== 'firestore_test' || !driverUid) throw new Error('Trip has no driver');
         await saveCompletedTrip(driverUid, completed);
+        if (completed.paymentMethod === 'mercadopago') {
+          await rememberCheckoutTrip(completed.id).catch(() => {});
+        }
       }
       setActiveTrip(completed);
       return true;

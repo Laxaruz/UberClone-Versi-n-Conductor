@@ -27,6 +27,7 @@ function createPaymentRepository(database) {
       if (trip.paymentStatus === 'approved'
         && String(trip.paymentId) === String(paymentId)) return;
       transaction.update(ref, {
+        status: 'paid',
         paymentStatus: 'approved', paymentId: String(paymentId),
         paymentUpdatedAt: new Date(),
       });

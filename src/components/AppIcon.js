@@ -7,6 +7,7 @@ const symbols = {
   document: { ios: 'doc.text', android: 'description', web: 'description' },
   earnings: { ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' },
   history: { ios: 'clock.arrow.circlepath', android: 'history', web: 'history' },
+  payment: { ios: 'creditcard', android: 'credit_card', web: 'credit_card' },
   settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
   camera: { ios: 'camera', android: 'photo_camera', web: 'photo_camera' },
   gallery: { ios: 'photo.on.rectangle', android: 'photo_library', web: 'photo_library' },

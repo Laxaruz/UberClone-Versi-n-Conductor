@@ -26,6 +26,8 @@ export default function TripCompletedScreen({ navigation }) {
   const completed = activeTrip?.status === 'completed' || activeTrip?.status === 'paid';
   const cashTrip = activeTrip?.paymentMethod === 'cash';
   const cashRecorded = activeTrip?.paymentStatus === 'cash_received';
+  const testPaymentApproved = activeTrip?.paymentMethod === 'mercadopago'
+    && activeTrip?.paymentStatus === 'approved';
   const cashCanSubmit = cashTrip && !cashRecorded && activeTrip?.source === 'firestore_test'
     && cashServiceConfigured;
 
@@ -62,12 +64,14 @@ export default function TripCompletedScreen({ navigation }) {
           <Amount label={t('commission')} amount={activeTrip.finalCommission} />
           <Amount label={t('netEarnings')} amount={activeTrip.finalDriverEarnings} />
           <View style={styles.paymentRow}><Text style={styles.label}>{t('paymentStatus')}</Text>
-            <Text style={styles.paymentPending}>{t(cashRecorded ? 'cashReceived' : 'paymentPending')}</Text></View>
+            <Text style={styles.paymentPending}>{t(cashRecorded ? 'cashReceived'
+              : testPaymentApproved ? 'paymentApproved' : 'paymentPending')}</Text></View>
         </View>
         {cashTrip && cashRecorded ? <>
           <Text style={styles.notice}>{t('cashReceiptDemo')}</Text>
           <Amount label={t('driverBalance')} amount={activeTrip.cashBalance} />
-        </> : <Text style={styles.notice}>{t(cashTrip ? 'cashPending' : 'paymentNotProcessed')}</Text>}
+        </> : <Text style={styles.notice}>{t(cashTrip ? 'cashPending'
+          : testPaymentApproved ? 'checkoutVerifiedNotice' : 'paymentNotProcessed')}</Text>}
         {cashTrip && !cashRecorded ? <>
           {!cashCanSubmit && <Text style={styles.notice}>{t('cashBackendRequired')}</Text>}
           {cashError && <Text style={styles.notice}>{t('cashSaveFailed')}</Text>}
@@ -77,6 +81,10 @@ export default function TripCompletedScreen({ navigation }) {
             <Text style={styles.buttonText}>{t(cashBusy ? 'savingCash' : 'confirmCash')}</Text>
           </Pressable>
         </> : null}
+        {activeTrip.paymentMethod === 'mercadopago' ? <Pressable accessibilityRole="button"
+          style={styles.button} onPress={() => navigation.navigate('PaymentPreview', { tripId: activeTrip.id })}>
+          <Text style={styles.buttonText}>{t('openTestCheckout')}</Text>
+        </Pressable> : null}
       </> : <Text style={styles.notice}>{t('noCompletedTrip')}</Text>}
       <Pressable accessibilityRole="button" style={styles.button} onPress={() => navigation.getParent()?.navigate('MainDrawer')}>
         <Text style={styles.buttonText}>{t('backHome')}</Text>

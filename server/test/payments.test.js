@@ -3,7 +3,7 @@ const { createHmac } = require('node:crypto');
 const { test } = require('node:test');
 const { createApp } = require('../app');
 const { createMercadoPagoClient } = require('../mercadoPagoClient');
-const { canStartCheckout, matchesApprovedTestPayment } = require('../paymentChecks');
+const { canStartCheckout, isSandboxCheckoutUrl, matchesApprovedTestPayment } = require('../paymentChecks');
 const { createPaymentRepository } = require('../paymentRepository');
 
 async function start(app) {
@@ -39,11 +39,15 @@ test('current trips remain blocked, and test checkout uses the stored fare', asy
     assert.equal((await post('owner', { fare: 1 })).status, 409);
     assert.equal(calls, 0);
     trip.paymentEligible = true;
+    const summary = await fetch(`${server.base}/api/trips/trip-1`, { headers: { authorization: 'Bearer owner' } });
+    assert.equal((await summary.json()).checkoutEnabled, true);
     const first = await post('owner', { fare: 1 });
     assert.equal(first.status, 200);
     assert.deepEqual(await first.json(), { preferenceId: 'pref-1', checkoutUrl: 'https://sandbox.mercadopago.com/test' });
     assert.equal((await post('owner')).status, 200);
     assert.equal(calls, 1);
+    trip.paymentCheckoutUrl = 'https://mercadopago.com/checkout';
+    assert.equal((await post('owner')).status, 502);
   } finally {
     await server.close();
   }
@@ -69,7 +73,7 @@ test('webhook requires a signed matching payment and handles repeats', async () 
     mercadoPago: { getPayment: async () => payment, getMerchantOrder: async () => order },
     markPaid: async () => {
       updates += 1;
-      Object.assign(trip, { paymentStatus: 'approved', paymentId: '123' });
+      Object.assign(trip, { status: 'paid', paymentStatus: 'approved', paymentId: '123' });
     },
     webhookSecret: 'test-secret', paymentsTestMode: true,
   });
@@ -89,6 +93,7 @@ test('webhook requires a signed matching payment and handles repeats', async () 
     assert.equal((await post(`ts=1700000000,v1=${signature}`)).status, 200);
     assert.equal(updates, 1);
     assert.equal((await post(`ts=1700000000,v1=${signature}`)).status, 200);
+    assert.equal(trip.status, 'paid');
   } finally {
     await server.close();
   }
@@ -129,9 +134,12 @@ test('payment checks reject live and mismatched provider data', () => {
   assert.equal(matchesApprovedTestPayment(payment, { ...order, status: 'opened' }, 'trip-1', trip), false);
   assert.equal(matchesApprovedTestPayment(payment, { ...order, paid_amount: 1 }, 'trip-1', trip), false);
   assert.equal(canStartCheckout({ ...trip, paymentEligible: undefined }), false);
+  assert.equal(isSandboxCheckoutUrl('https://sandbox.mercadopago.com/test'), true);
+  assert.equal(isSandboxCheckoutUrl('https://mercadopago.com/test'), false);
+  assert.equal(isSandboxCheckoutUrl('https://sandbox.mercadopago.com.evil.test/'), false);
 });
 
-test('repository approves payment without changing the completed trip status', async () => {
+test('repository marks the completed trip paid only once', async () => {
   const trip = {
     status: 'completed', paymentMethod: 'mercadopago', paymentStatus: 'pending',
     paymentEligible: true, fare: 19200, paymentPreferenceId: 'pref-1',
@@ -155,7 +163,7 @@ test('repository approves payment without changing the completed trip status', a
   };
   const repository = createPaymentRepository(database);
   await repository.markPaid('trip-1', 123, payment, order);
-  assert.equal(trip.status, 'completed');
+  assert.equal(trip.status, 'paid');
   assert.equal(trip.paymentStatus, 'approved');
   assert.equal(trip.paymentId, '123');
   await repository.markPaid('trip-1', 123, payment, order);

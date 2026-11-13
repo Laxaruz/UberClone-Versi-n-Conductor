@@ -47,7 +47,7 @@ test('health and owner-only trip read', async () => {
     assert.equal(owner.status, 200);
     assert.deepEqual(await owner.json(), {
       id: 'trip-1', status: 'completed', paymentMethod: 'mercadopago',
-      fare: 19200, paymentStatus: 'pending',
+      fare: 19200, paymentStatus: 'pending', checkoutEnabled: false,
     });
   } finally {
     await new Promise((resolve) => server.close(resolve));

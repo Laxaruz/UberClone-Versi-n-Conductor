@@ -9,6 +9,15 @@ function canStartCheckout(trip) {
     && trip.fare > 0;
 }
 
+function isSandboxCheckoutUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.hostname === 'sandbox.mercadopago.com';
+  } catch {
+    return false;
+  }
+}
+
 // AI-assisted: see docs/AI_LOG.md #40
 function validWebhookSignature({ signature, requestId, dataId, secret }) {
   if (!signature || !requestId || !/^[0-9]+$/.test(dataId || '') || !secret) return false;
@@ -38,8 +47,8 @@ function matchesApprovedTestPayment(payment, order, tripId, trip) {
     && order?.preference_id === trip.paymentPreferenceId
     && order?.external_reference === tripId
     && (canStartCheckout(trip)
-      || (trip.status === 'completed' && trip.paymentStatus === 'approved'
+      || (trip.status === 'paid' && trip.paymentStatus === 'approved'
         && String(trip.paymentId) === String(payment.id)));
 }
 
-module.exports = { canStartCheckout, validWebhookSignature, matchesApprovedTestPayment };
+module.exports = { canStartCheckout, isSandboxCheckoutUrl, validWebhookSignature, matchesApprovedTestPayment };
