@@ -6,6 +6,8 @@ import AppIcon from '../components/AppIcon';
 import { colors } from '../config/theme';
 import useTranslation from '../i18n/useTranslation';
 import HomeScreen from '../screens/HomeScreen';
+import HistoryDetailScreen from '../screens/HistoryDetailScreen';
+import HistoryScreen from '../screens/HistoryScreen';
 import EarningsScreen from '../screens/EarningsScreen';
 import IncomingRequestScreen from '../screens/IncomingRequestScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -30,11 +32,6 @@ function VehicleScreen() {
 
 function DocumentsScreen() {
   return <RegistrationScreen section="documents" />;
-}
-
-function HistoryScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('history')} />;
 }
 
 function ProfileScreen() {
@@ -108,10 +105,13 @@ function TripStack() {
 }
 
 export default function RootNavigator() {
+  const t = useTranslation();
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainDrawer" component={MainDrawer} />
       <Stack.Screen name="TripFlow" component={TripStack} />
+      <Stack.Screen name="HistoryDetail" component={HistoryDetailScreen}
+        options={{ headerShown: true, title: t('historyDetail'), headerBackTitle: t('history'), headerTintColor: colors.text }} />
     </Stack.Navigator>
   );
 }

@@ -1075,3 +1075,75 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Verificación:** Pasó la prueba de cálculos de Ganancias, las 11 pruebas del servidor y las pruebas existentes de registro, disponibilidad, solicitudes, viaje y fechas. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Se publicaron las reglas de lectura en Firestore y se creó el índice `trips` por `driverId` y `completedAt`; al cierre de esta revisión, Firestore todavía lo mostraba en construcción. No se ha probado la pantalla en iPhone ni un cobro completo de Mercado Pago con este cambio.
 - **Commit, push y hash:** Pendientes. Los cambios de Ganancias permanecen locales en `Jhoseth-dev` y `main` no se modificó en este avance.
 - **Aprendizaje:** Los ingresos de un período y el saldo acumulado son cifras distintas. Los pagos pendientes se muestran aparte; la comisión del efectivo se descuenta del saldo una sola vez cuando el servidor registra ese cobro.
+
+## Entrada #55 — Planificación del avance de Historial
+
+- **Fecha y hora:** 2026-11-13 12:55:56 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Contrastar la sección de Historial de la guía con la implementación de Ganancias y el modelo de viajes, y recomendar campos, filtros, paginación y una forma de compartir la consulta Firestore.
+- **Prompt completo y literal:**
+
+> Ya traje a mi rama el avance de Ganancias de Jhoseth. Comprobe el calculo de hoy, semana y mes, pasaron las 11 pruebas del servidor y Expo exporto iOS. Todavia no probamos Ganancias en el celular y falta confirmar que el indice de Firestore termino de construirse. Ahora quiero empezar mi avance de Historial. Pienso mostrar los viajes del conductor con filtros, paginas y una pantalla de detalle. Podrias revisar la guia y el codigo actual para decirme que datos y filtros debemos incluir y como evitar repetir la consulta que ya usa Ganancias?
+
+- **Resumen de la respuesta:** La guía pide una lista con los viajes más recientes primero, filtros Hoy/Semana/Mes/Rango y método de pago, paginación de hasta 20, los datos resumidos del viaje y un detalle con mapa, distancia, duración, comisión, propina y calificación. Se recomendó extraer una consulta paginada compartida para Ganancias e Historial; el esquema actual no guarda calificación ni geometría de la ruta recorrida, y el estado de construcción del índice remoto no se puede confirmar solo desde el repositorio.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron la sección 6 de la guía, el repositorio de Ganancias, el esquema de viaje, las reglas e índices locales y el servicio de rutas para plantear el alcance. No se modificó código; son recomendaciones para el siguiente avance.
+- **Archivos revisados:** Guía UberClone — Versión Conductor.pdf, src/hooks/useEarnings.js, src/services/earningsRepository.js, src/utils/earningsSummary.js, src/screens/EarningsScreen.js, src/navigation/RootNavigator.js, src/utils/completedTrip.js, src/services/tripRepository.js, src/services/routeService.js, src/components/TripRouteMap.js, firestore.rules, firestore.indexes.json y docs/TRIPS.md.
+- **Archivos afectados y hash del commit:** Solo esta entrada #55 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Revisión sobre df356599b86b314eeff5a08ba7bb8d34ca49f638; no hay commit nuevo para esta consulta.
+- **Verificación:** Git mostró Kevin-dev en df35659, un commit local adelante de origin/Kevin-dev (49511b9), y sin cambios locales pendientes; origin/Jhoseth-dev apunta al mismo df35659. La guía se leyó en sus páginas 3, 5 y 6. El repositorio contiene el índice compuesto trips(driverId ASC, completedAt DESC) y la regla exige propietario y límite de consulta máximo de 20. No se consultó la consola para conocer el estado actual del índice; el último estado comunicado es que seguía construyéndose. Las 11 pruebas y la exportación iOS son resultados reportados por Kevin; no se ejecutaron de nuevo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #56 — Revisión del avance local de Historial
+
+- **Fecha y hora:** 2026-11-13 13:11:13 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el avance local de Historial contra la guía, verificar la consulta compartida con Ganancias, filtros, paginación, detalle, mapa e índice antes del commit.
+- **Prompt completo y literal:**
+
+> Implemente Historial en mi rama. Ahora muestro los viajes del conductor en una FlatList ordenada por fecha y con paginas de 20. Agregue filtros por Hoy, Semana, Mes, rango de fechas y metodo de pago. Tambien hice un detalle con mapa, distancia, duracion, tarifa, comision, propina y estado del pago. Como los viajes no guardan calificacion ni recorrido real, muestro que esos datos no estan disponibles. Comparti la consulta de viajes con Ganancias y agregue el indice para filtrar por metodo. Pasaron las pruebas de fechas y ganancias, las 11 pruebas del servidor y la exportacion de iOS. Todavia no publique el indice ni probe Historial en el celular. Podrias revisar si ves algun error o algo que no cumpla la guia antes del commit?
+
+- **Resumen de la respuesta:** La lista, los filtros requeridos, las páginas de 20 y la consulta reutilizada con Ganancias coinciden con la guía y las reglas. Se encontró una falta comprobada: el mapa del detalle dibuja los dos marcadores, pero no una línea de ruta; la guía pide la ruta dibujada. Si se usa OSRM entre los puntos guardados, debe identificarse como estimación y no como recorrido real.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se inspeccionaron los diffs staged, la guía, el repositorio común de consultas, el índice y las reglas. No se modificó código ni se ejecutaron pruebas. También se señaló condicionalmente que los archivos nuevos no muestran referencias AI-assisted; si su contenido se desarrolló con IA, falta enlazar los bloques a esta bitácora.
+- **Archivos revisados:** src/hooks/useTripHistory.js, src/services/tripPages.js, src/services/earningsRepository.js, src/utils/historyDateRange.js, src/screens/HistoryScreen.js, src/screens/HistoryDetailScreen.js, src/navigation/RootNavigator.js, src/services/routeService.js, firestore.indexes.json, firestore.rules, src/i18n/translations.js, docs/TRIPS.md, tests/historyDateRange.test.mjs y las bitácoras.
+- **Archivos afectados y hash del commit:** Solo esta entrada #56 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Base Kevin-dev df356599b86b314eeff5a08ba7bb8d34ca49f638; no hay commit nuevo para esta revisión.
+- **Verificación:** Git mostró Kevin-dev en df35659, un commit adelante de origin/Kevin-dev, con los 13 archivos del avance staged. git diff --check y git diff --cached --check no reportaron errores. La lectura confirmó que el detalle solo renderiza Marker y no Polyline; que el índice nuevo cubre driverId, paymentMethod y completedAt; y que la regla limita la consulta a documentos del conductor y máximo 20. Las pruebas y la exportación de iOS son resultados reportados por Kevin y no se repitieron. El índice no está publicado y no se probó en celular, según Kevin.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #57 — Revisión de la ruta estimada en el detalle de Historial
+
+- **Fecha y hora:** 2026-11-13 13:18:43 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Comprobar si el detalle de Historial ahora satisface el requisito de dibujar una ruta, revisar el fallback de puntos y buscar otros problemas antes del commit.
+- **Prompt completo y literal:**
+
+> Corregi el detalle de Historial para dibujar una ruta estimada con OSRM entre el origen y el destino. Mantengo el aviso de que no es el recorrido real y, si falla el servicio, quedan visibles los puntos guardados. Tambien publique los indices de Firestore y la consola confirmo el despliegue, aunque todavia no confirme que el indice nuevo termino de construirse. Pasaron la prueba de rutas, la exportacion de iOS y la revision del diff preparado. Aun no probe Historial en el celular. Podrias revisar si el requisito de la ruta quedo cubierto y si ves otro error antes del commit?
+
+- **Resumen de la respuesta:** El detalle ahora consulta OSRM con las coordenadas guardadas, dibuja la geometría devuelta con Polyline y conserva ambos marcadores y el mensaje de fallback si la consulta falla; el requisito de mapa con ruta estimada queda cubierto. No se encontró otro defecto funcional en la lectura del cambio; queda pendiente la prueba en dispositivo y la construcción del índice.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron el diff preparado y la integración de la ruta con el servicio OSRM. No se modificó código ni se repitieron pruebas o exportación. Se señaló revisar la referencia AI-assisted del bloque si el código se escribió siguiendo la recomendación de la entrada #56.
+- **Archivos revisados:** src/screens/HistoryDetailScreen.js, src/services/routeService.js, src/i18n/translations.js, docs/TRIPS.md, firestore.indexes.json y las bitácoras.
+- **Archivos afectados y hash del commit:** Solo esta entrada #57 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Revisión sobre df356599b86b314eeff5a08ba7bb8d34ca49f638; no hay commit nuevo.
+- **Verificación:** Git mostró Kevin-dev en df35659, un commit adelante de origin/Kevin-dev, con el avance staged y sin diff unstaged antes de actualizar esta bitácora. git diff --check y git diff --cached --check no reportaron errores. La lectura confirmó la llamada OSRM con los puntos guardados, el renderizado de Polyline, el texto que aclara que la línea es estimada, los marcadores persistentes ante error y la atribución OSRM/OpenStreetMap. La prueba de rutas y exportación de iOS fueron reportadas por Kevin y no se repitieron. El despliegue del índice también fue reportado; no se consultó la consola para confirmar que finalizó su construcción. Historial no fue probado en el celular.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #58 — Revisión de prueba en dispositivo y textos de Historial
+
+- **Fecha y hora:** 2026-11-13 13:27:02 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar las correcciones de regreso y actualización de Historial y verificar pendientes antes del commit.
+- **Prompt completo y literal:**
+
+> Probee Historial en mi iPhone. El filtro Efectivo dejo visible el viaje y pude abrir su detalle. Vi la ruta estimada en el mapa, ademas de los datos del viaje y el estado del pago. Corregi dos textos que aparecian mal, el regreso decia MainDrawer y el boton decia Actualizar ganancias. Ahora muestran Historial y Actualizar historial. Tambien comprobe que Expo exporta iOS y que el diff preparado no tiene errores de formato. Todavia no hice commit ni push. Podrias revisar si ves algun pendiente antes del commit?
+
+- **Resumen de la respuesta:** El diff contiene el título de regreso Historial y el botón usa la traducción Actualizar historial; la prueba reportada en iPhone cubre filtro Efectivo, apertura del detalle y ruta estimada. No se encontró otro error funcional en la lectura; queda como punto condicional comprobar la referencia AI-assisted de los bloques escritos con ayuda de IA.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el estado Git, las etiquetas de navegación y los textos en español e inglés. No se modificó código ni se repitió la prueba en iPhone o la exportación iOS. No se atribuyó confirmación de la consola de Firestore; la prueba del filtro Efectivo se registró como reportada por Kevin.
+- **Archivos revisados:** src/navigation/RootNavigator.js, src/screens/HistoryScreen.js, src/screens/HistoryDetailScreen.js, src/i18n/translations.js y las bitácoras.
+- **Archivos afectados y hash del commit:** Solo esta entrada #58 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Revisión sobre df356599b86b314eeff5a08ba7bb8d34ca49f638; no hay commit nuevo.
+- **Verificación:** Git mostró Kevin-dev en df35659, una confirmación adelante de origin/Kevin-dev y los cambios de Historial staged. La lectura confirmó headerBackTitle con la traducción history y el uso de historyRefresh en la pantalla y el detalle. git diff --check y git diff --cached --check no reportaron errores; aparecieron solo avisos de conversión LF/CRLF en las bitácoras. La prueba de Historial en iPhone y la exportación de iOS fueron reportadas por Kevin y no se repitieron. No se hizo commit ni push.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

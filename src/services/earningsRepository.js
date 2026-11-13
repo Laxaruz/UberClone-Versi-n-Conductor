@@ -1,35 +1,15 @@
-import { collection, doc, getDocFromServer, getDocsFromServer, limit, onSnapshot,
-  orderBy, query, startAfter, Timestamp, where } from 'firebase/firestore';
-import { database, ensureDemoUser } from './firebaseClient';
-
-const PAGE_SIZE = 20;
-
-function tripsQuery(driverUid, earliest, after) {
-  const constraints = [where('driverId', '==', driverUid),
-    where('completedAt', '>=', Timestamp.fromMillis(earliest)),
-    orderBy('completedAt', 'desc'), limit(PAGE_SIZE)];
-  if (after) constraints.push(startAfter(after));
-  return query(collection(database, 'trips'), ...constraints);
-}
+import { doc, getDocFromServer, onSnapshot } from 'firebase/firestore';
+import { database } from './firebaseClient';
+import { loadTripsPage, tripsQuery } from './tripPages';
 
 export async function loadEarningsData(driverUid, earliest) {
-  if (!database || !driverUid) throw new Error('Earnings are unavailable');
-  const user = await ensureDemoUser();
-  if (user.uid !== driverUid) throw new Error('Driver session changed');
-
   const trips = [];
-  let after = null;
+  let cursor = null;
   while (true) {
-    const snapshot = await getDocsFromServer(tripsQuery(driverUid, earliest, after));
-    for (const item of snapshot.docs) {
-      const data = item.data();
-      trips.push({ id: item.id, fare: data.fare, commission: data.commission,
-        tip: data.tip, driverEarnings: data.driverEarnings,
-        status: data.status, paymentStatus: data.paymentStatus,
-        paymentMethod: data.paymentMethod, completedAtMs: data.completedAt?.toMillis?.() });
-    }
-    if (snapshot.size < PAGE_SIZE) break;
-    after = snapshot.docs[snapshot.docs.length - 1];
+    const page = await loadTripsPage(driverUid, { startMs: earliest, cursor });
+    trips.push(...page.trips);
+    if (!page.hasMore) break;
+    cursor = page.cursor;
   }
 
   const balanceSnapshot = await getDocFromServer(doc(database, 'driverBalances', driverUid));
@@ -41,7 +21,7 @@ export async function loadEarningsData(driverUid, earliest) {
 export function observeEarningsChanges(driverUid, earliest, onChange) {
   if (!database || !driverUid) return () => {};
   let ready = false;
-  const unsubscribeTrips = onSnapshot(tripsQuery(driverUid, earliest), (snapshot) => {
+  const unsubscribeTrips = onSnapshot(tripsQuery(driverUid, { startMs: earliest }), (snapshot) => {
     if (snapshot.metadata.fromCache) return;
     if (ready) onChange();
     ready = true;
