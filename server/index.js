@@ -4,10 +4,12 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { initializeApp, applicationDefault } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
+const { getMessaging } = require('firebase-admin/messaging');
 const { createApp } = require('./app');
 const { createMercadoPagoClient } = require('./mercadoPagoClient');
 const { createPaymentRepository } = require('./paymentRepository');
 const { createCashRepository } = require('./cashRepository');
+const { startRequestNotifications } = require('./requestNotifications');
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const host = process.env.SERVER_HOST || '127.0.0.1';
@@ -53,3 +55,5 @@ const app = createApp({
 app.listen(port, host, () => {
   console.log(`Server listening on ${host}:${port}`);
 });
+
+startRequestNotifications(database, getMessaging(firebaseApp));

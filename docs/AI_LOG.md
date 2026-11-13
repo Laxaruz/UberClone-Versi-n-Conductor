@@ -1164,3 +1164,57 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Verificación:** Pasaron las pruebas automáticas del proyecto, incluidas las de perfil, vinculación y recuperación de la cuenta. `npm run check` indicó dependencias al día usando el mapa local de Expo, sin consulta de red. La exportación de JavaScript y recursos para Android e iOS terminó correctamente. En Firebase se habilitó Correo/Contraseña y se publicaron las reglas de Perfil. Falta probar el flujo completo en iPhone; no se presenta la exportación como prueba en dispositivo.
 - **Commit y hash al redactar esta entrada:** Pendientes. `main` no se modificó.
 - **Aprendizaje:** Vincular la cuenta anónima antes de salir conserva el UID usado por los documentos de Firestore y permite recuperar el perfil con correo y contraseña.
+
+## Entrada #60 — Planificación del avance de Notificaciones con Firebase Cloud Messaging
+
+- **Fecha y hora:** 2026-11-13 15:02:34 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir el alcance mínimo del avance de notificaciones, la configuración necesaria en Android e iOS y una prueba con solicitudes de Firestore que use FCM real y mantenga el envío fuera del cliente.
+- **Prompt completo y literal:**
+
+> Revise e integre el commit de Perfil y Configuracion de Jhoseth en Kevin-dev. Comprobe las pruebas de autenticacion, perfil y registro, y exporte Android e iOS. Todavia no probe el flujo en mi celular ni publique las reglas nuevas de Firestore. Ahora me toca Notificaciones. La guia pide Firebase Cloud Messaging para avisar solicitudes nuevas cuando la app este en segundo plano, pero por ahora uso Expo Go y el proyecto no tiene una compilacion de desarrollo ni codigo de notificaciones. Quiero cumplir ese requisito sin presentar una alerta local como si fuera un aviso push real. Tambien quiero evitar mandar notificaciones desde el telefono con permisos de servidor. Podrias decirme el alcance mas corto para este commit, que configuracion necesito en Android e iPhone y como lo pruebo con una solicitud de Firestore?
+
+- **Resumen de la respuesta:** La guía requiere FCM real; Expo Go no basta para `@react-native-firebase/messaging`, por lo que se recomendó una compilación de desarrollo nativa. El cliente solo solicita permiso y registra/actualiza su token; el servidor de confianza envía avisos genéricos con el ID de solicitud y Firestore sigue siendo la fuente de verdad. Se detalló la configuración de Android/iOS y una prueba de segundo plano con una solicitud vigente.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron la guía, la configuración Expo, las reglas, el servidor existente y la documentación oficial de Expo/Firebase para proponer el alcance. No se modificó código ni configuración. Se descartó tratar una alerta local como FCM o dar credenciales de servidor al teléfono.
+- **Archivos revisados:** `UberClone — Versión Conductor.pdf` (requisito de notificación de solicitudes con la app en segundo plano), `package.json`, `app.json`, `docs/FIREBASE_SETUP.md`, `firestore.rules`, `server/index.js`, `src/services/firebaseClient.js`, `src/services/firestoreTripRequests.js` y las bitácoras.
+- **Archivos afectados y hash del commit:** Esta entrada #60 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Revisión sobre `f0900baa12eb324122b464e84cfa9ae78da21e0f`; no hay commit nuevo.
+- **Verificación:** Git mostró `Kevin-dev` en `f0900baa12eb324122b464e84cfa9ae78da21e0f`, un commit adelante de `origin/Kevin-dev`, con el árbol limpio; `origin/Jhoseth-dev` apunta al mismo hash. La configuración local usa Expo 58 y no declara `expo-dev-client`, `expo-notifications` ni `@react-native-firebase/*`; `app.json` contiene los identificadores nativos pero no configuración de mensajería. Las reglas impiden crear solicitudes desde el cliente y `server/index.js` inicializa Firebase Admin, pero no tiene remitente FCM. Las pruebas y exportaciones descritas por Kevin no se volvieron a ejecutar; el flujo móvil y la publicación de reglas permanecen pendientes según su reporte.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #61 — Revisión del avance local de Notificaciones FCM
+
+- **Fecha y hora:** 2026-11-13 15:26:19 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el cambio local de FCM antes del commit, identificar errores y riesgos en registro, envío y navegación, y comprobar su impacto al usar Expo Go.
+- **Prompt completo y literal:**
+
+> Prepare las notificaciones de solicitudes con FCM. Agregue la configuracion nativa de Firebase y el registro del dispositivo en Firestore cuando el conductor esta aprobado. Tambien hice que el servidor avise solo a conductores aprobados y disponibles, y que al tocar el aviso se abra Solicitud entrante para consultar de nuevo Firestore. Marque cada solicitud para evitar avisos repetidos. Comprobe 13 pruebas del servidor, exporte Expo para Android e iOS y revise el diff. No pude probar una notificacion real porque solo tenemos iPhone y no contamos con Apple Developer de pago. Tampoco publique las reglas nuevas. Podrias revisar si ves algun problema antes del commit y si el cambio afecta el uso normal en Expo Go?
+
+- **Resumen de la respuesta:** El flujo de FID y envío multicast coincide con las APIs actuales de Firebase; la guarda de `storeClient` evita cargar el módulo nativo en Expo Go, donde push no funcionará, aunque el uso habitual de la app puede continuar. Se identificó que el marcador se escribe antes de enviar, así que un fallo de lectura/envío deja la solicitud sin reintento; también se señaló el entitlement APNs de desarrollo como una configuración que no sirve sin ajuste para distribución.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron el diff local, las reglas, las pruebas añadidas, la configuración nativa y documentación oficial de Expo, React Native Firebase, Firebase y Apple. No se modificó código. Se distinguen los resultados de pruebas/exportación reportados por Kevin de las verificaciones de lectura hechas en esta revisión.
+- **Archivos revisados:** `App.js`, `app.json`, `package.json`, `package-lock.json`, `firestore.rules`, `firestore.indexes.json`, `server/index.js`, `server/requestNotifications.js`, `server/test/requestNotifications.test.js`, `server/README.md`, `src/context/DriverContext.js`, `src/screens/IncomingRequestScreen.js`, `src/services/firestoreTripRequests.js`, `src/services/pushNotifications.js`, `docs/NOTIFICATIONS.md`, `GoogleService-Info.plist`, `google-services.json` y las bitácoras.
+- **Archivos afectados y hash del commit:** Esta entrada #61 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Revisión sobre `f0900baa12eb324122b464e84cfa9ae78da21e0f`; no hay commit nuevo.
+- **Verificación:** Git mostró `Kevin-dev` en `f0900baa12eb324122b464e84cfa9ae78da21e0f`, un commit adelante de `origin/Kevin-dev`; el avance de FCM consta de archivos modificados y nuevos. Se verificó sin mostrar claves que `google-services.json` y `GoogleService-Info.plist` corresponden al mismo proyecto. El índice compuesto `tripRequests(status, expiresAt)` existe. La lectura confirmó el filtro servidor de conductores aprobados/disponibles, la relectura de Firestore al abrir el aviso, y que `pushAvailable` omite el módulo FCM bajo `storeClient`. No se ejecutaron pruebas, exportaciones ni pruebas en dispositivos; las 13 pruebas y exportaciones fueron reportadas por Kevin. Las reglas nuevas siguen sin publicar según su reporte.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #62 — Verificación de reintentos FCM y entorno APNs
+
+- **Fecha y hora:** 2026-11-13 15:36:04 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Verificar si las correcciones de reintento limitado de FCM y selección de entitlement APNs resuelven los hallazgos anteriores antes del commit.
+- **Prompt completo y literal:**
+
+> Corregi los dos puntos que encontraste. Ahora el servidor reintenta una vez si falla la lectura de dispositivos o el envio a FCM mientras la solicitud siga vigente. Ademas, si FCM confirma algunos dispositivos, solo reintenta los que fallaron. Cambie la marca a pushClaimedAt para indicar que comenzo el intento, y documente que un corte del servidor durante los 15 segundos aun puede perder el aviso. Tambien movi el entorno APNs a app.config.js. En desarrollo usa development y en los otros perfiles EAS usa production, con opcion de ajustarlo al perfil de firma. Pase 15 pruebas del servidor, comprobe los dos valores de APNs y git diff --check no encontro errores. Todavia no publique las reglas ni pude probar FCM en iPhone. Podrias confirmar si estos ajustes resuelven los hallazgos antes del commit?
+
+- **Resumen de la respuesta:** La lectura confirma reintentos únicos para lecturas fallidas y reintentos de envío limitados a FIDs con respuesta fallida; `pushClaimedAt` evita otro proceso concurrente y el caso de caída quedó documentado. `app.config.js` selecciona desarrollo para el perfil `development` y producción para otros perfiles EAS, permitiendo la variable de ajuste; sigue pendiente probar APNs en un iPhone y las reglas publicadas. Se observó que las pruebas revisadas no incluyen una respuesta parcial de FCM por dispositivo.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron la configuración Expo dinámica, el servicio servidor, sus pruebas y la documentación. No se modificó código. La corrección se considera resuelta por inspección estática; los resultados de 15 pruebas y `git diff --check` son reportados por Kevin y no se repitieron.
+- **Archivos revisados:** `app.config.js`, `app.json`, `server/requestNotifications.js`, `server/test/requestNotifications.test.js`, `server/index.js`, `docs/NOTIFICATIONS.md`, `server/README.md`, `firestore.rules`, `firestore.indexes.json`, `src/services/pushNotifications.js`, `App.js`, `package.json` y las bitácoras.
+- **Archivos afectados y hash del commit:** Esta entrada #62 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Revisión sobre `f0900baa12eb324122b464e84cfa9ae78da21e0f`; no hay commit nuevo.
+- **Verificación:** Git mostró `Kevin-dev` en `f0900baa12eb324122b464e84cfa9ae78da21e0f`, un commit adelante de `origin/Kevin-dev`, con el avance local de FCM aún sin commit. La lectura confirmó el control de vigencia antes de reintentar, dos intentos máximos de envío y el filtro de respuestas exitosas antes del segundo intento; `app.config.js` usa `EAS_BUILD_PROFILE` y valida `EXPO_APNS_ENV`. `rg` confirmó que las pruebas visibles no simulan una respuesta multicast parcial. La configuración de Firebase sigue sin seguimiento en Git y debe incluirse en el entorno del build. No se ejecutaron pruebas ni builds; las 15 pruebas, los valores APNs y `git diff --check` fueron informados por Kevin. Las reglas siguen sin publicar y FCM no se probó en iPhone.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

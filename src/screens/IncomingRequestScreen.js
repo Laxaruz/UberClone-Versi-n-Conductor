@@ -11,13 +11,15 @@ import useTranslation from '../i18n/useTranslation';
 import { createDemoTripRequestSource } from '../services/demoTripRequests';
 import { createFirestoreTripRequestSource } from '../services/firestoreTripRequests';
 
-export default function IncomingRequestScreen({ navigation }) {
+export default function IncomingRequestScreen({ navigation, route }) {
   const t = useTranslation();
   const isFocused = useIsFocused();
   const { driverUid, available, firebaseConfigured, saveCurrentLocation, updateAvailability, setActiveTrip } = useDriver();
   const [demoSource] = useState(createDemoTripRequestSource);
+  const notifiedRequestId = route?.params?.requestId;
   const liveSource = useMemo(() => firebaseConfigured && driverUid
-    ? createFirestoreTripRequestSource(driverUid) : null, [firebaseConfigured, driverUid]);
+    ? createFirestoreTripRequestSource(driverUid, notifiedRequestId) : null,
+  [firebaseConfigured, driverUid, notifiedRequestId]);
   const source = firebaseConfigured ? liveSource : demoSource;
   const { request, remainingSeconds, accept, reject, restartDemo, active, connected, resolving, error } =
     useTripRequests(source, isFocused && (!firebaseConfigured || available));
