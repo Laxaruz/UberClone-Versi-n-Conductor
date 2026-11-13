@@ -753,3 +753,57 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y commit:** Solo esta entrada #36 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. El hash del commit del avance queda pendiente. HEAD leído: f895dd608e9534e0d63e4976c4daa382fda4a7ac.
 - **Verificación:** La lectura confirma que completeTrip espera saveCompletedTrip antes de actualizar el estado local, que el repositorio comprueba el documento de solicitud y usa una transacción con el mismo ID, y que las reglas no permiten actualizar ni borrar trips. El test fuente cubre el helper y valores/propietario, pero no ejecuta las reglas; el uso del emulador y los exports son reportados por Kevin. git ls-files --modified enumeró los archivos locales modificados; git status y git diff fallaron con “this operation must be run in a work tree”. No se ejecutaron pruebas ni exports.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #37 — Alcance mínimo para el backend de pagos
+
+- **Fecha y hora:** 2026-11-12 22:33:31 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir un alcance mínimo para preparar el backend y la lectura de viajes sin habilitar cobros ni aprobaciones, separándolo del avance de efectivo y resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Publique el commit del guardado de viajes y desplegue las reglas de Firestore. Las reglas compilaron y las comprobe en el emulador, pero voy a dejar para despues la prueba de Finalizar viaje en el celular porque necesitamos avanzar. Ahora quiero empezar el backend de pagos de prueba. Todavia no tengo credenciales de Mercado Pago y el estado completed se crea desde el telefono, asi que no quiero tratarlo como prueba segura de que el viaje termino. Estoy pensando dejar el servidor y la lectura del viaje preparados, pero sin permitir un cobro real ni marcar un pago como aprobado hasta tener credenciales y una forma confiable de validar el viaje. Podrias revisar cual seria el alcance minimo y seguro para este commit, y que parte debe quedar separada del efectivo y resumen que hara Jhoseth?
+
+- **Resumen de la respuesta:** GitHub confirma Kevin-dev en el commit a1ca65e, cuyo árbol contiene la persistencia de trips pero todavía no tiene servidor ni dependencias backend; las variables de Mercado Pago son solo nombres vacíos en .env.example. Recomiendo limitar este avance a un servidor Express con lectura autenticada y de solo lectura del viaje propio; sin preferencia, cobro ni cambios de pago hasta tener una señal de finalización confiable y credenciales de prueba.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se consultaron el estado remoto de Kevin-dev, los archivos del contrato de viaje y de configuración, además de documentación oficial de Mercado Pago y Firebase. Se separó el backend de lectura de los componentes de efectivo y resumen de Jhoseth. No se modificó código, no se instalaron dependencias, no se leyeron ni registraron credenciales, y no se ejecutaron pruebas.
+- **Archivos revisados:** package.json, .gitignore, .env.example, docs/TRIPS.md, firestore.rules, src/services/tripRepository.js, src/services/firebaseClient.js y árbol de archivos del commit de Kevin-dev.
+- **Archivos afectados y commit:** Solo esta entrada #37 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No hay commit para esta consulta; hash base remoto a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Verificación:** La API de GitHub devuelve Kevin-dev en a1ca65e con padre f895dd6; el árbol de ese commit no contiene directorio de servidor. package.json conserva únicamente el conjunto Expo/React Native y .env.example tiene variables vacías para Mercado Pago. docs/TRIPS.md ya aclara que completed se crea desde el teléfono y no prueba por sí solo elegibilidad de cobro. El despliegue de reglas y las pruebas del emulador se registran como reportados por Kevin, no verificados en la consola. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #38 — Alcance preparatorio del backend de pagos
+
+- **Fecha y hora:** 2026-11-12 22:35:26 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir el mínimo seguro para preparar el servidor y la lectura de viajes sin crear cobros ni aprobar pagos, y separar el trabajo de efectivo y resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Publique el commit del guardado de viajes y desplegue las reglas de Firestore. Las reglas compilaron y las comprobe en el emulador, pero voy a dejar para despues la prueba de Finalizar viaje en el celular porque necesitamos avanzar. Ahora quiero empezar el backend de pagos de prueba. Todavia no tengo credenciales de Mercado Pago y el estado completed se crea desde el telefono, asi que no quiero tratarlo como prueba segura de que el viaje termino. Estoy pensando dejar el servidor y la lectura del viaje preparados, pero sin permitir un cobro real ni marcar un pago como aprobado hasta tener credenciales y una forma confiable de validar el viaje. Podrias revisar cual seria el alcance minimo y seguro para este commit, y que parte debe quedar separada del efectivo y resumen que hara Jhoseth?
+
+- **Resumen de la respuesta:** Se verificó Kevin-dev en a1ca65e; el árbol remoto no tiene servidor ni dependencias backend y docs/TRIPS.md advierte que completed se crea desde el teléfono y no prueba elegibilidad de cobro. Se recomienda un commit solo de backend Express y lectura autenticada de viajes propios, sin preferencia ni cambios de estado de pago; efectivo y resumen permanecen con Jhoseth.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el commit remoto, el árbol de archivos, package.json, .gitignore, .env.example, docs/TRIPS.md, reglas y el contrato existente; se consultaron fuentes oficiales de Mercado Pago y Firebase. No se modificó código, no se instalaron dependencias, no se leyeron ni registraron credenciales y no se ejecutaron pruebas.
+- **Archivos revisados:** package.json, .gitignore, .env.example, docs/TRIPS.md, firestore.rules, src/services/tripRepository.js, src/services/firebaseClient.js y el árbol del commit a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Archivos afectados y commit:** Solo esta entrada #38 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No hay commit para esta consulta; hash base remoto a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Verificación:** La API de GitHub confirma que Kevin-dev apunta a a1ca65ea7675a519cd1ca4b7859f683b71fef962, cuyo padre es f895dd608e9534e0d63e4976c4daa382fda4a7ac. El árbol no contiene server/; package.json es el de Expo; .gitignore excluye .env; .env.example solo contiene nombres de variables vacíos; docs/TRIPS.md aclara que completed no valida por sí solo el cierre. GitHub no permite verificar el despliegue real de reglas; los resultados del emulador son reportados por Kevin. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #39 — Revisión del servidor de lectura de viajes
+
+- **Fecha y hora:** 2026-11-12 22:48:42 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el backend Express de lectura de viajes, la verificación del token, el control de propietario, el manejo de errores y las pruebas locales antes del commit.
+- **Prompt completo y literal:**
+
+> Cree server como paquete separado de Expo y agregue GET /health y GET /api/trips/:tripId. La consulta verifica el ID token con Firebase Admin, compara el UID con driverId y devuelve solo ID, estado, metodo de pago, tarifa y estado del pago. Tambien agregue los nombres de configuracion vacios en .env.example y deje documentado que el servidor aun no crea preferencias ni aprueba pagos. Probe la ruta con peticiones HTTP para token ausente o invalido, viaje inexistente, conductor diferente, ID invalido, error de lectura y conductor propietario. Las pruebas pasaron, y git diff --check no encontro errores. No tengo credenciales del servidor ni de Mercado Pago, por eso no hice una prueba contra Firebase real ni cambie el flujo de efectivo de Jhoseth. Podrias revisar el codigo y decirme si ves un error antes del commit?
+
+- **Resumen de la respuesta:** La ruta verifica el token antes de consultar Firestore, limita la respuesta a campos del viaje propio y devuelve errores genéricos; no encontré un error funcional comprobado en este flujo. El servidor escucha solo en 127.0.0.1 y las pruebas HTTP usan dependencias simuladas, por lo que no prueban conectividad desde el teléfono ni acceso con credenciales reales de Firebase.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron los archivos nuevos de server, la configuración de entorno, pruebas y documentación, y documentación oficial de Firebase Admin/ID tokens. No se modificó código, no se leyeron credenciales y no se ejecutaron pruebas. Los casos HTTP y git diff --check se anotan como reportados por Kevin.
+- **Archivos revisados:** server/package.json, server/app.js, server/index.js, server/test/app.test.js, server/README.md, .env.example, .gitignore.
+- **Archivos afectados y commit:** Solo esta entrada #39 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Hash del commit del avance: pendiente. HEAD base local: a1ca65ea7675a519cd1ca4b7859f683b71fef962.
+- **Verificación:** git rev-parse confirma HEAD a1ca65ea7675a519cd1ca4b7859f683b71fef962 y la rama Kevin-dev. git ls-files muestra .env.example modificado, y los seis archivos de server sin seguimiento. git status y git diff --check no pudieron ejecutarse en esta llamada porque Git respondió “this operation must be run in a work tree”; las pruebas HTTP y diff check quedan como reportadas por Kevin. La lectura confirma que applicationDefault y verifyIdToken usan Firebase Admin y que la ruta compara driverId con el UID verificado. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
