@@ -807,3 +807,56 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y commit:** Solo esta entrada #39 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Hash del commit del avance: pendiente. HEAD base local: a1ca65ea7675a519cd1ca4b7859f683b71fef962.
 - **Verificación:** git rev-parse confirma HEAD a1ca65ea7675a519cd1ca4b7859f683b71fef962 y la rama Kevin-dev. git ls-files muestra .env.example modificado, y los seis archivos de server sin seguimiento. git status y git diff --check no pudieron ejecutarse en esta llamada porque Git respondió “this operation must be run in a work tree”; las pruebas HTTP y diff check quedan como reportadas por Kevin. La lectura confirma que applicationDefault y verifyIdToken usan Firebase Admin y que la ruta compara driverId con el UID verificado. No se ejecutaron pruebas.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #40 — Alcance de pagos de prueba y finalización confiable
+
+- **Fecha y hora:** 2026-11-12 23:01:14 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Definir cómo preparar el avance de pagos de prueba sin tratar el estado completed creado por el teléfono como prueba segura del viaje, y separar Checkout de la app y efectivo/resumen de Jhoseth.
+- **Prompt completo y literal:**
+
+> Ya subi el servidor de lectura y ahora necesito terminar mi avance de pagos de prueba para que Jhoseth pueda seguir. Revise la guia y el repositorio, y todavia no tenemos credenciales de Mercado Pago ni un pago conectado a la app. Pienso hacer en el servidor la creacion de la preferencia de Checkout Pro con el monto guardado del viaje, y despues recibir la notificacion, verificarla con Mercado Pago y actualizar el pago en Firestore. Tambien comprobare el conductor con su token y dejare las llaves solo en el servidor. Me preocupa que el estado completed del viaje aun se crea desde el telefono. Como podemos terminar este avance de prueba sin presentar ese estado como una prueba segura de que el viaje ocurrio? Y que debe quedar para el siguiente commit de checkout en la app y para el efectivo de Jhoseth?
+
+- **Resumen de la respuesta:** GitHub confirma Kevin-dev en afa9c1d y el servidor actual sigue siendo de lectura; docs/TRIPS reconoce que completed viene del teléfono y no prueba por sí solo que el viaje ocurrió. Recomiendo separar una prueba de proveedor con datos sintéticos del cobro de viajes reales; sin credenciales y señal confiable solo se puede dejar código deshabilitado o probado con mocks, no afirmar Checkout Pro integrado.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el estado remoto, servidor, reglas y contrato de trips, además de documentación oficial de Mercado Pago y Firebase. Se propuso que el siguiente commit de app consuma el endpoint solo cuando la preferencia y el checkout de prueba estén configurados; Jhoseth conserva efectivo y resumen. No se modificó código, no se usaron credenciales y no se ejecutaron pruebas.
+- **Archivos revisados:** Guía PDF, server/app.js, server/index.js, server/package.json, server/README.md, docs/TRIPS.md, firestore.rules, .env.example, src/context/DriverContext.js, src/services/tripRepository.js, src/screens/TripCompletedScreen.js.
+- **Archivos afectados y commit:** Solo esta entrada #40 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. No hay commit para esta consulta; hash base remoto afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab.
+- **Verificación:** La API de GitHub confirma Kevin-dev en afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab, padre a1ca65ea7675a519cd1ca4b7859f683b71fef962. El servidor ofrece health y lectura autenticada, sin endpoints de pago; el documento y firestore.rules aún permiten crear completed desde el cliente después de que la solicitud esté accepted. .env.example contiene nombres vacíos. Se consultó la documentación oficial actual de preferencia Checkout Pro, webhooks, cuentas de prueba y verificación de Firebase ID tokens. No se ejecutaron pruebas ni se verificó la consola de Firebase.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #41 — Revisión de preferencias y webhook de pago de prueba
+
+- **Fecha y hora:** 2026-11-12 23:24:53 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el código local del servidor que crea preferencias Checkout Pro, valida webhooks y actualiza Firestore antes del commit.
+- **Prompt completo y literal:**
+
+> Preparé en el servidor la creación de preferencias de Mercado Pago usando el monto guardado del viaje. Además, agregué la verificación de la firma del webhook y la consulta del pago y la orden antes de actualizar Firestore. Los viajes actuales siguen bloqueados para checkout porque la finalización todavía se controla desde el teléfono. Creé la aplicación de Checkout Pro con credenciales de prueba, guardé el token fuera de Git y comprobé con una consulta de solo lectura que funciona. También creé una preferencia sintética de prueba y Mercado Pago respondió 201 con una URL de sandbox, pero no hice ningún pago. Las cinco pruebas locales del servidor pasaron. Aún faltan las credenciales locales de Firebase Admin, una URL HTTPS pública y el secreto del webhook, por eso no probé una notificación real ni la app. ¿Podrías revisar el código y decirme si ves un error que deba corregir antes del commit?
+
+- **Resumen de la respuesta:** Error comprobado: markPaid reemplaza status: completed por paid, aunque el modelo/documentación del proyecto separa el estado del viaje y el del pago. Recomiendo conservar completed, actualizar solo los campos del pago y corregir la prueba y el README; las pruebas, la consulta de solo lectura y el HTTP 201 se registran como reportados por Kevin, no reproducidos.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron lecturas de código local y documentación oficial de Mercado Pago. No se modificó código ni se leyeron credenciales; las pruebas locales, la consulta de solo lectura y la creación de preferencia quedan como reportadas por Kevin. Se señaló además el riesgo de que solicitudes concurrentes puedan crear preferencias duplicadas antes de guardar una en Firestore.
+- **Archivos revisados:** server/app.js, server/index.js, server/mercadoPagoClient.js, server/paymentChecks.js, server/paymentRepository.js, server/test/payments.test.js, server/README.md, docs/TRIPS.md, .env.example; documentación oficial de webhooks y Merchant Orders de Mercado Pago.
+- **Archivos afectados y hash del commit:** Solo esta entrada #41 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. El commit de este avance está pendiente; HEAD base local afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab.
+- **Verificación:** Se confirmó rama Kevin-dev y HEAD con git rev-parse; git status --short --branch falló con “this operation must be run in a work tree”, así que no se verificó el diff/estado con ese comando. La lectura confirma status: 'paid' en server/paymentRepository.js líneas 29-31 y la misma transición simulada por el test en server/test/payments.test.js líneas 65-68; docs/TRIPS.md líneas 5-9 documenta completed como estado del viaje y campos de pago separados. No se ejecutaron pruebas, no se llamó a Mercado Pago y no se inspeccionaron secretos. Los cinco tests, el HTTP 201 y la consulta de solo lectura son resultados reportados por Kevin.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #42 — Verificación de la corrección del estado del viaje y la orden de pago
+
+- **Fecha y hora:** 2026-11-12 23:29:27 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Confirmar que la corrección de markPaid conserva el estado completed, que la prueba de repositorio verifica idempotencia y que la orden comercial se valida antes de actualizar Firestore.
+- **Prompt completo y literal:**
+
+> Corregí el error que encontraste. Ahora, cuando Mercado Pago confirma un pago de prueba, el repositorio conserva el viaje en completed y cambia solo los datos del pago. También hice que la prueba use el repositorio para comprobarlo y que un aviso repetido no vuelva a escribir el pago. Además, el servidor exige que la orden comercial esté cerrada, que el monto pagado coincida con la tarifa y que el pago figure en esa orden. Las seis pruebas locales pasan y git diff --check no muestra errores. La preferencia sintética real ya había respondido 201, pero sigo sin probar el webhook con Mercado Pago ni Firebase Admin porque falta una URL pública y las credenciales de Admin. ¿Podrías confirmar si la corrección resuelve el error antes del commit?
+
+- **Resumen de la respuesta:** La lectura confirma que markPaid conserva status: completed y cambia paymentStatus, paymentId y paymentUpdatedAt; la prueba nueva llama al repositorio y comprueba el estado y que la segunda llamada no repita la escritura. También se validan el estado closed, los montos, el reembolso en cero y que la orden incluya el pago aprobado. No se confirma ejecución independiente de las seis pruebas ni una notificación real.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron los archivos locales y la documentación oficial de Merchant Orders de Mercado Pago. No se modificó código ni se leyeron secretos. Las seis pruebas, git diff --check y la respuesta HTTP 201 quedan como reportados por Kevin; no se ejecutaron pruebas ni se hizo una llamada al proveedor.
+- **Archivos revisados:** server/paymentChecks.js, server/paymentRepository.js, server/app.js, server/test/payments.test.js, server/README.md y docs/TRIPS.md; documentación oficial de Merchant Orders de Mercado Pago.
+- **Archivos afectados y hash del commit:** Solo esta entrada #42 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. El commit del avance sigue pendiente; HEAD base local afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab.
+- **Verificación:** La lectura confirma que server/paymentRepository.js líneas 20-32 conserva el estado del viaje y tiene salida idempotente; server/test/payments.test.js líneas 134-163 llama createPaymentRepository.markPaid dos veces y comprueba status === completed y una sola actualización. server/paymentChecks.js líneas 23-42 comprueba pago aprobado de prueba, referencias, orden cerrada, total y monto pagado iguales a la tarifa, reembolso en cero y pago aprobado incluido. La referencia oficial de Mercado Pago documenta closed como orden cuyos pagos cubren el total. Se confirmó rama Kevin-dev y HEAD afa9c1d456dc338bdb0adf0ba6f33b372cc3a7ab; git status --short --branch y git diff --check respondieron “this operation must be run in a work tree”, por lo que no se verificó el diff de Git. No se ejecutaron pruebas, no se validó Firebase Admin ni se probó el webhook real.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
