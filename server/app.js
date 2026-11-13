@@ -61,6 +61,8 @@ function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCa
       paymentMethod: trip.paymentMethod,
       fare: trip.fare,
       paymentStatus: trip.paymentStatus,
+      checkoutAvailable: Boolean(paymentsTestMode && mercadoPago && notificationUrl
+        && webhookSecret && canStartCheckout(trip)),
     });
   });
 

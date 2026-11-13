@@ -779,3 +779,39 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y hash del commit:** Solo esta entrada #48 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Base Kevin-dev 513d6a69c0ea88ed836d15af515ad5756cb063b0; no hay commit para esta consulta.
 - **Verificación:** Git confirmó la rama Kevin-dev en 513d6a69c0ea88ed836d15af515ad5756cb063b0, sincronizada con origin/Kevin-dev, y cambios locales en .env.example, ambos registros de IA, server/README.md, server/app.js, server/index.js, server/paymentChecks.js, server/paymentRepository.js y server/test/payments.test.js. git diff --check no reportó problemas de espacios; sí mostró advertencias de conversión LF/CRLF. La lectura confirma que firestore.rules limita la creación de trips a completedTripFields, que excluye testFixture y paymentEligible, y prohíbe update/delete del cliente. La referencia pública de GET merchant_orders y su ejemplo no muestran is_test; el test unitario sí lo incorpora explícitamente en el objeto mock. No se ejecutaron pruebas ni se repitió un reenvío desde el panel. El control HTTP/Firestore posterior a la corrección queda reportado por Kevin.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #49 — Revisión de la pantalla de Checkout Pro
+
+- **Fecha y hora:** 2026-11-13 10:44:09 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar la integración local de la pantalla de cobro con el servidor, verificar autenticación y aprobación solo del servidor, y buscar errores en la apertura y actualización de Checkout Pro antes del commit.
+- **Prompt completo y literal:**
+
+> Conecte la pantalla de cobro con el servidor de Mercado Pago. La app consulta el viaje con el token de Firebase, muestra el estado confirmado por el servidor y solo habilita Checkout Pro si el servidor indica que es un viaje de prueba elegible. Al volver del navegador se puede actualizar el estado; el telefono nunca marca el pago como aprobado. Mantengo aparte el cobro en efectivo. Las 11 pruebas del servidor pasaron, Expo exporto Android e iOS y git diff --check no encontro errores. No hice una prueba nueva en el celular ni publique este avance. Podrias revisar si hay algun error antes del commit?
+
+- **Resumen de la respuesta:** La pantalla obtiene el estado y checkoutAvailable del servidor autenticado, y solo copia a activeTrip el estado que devuelve el servidor; la ruta de efectivo queda separada. Se encontró un error confirmado en la validación de URL: el cliente solo acepta sandbox.mercadopago.com.co, pero el backend de prueba y la respuesta documentada usan sandbox.mercadopago.com; con ese host, el cliente rechaza la URL antes de abrir Checkout.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisaron cambios rastreados y dos archivos nuevos, la respuesta del servidor y la referencia oficial de la API de preferencias. No se modificó código ni se ejecutaron pruebas o exportaciones. Las 11 pruebas, la exportación y el estado de los dispositivos se registran como reportados por Kevin; la prueba de celular sigue pendiente.
+- **Archivos revisados:** server/app.js, server/test/app.test.js, src/i18n/translations.js, src/navigation/RootNavigator.js, src/screens/TripCompletedScreen.js, src/screens/CheckoutScreen.js y src/services/checkoutPaymentService.js. Documentación consultada: https://www.mercadopago.com.co/developers/es/reference/online-payments/checkout-pro-preferences/get-preference/get.
+- **Archivos afectados y hash del commit:** Solo esta entrada #49 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Base Kevin-dev 7e8421923a17d411850c260b7b829a2b521ebf07; no hay commit para esta consulta.
+- **Verificación:** Git confirmó Kevin-dev sincronizada con origin/Kevin-dev en 7e8421923a17d411850c260b7b829a2b521ebf07. El estado local incluye cambios en server/app.js, server/test/app.test.js, src/i18n/translations.js, src/navigation/RootNavigator.js, src/screens/TripCompletedScreen.js y los nuevos src/screens/CheckoutScreen.js y src/services/checkoutPaymentService.js. git diff --check no reportó errores de espacios en archivos rastreados y mostró un aviso de conversión LF/CRLF; los archivos nuevos no entran en ese diff. La lectura confirma que GET autenticado devuelve checkoutAvailable desde configuración y canStartCheckout; la pantalla muestra el estado del servidor y ofrece actualización manual. El servicio valida el ID token, estado, configuración y hostname de la URL. La prueba del servidor crea una URL sandbox.mercadopago.com/test, mientras el cliente solo permite sandbox.mercadopago.com.co; la respuesta oficial de ejemplo usa https://sandbox.mercadopago.com/mla/checkout/pay. No se ejecutaron las 11 pruebas, Expo ni una prueba en celular; estos resultados quedan reportados por Kevin.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #50 — Verificación de la corrección de URL de Checkout Pro
+
+- **Fecha y hora:** 2026-11-13 10:50:40 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Confirmar que la validación del enlace de Checkout Pro admite los dos dominios sandbox previstos, exige HTTPS y rechaza dominios parecidos antes del commit.
+- **Prompt completo y literal:**
+
+> Corregi la validacion de la URL de Checkout Pro. Ahora acepta los dos dominios sandbox que vimos en la respuesta del servidor y en la prueba real, pero rechaza HTTP y dominios parecidos. Comprobe esos cuatro casos y Expo genero el bundle de iOS. El flujo sigue tomando el estado del pago desde el servidor y no cambie el cobro en efectivo. Podrias confirmar si el error que encontraste quedo resuelto antes del commit?
+
+- **Resumen de la respuesta:** La expresión actual acepta HTTPS solo para los hostnames exactos sandbox.mercadopago.com y sandbox.mercadopago.com.co, seguidos por /; no acepta HTTP ni nombres con prefijo/sufijo parecido. Esto corrige el rechazo del host sandbox.mercadopago.com usado por el backend de prueba y por la referencia oficial.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se leyó la expresión de validación local y el estado/diff de Git. No se modificó código ni se repitieron los cuatro casos o la exportación iOS; estos resultados quedan reportados por Kevin.
+- **Archivos revisados:** src/services/checkoutPaymentService.js, server/app.js y server/test/payments.test.js. Documentación de referencia consultada en la entrada #49.
+- **Archivos afectados y hash del commit:** Solo esta entrada #50 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Base Kevin-dev 7e8421923a17d411850c260b7b829a2b521ebf07; no hay commit para esta consulta.
+- **Verificación:** Git confirmó Kevin-dev en 7e8421923a17d411850c260b7b829a2b521ebf07, sincronizada con origin/Kevin-dev, con cambios locales sin commit. La lectura confirma que la expresión /^https:\/\/sandbox\.mercadopago\.com(?:\.co)?\// exige esquema HTTPS y limita el host a los dos valores exactos; la URL simulada del servidor usa sandbox.mercadopago.com. No se ejecutaron los cuatro casos ni Expo. git diff --check no reportó errores de espacios, pero el servicio sigue sin seguimiento y por ello Git diff no lo incluye; la salida mostró advertencias LF/CRLF para archivos rastreados.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.

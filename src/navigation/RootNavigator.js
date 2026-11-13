@@ -11,6 +11,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
 import ActiveTripScreen from '../screens/ActiveTripScreen';
 import TripCompletedScreen from '../screens/TripCompletedScreen';
+import CheckoutScreen from '../screens/CheckoutScreen';
 import RegistrationScreen from '../screens/RegistrationScreen';
 import { useDriver } from '../context/DriverContext';
 
@@ -43,11 +44,6 @@ function HistoryScreen() {
 function ProfileScreen() {
   const t = useTranslation();
   return <FeaturePreview title={t('profile')} />;
-}
-
-function PaymentPreviewScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('payment')} />;
 }
 
 function RegistrationTabs() {
@@ -106,7 +102,7 @@ function TripStack() {
       <Stack.Screen name="TripCompleted" component={TripCompletedScreen} options={{ title: t('tripSummary') }} />
       <Stack.Screen
         name="PaymentPreview"
-        component={PaymentPreviewScreen}
+        component={CheckoutScreen}
         options={{ title: t('payment') }}
       />
     </Stack.Navigator>

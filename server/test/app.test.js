@@ -11,6 +11,10 @@ test('health and owner-only trip read', async () => {
   };
   let reads = 0;
   const app = createApp({
+    paymentsTestMode: true,
+    mercadoPago: {},
+    notificationUrl: 'https://example.test/webhook',
+    webhookSecret: 'test-secret',
     verifyIdToken: async (token) => {
       if (token === 'owner') return { uid: 'driver-1' };
       if (token === 'other') return { uid: 'driver-2' };
@@ -47,8 +51,11 @@ test('health and owner-only trip read', async () => {
     assert.equal(owner.status, 200);
     assert.deepEqual(await owner.json(), {
       id: 'trip-1', status: 'completed', paymentMethod: 'mercadopago',
-      fare: 19200, paymentStatus: 'pending',
+      fare: 19200, paymentStatus: 'pending', checkoutAvailable: false,
     });
+    trip.paymentEligible = true;
+    const eligible = await get('/api/trips/trip-1', 'owner');
+    assert.equal((await eligible.json()).checkoutAvailable, true);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
