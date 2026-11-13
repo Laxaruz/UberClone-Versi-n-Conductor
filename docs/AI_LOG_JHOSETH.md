@@ -242,3 +242,23 @@
 - **Verificación:** Pasaron las pruebas automáticas del proyecto, incluidas las de perfil, vinculación y recuperación de la cuenta. `npm run check` indicó dependencias al día usando el mapa local de Expo, sin consulta de red. La exportación de JavaScript y recursos para Android e iOS terminó correctamente. En Firebase se habilitó Correo/Contraseña y se publicaron las reglas de Perfil. Falta probar el flujo completo en iPhone; no se presenta la exportación como prueba en dispositivo.
 - **Commit y hash al redactar esta entrada:** Pendientes. `main` no se modificó.
 - **Aprendizaje:** Vincular la cuenta anónima antes de salir conserva el UID usado por los documentos de Firestore y permite recuperar el perfil con correo y contraseña.
+
+## Entrada #63 — Rediseño visual de la aplicación (avance personal #16)
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Mejorar la presentación del registro, la navegación, las solicitudes, el viaje, el cobro, las ganancias y el historial sin cambiar sus funciones.
+- **Prompt completo y literal de la primera etapa:**
+
+> Voy a iniciar el rediseño visual del registro y la navegacion en Jhoseth-dev. Quiero mejorar los iconos, los formularios y la presentacion del selector de fecha. Mantendre las tres pestañas y las reglas actuales de validacion y envio. Kevin trabajara el diseño de las otras pantallas. Que aspectos visuales me recomiendas priorizar y como puedo comprobar que el cambio no afecta el funcionamiento?
+
+- **Ampliación del alcance:** Antes de publicar el commit, Jhoseth asumió también el rediseño de solicitudes, viaje, cobro, ganancias e historial porque Kevin no podía realizar esa parte. La respuesta compartida para esta segunda etapa recomendó una identidad visual común, destacar el temporizador y las etapas del viaje, separar los estados de pago y conservar filtros y cálculos.
+- **Qué se usó / modificó / descartó:** Se unificaron colores, iconos, tarjetas, botones y estados visuales. Se mejoraron los formularios, las tres pestañas y el selector de fecha; en iPhone se fijó el tema claro del calendario para que los días fueran legibles sobre fondo blanco. Se conservaron las validaciones, el envío, las rutas, las consultas, los cálculos y las acciones de pago.
+- **Integración previa:** El commit de notificaciones de Kevin `fad61119e33b112230b8c8b06c391637b24f9a76` llegó mediante la unión `9001b4026c29ab45c6f79cde96e8b0df59a2daf1`. No forma parte del trabajo visual propio.
+- **Archivos del rediseño:** `src/navigation/RootNavigator.js`; `src/config/appVisuals.js` (antes `registrationVisuals.js`); `src/components/AppIcon.js`, `ChoiceSelector.js`, `DateSelector.js`, `IncomingTripCard.js` y `ScreenHero.js`; las pantallas `RegistrationScreen.js`, `IncomingRequestScreen.js`, `TripPreviewScreen.js`, `ActiveTripScreen.js`, `TripCompletedScreen.js`, `PaymentScreen.js`, `EarningsScreen.js`, `HistoryScreen.js` y `HistoryDetailScreen.js`; y esta entrada en ambas bitácoras.
+- **Commit propio:** `Mejorar diseno visual de la aplicacion` en `Jhoseth-dev`. El hash definitivo se consulta con `git rev-parse HEAD`, pues esta entrada está dentro del mismo commit.
+- **Verificación:** Pasaron las pruebas de registro, disponibilidad, solicitudes, estados del viaje y fechas; también las 16 pruebas del servidor. `npm run check` indicó dependencias al día usando el mapa local de Expo. Expo exportó JavaScript y recursos para Android e iOS, y se repitió la exportación de iOS tras corregir el calendario. Esto no equivale a una compilación instalable ni verifica visualmente todas las pantallas en iPhone.
+- **Pendiente:** Comprobar en iPhone la legibilidad del calendario tras la corrección y recorrer visualmente las pantallas rediseñadas.
+- **Aprendizaje:** Los cambios visuales pueden compartir una misma identidad sin alterar las reglas que determinan estados, pagos y ganancias. La apariencia del selector nativo también depende del tema del dispositivo.

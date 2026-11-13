@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { AppState, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../config/theme';
+import ScreenHero, { InfoBanner, StatusPill } from '../components/ScreenHero';
+import { appVisuals as visual } from '../config/appVisuals';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
 import {
@@ -95,23 +96,27 @@ export default function PaymentScreen({ route }) {
   }
 
   const statusKey = { approved: 'paymentApproved', rejected: 'paymentRejected', pending: 'paymentPending' }[trip?.paymentStatus];
+  const statusTone = trip?.paymentStatus === 'approved' ? 'success'
+    : trip?.paymentStatus === 'rejected' ? 'danger' : 'warning';
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.badge}>{t('checkoutTestBadge')}</Text>
-      <Text style={styles.title}>{t('payment')}</Text>
-      <Text style={styles.notice}>{t('checkoutExplanation')}</Text>
-      {!checkoutServiceConfigured ? <Text style={styles.warning}>{t('checkoutBackendRequired')}</Text> : null}
-      {checkoutServiceConfigured && !tripId ? <Text style={styles.warning}>{t('checkoutNoTrip')}</Text> : null}
+      <ScreenHero icon="payment" eyebrow={t('checkoutTestBadge')} title={t('payment')}
+        description={t('checkoutExplanation')} />
+      {!checkoutServiceConfigured ? <InfoBanner>{t('checkoutBackendRequired')}</InfoBanner> : null}
+      {checkoutServiceConfigured && !tripId ? <InfoBanner>{t('checkoutNoTrip')}</InfoBanner> : null}
       {trip ? <View style={styles.card}>
         <Text style={styles.label}>{t('finalFare')}</Text>
         <Text style={styles.amount}>{formatCop(trip.fare)}</Text>
-        <Text style={styles.label}>{t('paymentStatus')}</Text>
-        <Text style={styles.status}>{t(statusKey)}</Text>
+        <View style={styles.divider} />
+        <View style={styles.statusRow}>
+          <Text style={styles.label}>{t('paymentStatus')}</Text>
+          <StatusPill label={t(statusKey)} tone={statusTone} />
+        </View>
         {trip.paymentStatus === 'pending' && !trip.checkoutAvailable
-          ? <Text style={styles.warning}>{t('checkoutNotEligible')}</Text> : null}
+          ? <InfoBanner>{t('checkoutNotEligible')}</InfoBanner> : null}
       </View> : null}
-      {error ? <Text style={styles.warning}>{t(error)}</Text> : null}
+      {error ? <InfoBanner tone="danger">{t(error)}</InfoBanner> : null}
       <Pressable accessibilityRole="button" disabled={!trip?.checkoutAvailable || opening || loading}
         style={[styles.button, (!trip?.checkoutAvailable || opening || loading) && styles.disabled]}
         onPress={openCheckout}>
@@ -127,22 +132,19 @@ export default function PaymentScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 20, paddingBottom: 40 },
-  badge: { alignSelf: 'flex-start', padding: 8, borderRadius: 12,
-    backgroundColor: colors.warningSoft, color: colors.warning, fontWeight: '700' },
-  title: { marginTop: 18, color: colors.text, fontSize: 30, fontWeight: '800' },
-  notice: { marginTop: 12, color: colors.muted, lineHeight: 23 },
-  warning: { marginTop: 14, color: colors.warning, lineHeight: 22 },
-  card: { marginTop: 20, padding: 20, borderRadius: 18, borderWidth: 1,
-    borderColor: colors.border, backgroundColor: colors.surface },
-  label: { marginTop: 8, color: colors.muted },
-  amount: { marginTop: 5, color: colors.text, fontSize: 24, fontWeight: '800' },
-  status: { marginTop: 5, color: colors.primary, fontSize: 18, fontWeight: '700' },
-  button: { marginTop: 22, padding: 17, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary },
-  buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
-  outlineButton: { marginTop: 12, padding: 16, borderRadius: 16, borderWidth: 1,
-    borderColor: colors.primary, alignItems: 'center' },
-  outlineText: { color: colors.primary, fontSize: 16, fontWeight: '700' },
+  screen: { flex: 1, backgroundColor: visual.background },
+  content: { padding: 16, paddingTop: 20, paddingBottom: 40 },
+  card: { padding: 20, borderRadius: 22, borderWidth: 1,
+    borderColor: visual.border, backgroundColor: visual.surface },
+  label: { color: visual.muted, fontWeight: '700', fontSize: 13 },
+  amount: { marginTop: 7, color: visual.ink, fontSize: 32, fontWeight: '800' },
+  divider: { height: 1, backgroundColor: visual.border, marginVertical: 18 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  button: { marginTop: 22, minHeight: 56, padding: 16, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: visual.accent },
+  buttonText: { color: visual.surface, fontSize: 16, fontWeight: '800' },
+  outlineButton: { marginTop: 12, minHeight: 54, padding: 15, borderRadius: 16, borderWidth: 1.5,
+    borderColor: visual.border, alignItems: 'center', justifyContent: 'center', backgroundColor: visual.surface },
+  outlineText: { color: visual.accent, fontSize: 15, fontWeight: '800' },
   disabled: { opacity: 0.45 },
 });

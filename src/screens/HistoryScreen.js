@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors } from '../config/theme';
+import AppIcon from '../components/AppIcon';
+import ScreenHero, { InfoBanner, StatusPill } from '../components/ScreenHero';
+import { appVisuals as visual } from '../config/appVisuals';
 import { useDriver } from '../context/DriverContext';
 import useTripHistory from '../hooks/useTripHistory';
 import useTranslation from '../i18n/useTranslation';
@@ -24,18 +26,30 @@ function TripCard({ trip, onPress, t, language }) {
     : trip.paymentStatus === 'approved' ? t('paymentApproved')
       : trip.paymentStatus === 'pending' ? t('paymentPending')
         : trip.paymentStatus === 'rejected' ? t('paymentRejected') : trip.paymentStatus || '—';
+  const paymentTone = ['cash_received', 'approved'].includes(trip.paymentStatus) ? 'success'
+    : trip.paymentStatus === 'rejected' ? 'danger' : 'warning';
   return <Pressable accessibilityRole="button" style={styles.card} onPress={onPress}>
     <View style={styles.cardTop}>
       <Text style={styles.date}>{date}</Text>
-      <Text style={styles.paymentBadge}>{payment}</Text>
+      <StatusPill label={payment} tone={paymentTone} />
     </View>
-    <Text style={styles.place}>{trip.origin?.address || t('historyPlaceMissing')}</Text>
-    <Text style={styles.arrow}>↓</Text>
-    <Text style={styles.place}>{trip.destination?.address || t('historyPlaceMissing')}</Text>
+    <View style={styles.routeRow}>
+      <AppIcon name="pin" size={20} color={visual.accent} />
+      <Text style={styles.place}>{trip.origin?.address || t('historyPlaceMissing')}</Text>
+    </View>
+    <View style={styles.routeLine} />
+    <View style={styles.routeRow}>
+      <AppIcon name="flag" size={20} color={visual.gold} />
+      <Text style={styles.place}>{trip.destination?.address || t('historyPlaceMissing')}</Text>
+    </View>
     <View style={styles.divider} />
     <Text style={styles.meta}>{t('category')}: {t(trip.category)}</Text>
-    <Text style={styles.meta}>{t('historyFare')}: {formatCop(trip.fare)}</Text>
-    <Text style={styles.net}>{t('earningsNet')}: {formatCop(trip.driverEarnings)}</Text>
+    <View style={styles.amounts}>
+      <View style={styles.amountColumn}><Text style={styles.amountLabel}>{t('historyFare')}</Text>
+        <Text style={styles.amount}>{formatCop(trip.fare)}</Text></View>
+      <View style={styles.amountColumn}><Text style={styles.amountLabel}>{t('earningsNet')}</Text>
+        <Text style={styles.net}>{formatCop(trip.driverEarnings)}</Text></View>
+    </View>
     <Text style={styles.openDetail}>{t('historyOpenDetail')} →</Text>
   </Pressable>;
 }
@@ -78,17 +92,17 @@ export default function HistoryScreen({ navigation }) {
   }
 
   const header = <View>
-    <Text style={styles.title}>{t('history')}</Text>
-    <Text style={styles.description}>{t('historyDescription')}</Text>
-    <Text style={styles.filterLabel}>{t('historyPeriod')}</Text>
-    <View style={styles.chips}>{periods.map((value) =>
+    <ScreenHero icon="history" title={t('history')} description={t('historyDescription')} />
+    <View style={styles.filterPanel}>
+      <Text style={styles.filterLabel}>{t('historyPeriod')}</Text>
+      <View style={styles.chips}>{periods.map((value) =>
       <Pressable key={value} accessibilityRole="button" style={[styles.chip, period === value && styles.chipActive]}
         onPress={() => { setPeriod(value); setRangeError(false); }}>
         <Text style={[styles.chipText, period === value && styles.chipTextActive]}>
           {t(`historyPeriod_${value}`)}
         </Text>
       </Pressable>)}</View>
-    {period === 'range' ? <View style={styles.rangePanel}>
+      {period === 'range' ? <View style={styles.rangePanel}>
       <Text style={styles.description}>{t('historyDateHint')}</Text>
       <View style={styles.rangeRow}>
         <View style={styles.rangeField}>
@@ -108,9 +122,9 @@ export default function HistoryScreen({ navigation }) {
       <Pressable accessibilityRole="button" style={styles.applyButton} onPress={applyRange}>
         <Text style={styles.applyText}>{t('historyApplyRange')}</Text>
       </Pressable>
-    </View> : null}
-    <Text style={styles.filterLabel}>{t('paymentMethod')}</Text>
-    <View style={styles.chips}>{methods.map((value) =>
+      </View> : null}
+      <Text style={styles.filterLabel}>{t('paymentMethod')}</Text>
+      <View style={styles.chips}>{methods.map((value) =>
       <Pressable key={value} accessibilityRole="button" style={[styles.chip, method === value && styles.chipActive]}
         onPress={() => setMethod(value)}>
         <Text style={[styles.chipText, method === value && styles.chipTextActive]}>
@@ -118,9 +132,10 @@ export default function HistoryScreen({ navigation }) {
             : value === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}
         </Text>
       </Pressable>)}</View>
-    {!firebaseConfigured ? <Text style={styles.warning}>{t('earningsBackendRequired')}</Text> : null}
+    </View>
+    {!firebaseConfigured ? <InfoBanner>{t('earningsBackendRequired')}</InfoBanner> : null}
     {firebaseConfigured && !driverUid ? <Text style={styles.description}>{t('earningsConnecting')}</Text> : null}
-    {period === 'range' && !range ? <Text style={styles.description}>{t('historyChooseRange')}</Text> : null}
+    {period === 'range' && !range ? <InfoBanner tone="info">{t('historyChooseRange')}</InfoBanner> : null}
     <Text style={styles.sectionTitle}>{t('historyTrips')}</Text>
   </View>;
 
@@ -129,10 +144,10 @@ export default function HistoryScreen({ navigation }) {
     renderItem={({ item }) => <TripCard trip={item} t={t} language={language}
       onPress={() => navigation.getParent()?.navigate('HistoryDetail', { tripId: item.id })} />}
     ListEmptyComponent={loaded && !loading && filters && firebaseConfigured && driverUid && !error
-      ? <Text style={styles.empty}>{t('historyEmpty')}</Text> : null}
+      ? <View style={styles.empty}><Text style={styles.emptyText}>{t('historyEmpty')}</Text></View> : null}
     ListFooterComponent={<View>
-      {loading || loadingMore ? <ActivityIndicator style={styles.spinner} color={colors.primary} /> : null}
-      {error ? <Text style={styles.warning}>{t('historyLoadFailed')}</Text> : null}
+      {loading || loadingMore ? <ActivityIndicator style={styles.spinner} color={visual.accent} /> : null}
+      {error ? <InfoBanner tone="danger">{t('historyLoadFailed')}</InfoBanner> : null}
       {hasMore && !loadingMore ? <Pressable accessibilityRole="button" style={styles.button}
         onPress={loadMore}><Text style={styles.buttonText}>{t('historyLoadMore')}</Text></Pressable> : null}
       {filters && firebaseConfigured && driverUid && !loading && !loadingMore
@@ -143,44 +158,49 @@ export default function HistoryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: visual.background },
   content: { padding: 20, paddingBottom: 48 },
-  title: { fontSize: 30, fontWeight: '800', color: colors.text },
-  description: { marginTop: 8, color: colors.muted, lineHeight: 22 },
-  filterLabel: { marginTop: 18, marginBottom: 8, color: colors.text, fontWeight: '700' },
+  description: { marginTop: 8, color: visual.muted, lineHeight: 22 },
+  filterPanel: { marginTop: 18, padding: 18, borderRadius: 22, borderWidth: 1,
+    borderColor: visual.border, backgroundColor: visual.surface },
+  filterLabel: { marginTop: 14, marginBottom: 9, color: visual.ink, fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 13, paddingVertical: 9, borderRadius: 18, borderWidth: 1,
-    borderColor: colors.border, backgroundColor: colors.surface },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { color: colors.text, fontWeight: '600' },
-  chipTextActive: { color: colors.surface },
-  rangePanel: { marginTop: 12, padding: 14, borderRadius: 16, backgroundColor: colors.surface },
+  chip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 14, borderWidth: 1,
+    borderColor: visual.border, backgroundColor: visual.background },
+  chipActive: { backgroundColor: visual.accent, borderColor: visual.accent },
+  chipText: { color: visual.ink, fontWeight: '700' },
+  chipTextActive: { color: visual.surface },
+  rangePanel: { marginTop: 14, padding: 14, borderRadius: 16, backgroundColor: visual.background },
   rangeRow: { flexDirection: 'row', gap: 10 },
   rangeField: { flex: 1 },
-  dateInput: { padding: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 12,
-    color: colors.text, backgroundColor: colors.surface },
-  applyButton: { marginTop: 14, padding: 13, borderRadius: 12, alignItems: 'center',
-    backgroundColor: colors.primary },
-  applyText: { color: colors.surface, fontWeight: '700' },
-  sectionTitle: { marginTop: 24, marginBottom: 4, fontSize: 20, fontWeight: '800', color: colors.text },
-  card: { marginTop: 14, padding: 18, borderRadius: 18, borderWidth: 1, borderColor: colors.border,
-    backgroundColor: colors.surface },
+  dateInput: { padding: 12, borderWidth: 1, borderColor: visual.border, borderRadius: 12,
+    color: visual.ink, backgroundColor: visual.surface },
+  applyButton: { marginTop: 14, padding: 14, borderRadius: 12, alignItems: 'center',
+    backgroundColor: visual.accent },
+  applyText: { color: visual.surface, fontWeight: '800' },
+  sectionTitle: { marginTop: 24, marginBottom: 4, fontSize: 21, fontWeight: '800', color: visual.ink },
+  card: { marginTop: 14, padding: 18, borderRadius: 22, borderWidth: 1, borderColor: visual.border,
+    backgroundColor: visual.surface },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, alignItems: 'center' },
-  date: { color: colors.muted, flex: 1 },
-  paymentBadge: { color: colors.primary, backgroundColor: colors.primarySoft,
-    paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8, fontSize: 12, fontWeight: '700' },
-  place: { marginTop: 9, color: colors.text, fontWeight: '700', fontSize: 16 },
-  arrow: { marginTop: 3, color: colors.primary, fontSize: 20 },
-  divider: { marginTop: 14, height: 1, backgroundColor: colors.border },
-  meta: { marginTop: 9, color: colors.muted },
-  net: { marginTop: 10, color: colors.text, fontWeight: '800' },
-  openDetail: { marginTop: 13, color: colors.primary, fontWeight: '700' },
-  empty: { marginTop: 20, color: colors.muted },
-  warning: { marginTop: 12, color: colors.warning },
+  date: { color: visual.muted, flex: 1, fontSize: 12 },
+  routeRow: { flexDirection: 'row', alignItems: 'center', gap: 9, marginTop: 14 },
+  routeLine: { marginLeft: 9, height: 12, borderLeftWidth: 2, borderLeftColor: visual.border },
+  place: { color: visual.ink, fontWeight: '700', fontSize: 15, flex: 1 },
+  divider: { marginTop: 17, height: 1, backgroundColor: visual.border },
+  meta: { marginTop: 11, color: visual.muted },
+  amounts: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginTop: 14 },
+  amountColumn: { flex: 1, minWidth: 0 },
+  amountLabel: { color: visual.muted, fontSize: 12 },
+  amount: { marginTop: 4, color: visual.ink, fontSize: 16, fontWeight: '700' },
+  net: { marginTop: 4, color: visual.accent, fontSize: 17, fontWeight: '800' },
+  openDetail: { marginTop: 18, color: visual.accent, fontWeight: '800' },
+  empty: { marginTop: 20, padding: 20, borderRadius: 18, backgroundColor: visual.surface },
+  emptyText: { color: visual.muted, textAlign: 'center' },
+  warning: { marginTop: 12, color: visual.error },
   spinner: { marginTop: 18 },
   button: { marginTop: 18, padding: 15, alignItems: 'center', borderRadius: 14,
-    backgroundColor: colors.primary },
-  buttonText: { color: colors.surface, fontWeight: '700' },
+    backgroundColor: visual.accent },
+  buttonText: { color: visual.surface, fontWeight: '800' },
   refresh: { marginTop: 16, padding: 12, alignItems: 'center' },
-  refreshText: { color: colors.primary, fontWeight: '700' },
+  refreshText: { color: visual.accent, fontWeight: '800' },
 });

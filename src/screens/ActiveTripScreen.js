@@ -1,8 +1,9 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import AppIcon from '../components/AppIcon';
+import ScreenHero, { InfoBanner } from '../components/ScreenHero';
 import TripRouteMap from '../components/TripRouteMap';
-import { colors } from '../config/theme';
+import { appVisuals as visual } from '../config/appVisuals';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
 
@@ -29,8 +30,8 @@ export default function ActiveTripScreen({ navigation }) {
   if (!headingKey) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>{t('trip')}</Text>
-        <Text style={styles.notice}>{t(['completed', 'paid'].includes(status) ? 'tripAlreadyCompleted' : 'noTrip')}</Text>
+        <ScreenHero icon="route" title={t('trip')} />
+        <InfoBanner>{t(['completed', 'paid'].includes(status) ? 'tripAlreadyCompleted' : 'noTrip')}</InfoBanner>
         {['completed', 'paid'].includes(status) ? <Pressable style={styles.button} onPress={() => navigation.navigate('TripCompleted')}>
           <Text style={styles.buttonText}>{t('viewTripSummary')}</Text>
         </Pressable> : null}
@@ -40,16 +41,14 @@ export default function ActiveTripScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.topLine}>
-        <Text style={styles.badge}>{t('tripDemoBadge')}</Text>
+      <ScreenHero icon={status === 'in_progress' ? 'flag' : 'pin'} eyebrow={t('tripDemoBadge')}
+        title={t(headingKey)} description={t(status === 'in_progress' ? 'destinationStageHint' : 'pickupStageHint')}>
         <Text style={styles.step}>{t(status === 'in_progress' ? 'tripStepTwo' : 'tripStepOne')}</Text>
-      </View>
-      <Text style={styles.title}>{t(headingKey)}</Text>
-      <Text style={styles.subtitle}>{t(status === 'in_progress' ? 'destinationStageHint' : 'pickupStageHint')}</Text>
-      <View style={styles.progress}>
-        <View style={[styles.progressBar, styles.progressActive]} />
-        <View style={[styles.progressBar, status === 'in_progress' && styles.progressActive]} />
-      </View>
+        <View style={styles.progress}>
+          <View style={[styles.progressBar, styles.progressActive]} />
+          <View style={[styles.progressBar, status === 'in_progress' && styles.progressActive]} />
+        </View>
+      </ScreenHero>
       <View style={styles.card}>
         <View style={styles.passengerRow}>
           <View style={styles.personIcon}><AppIcon name="person" size={23} /></View>
@@ -75,11 +74,11 @@ export default function ActiveTripScreen({ navigation }) {
       </View>
       <TripRouteMap key={`${activeTrip.id}-${status}`} isFocused={isFocused}
         target={status === 'in_progress' ? activeTrip.destination : activeTrip.origin} />
-      <Text style={styles.notice}>{t('routeNotNavigation')} {t('tripLocalOnly')}</Text>
-      {tripSaveError && status === 'in_progress' ? <Text style={styles.notice}>{t(tripSaveError)}</Text> : null}
+      <InfoBanner>{t('routeNotNavigation')} {t('tripLocalOnly')}</InfoBanner>
+      {tripSaveError && status === 'in_progress' ? <InfoBanner tone="danger">{t(tripSaveError)}</InfoBanner> : null}
       <Pressable accessibilityRole="button" disabled={tripSaving}
         style={[styles.button, tripSaving && styles.buttonDisabled]} onPress={handleAction}>
-        <AppIcon name={status === 'in_progress' ? 'flag' : 'check'} color={colors.surface} size={21} />
+        <AppIcon name={status === 'in_progress' ? 'flag' : 'check'} color={visual.surface} size={21} />
         <Text style={styles.buttonText}>{t(tripSaving ? 'savingTrip' : actionKey)}</Text>
       </Pressable>
     </ScrollView>
@@ -87,35 +86,30 @@ export default function ActiveTripScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  container: { flexGrow: 1, padding: 20, paddingBottom: 40, backgroundColor: colors.background },
-  topLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  badge: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.warningSoft,
-    color: colors.warning, fontWeight: '700' },
-  step: { color: colors.primary, fontWeight: '800', fontSize: 13 },
-  title: { marginTop: 22, fontSize: 30, fontWeight: '800', color: colors.text },
-  subtitle: { marginTop: 8, color: colors.muted, fontSize: 16, lineHeight: 23 },
-  progress: { flexDirection: 'row', gap: 8, marginTop: 22 },
-  progressBar: { flex: 1, height: 5, borderRadius: 5, backgroundColor: colors.border },
-  progressActive: { backgroundColor: colors.primary },
-  notice: { marginTop: 18, color: colors.warning, lineHeight: 21, fontSize: 14 },
-  card: { marginTop: 22, padding: 18, borderRadius: 20, borderWidth: 1,
-    borderColor: colors.border, backgroundColor: colors.surface },
+  screen: { flex: 1, backgroundColor: visual.background },
+  container: { flexGrow: 1, padding: 16, paddingTop: 20, paddingBottom: 40,
+    backgroundColor: visual.background },
+  step: { color: visual.heroMuted, fontWeight: '800', fontSize: 13, marginTop: 19 },
+  progress: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  progressBar: { flex: 1, height: 6, borderRadius: 5, backgroundColor: '#41646B' },
+  progressActive: { backgroundColor: '#75D7BF' },
+  card: { padding: 18, borderRadius: 21, borderWidth: 1,
+    borderColor: visual.border, backgroundColor: visual.surface },
   passengerRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  personIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: colors.primarySoft,
+  personIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: visual.accentSoft,
     alignItems: 'center', justifyContent: 'center' },
-  separator: { height: 1, backgroundColor: colors.border, marginVertical: 18 },
+  separator: { height: 1, backgroundColor: visual.border, marginVertical: 18 },
   pointRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   pointIcon: { width: 30, alignItems: 'center', marginTop: 2 },
-  pointText: { flex: 1 }, line: { width: 2, height: 22, backgroundColor: colors.border, marginLeft: 14, marginVertical: 2 },
-  label: { color: colors.muted, fontSize: 13 },
-  value: { marginTop: 4, color: colors.text, fontSize: 16, fontWeight: '700' },
-  estimateCard: { marginTop: 14, borderRadius: 17, backgroundColor: colors.primarySoft, padding: 16,
+  pointText: { flex: 1 }, line: { width: 2, height: 22, backgroundColor: visual.border, marginLeft: 14, marginVertical: 2 },
+  label: { color: visual.muted, fontSize: 13 },
+  value: { marginTop: 4, color: visual.ink, fontSize: 16, fontWeight: '700' },
+  estimateCard: { marginTop: 14, borderRadius: 17, backgroundColor: visual.accentSoft, padding: 16,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  estimateLabel: { flex: 1, color: colors.primary, fontWeight: '600' },
-  estimateValue: { color: colors.primary, fontWeight: '800' },
-  button: { marginTop: 24, padding: 17, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
-    flexDirection: 'row', gap: 10, backgroundColor: colors.primary },
+  estimateLabel: { flex: 1, color: visual.accent, fontWeight: '700' },
+  estimateValue: { color: visual.accent, fontWeight: '800' },
+  button: { marginTop: 22, minHeight: 56, padding: 16, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row', gap: 10, backgroundColor: visual.accent },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
+  buttonText: { color: visual.surface, fontSize: 16, fontWeight: '800' },
 });

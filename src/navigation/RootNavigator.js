@@ -1,8 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import AppIcon from '../components/AppIcon';
+import { appVisuals as visual } from '../config/appVisuals';
 import { colors } from '../config/theme';
 import useTranslation from '../i18n/useTranslation';
 import HomeScreen from '../screens/HomeScreen';
@@ -24,6 +25,17 @@ const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 
+function registrationTabOptions(title, icon) {
+  return {
+    title,
+    tabBarIcon: ({ focused }) => <View style={[styles.tabIcon, focused && styles.activeTabIcon]}>
+      <AppIcon name={icon} color={focused ? visual.accent : visual.muted} size={22} />
+    </View>,
+    tabBarLabel: ({ focused }) => <Text numberOfLines={2}
+      style={[styles.tabLabel, focused && styles.activeTabLabel]}>{title}</Text>,
+  };
+}
+
 function PersonalScreen() {
   return <RegistrationScreen section="personal" />;
 }
@@ -40,15 +52,15 @@ function RegistrationTabs() {
   const t = useTranslation();
   const { showRegistrationErrors } = useDriver();
   return (
-    <Tabs.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary,
-      tabBarInactiveTintColor: colors.muted, tabBarStyle: { borderTopColor: colors.border, paddingTop: 8 },
-      tabBarLabelStyle: { fontSize: 11, fontWeight: '700' } }}>
-      <Tabs.Screen name="Personal" component={PersonalScreen} options={{ title: t('personal'),
-        tabBarIcon: ({ color }) => <AppIcon name="person" color={color} size={23} /> }} listeners={{ blur: showRegistrationErrors }} />
-      <Tabs.Screen name="Vehicle" component={VehicleScreen} options={{ title: t('vehicle'),
-        tabBarIcon: ({ color }) => <AppIcon name="car" color={color} size={23} /> }} listeners={{ blur: showRegistrationErrors }} />
-      <Tabs.Screen name="Documents" component={DocumentsScreen} options={{ title: t('documents'),
-        tabBarIcon: ({ color }) => <AppIcon name="document" color={color} size={23} /> }} listeners={{ blur: showRegistrationErrors }} />
+    <Tabs.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: visual.accent,
+      tabBarInactiveTintColor: visual.muted, tabBarStyle: styles.tabBar,
+      tabBarItemStyle: styles.tabItem, tabBarHideOnKeyboard: true }}>
+      <Tabs.Screen name="Personal" component={PersonalScreen}
+        options={registrationTabOptions(t('personal'), 'person')} listeners={{ blur: showRegistrationErrors }} />
+      <Tabs.Screen name="Vehicle" component={VehicleScreen}
+        options={registrationTabOptions(t('vehicle'), 'car')} listeners={{ blur: showRegistrationErrors }} />
+      <Tabs.Screen name="Documents" component={DocumentsScreen}
+        options={registrationTabOptions(t('documents'), 'document')} listeners={{ blur: showRegistrationErrors }} />
     </Tabs.Navigator>
   );
 }
@@ -58,9 +70,17 @@ function MainDrawer() {
   return (
     <Drawer.Navigator
       screenOptions={{
-        drawerActiveTintColor: colors.primary,
-        headerTintColor: colors.text,
-        headerStyle: { backgroundColor: colors.surface },
+        drawerActiveTintColor: visual.accent,
+        drawerInactiveTintColor: visual.muted,
+        drawerActiveBackgroundColor: visual.accentSoft,
+        drawerStyle: styles.drawer,
+        drawerItemStyle: styles.drawerItem,
+        drawerLabelStyle: styles.drawerLabel,
+        headerTintColor: visual.ink,
+        headerTitleAlign: 'center',
+        headerTitleStyle: styles.headerTitle,
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: visual.surface },
       }}
     >
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: t('home'),
@@ -68,7 +88,7 @@ function MainDrawer() {
       <Drawer.Screen
         name="Registration"
         component={RegistrationTabs}
-        options={{ title: t('registration'), drawerIcon: ({ color }) => <AppIcon name="person" color={color} /> }}
+        options={{ title: t('registration'), drawerIcon: ({ color }) => <AppIcon name="registration" color={color} /> }}
       />
       <Drawer.Screen name="Earnings" component={EarningsScreen} options={{ title: t('earnings'),
         drawerIcon: ({ color }) => <AppIcon name="earnings" color={color} /> }} />
@@ -83,6 +103,21 @@ function MainDrawer() {
     </Drawer.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: { backgroundColor: visual.surface, borderTopColor: visual.border, borderTopWidth: 1,
+    paddingTop: 8, paddingBottom: 8, minHeight: 78 },
+  tabItem: { paddingHorizontal: 2 },
+  tabIcon: { width: 42, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  activeTabIcon: { backgroundColor: visual.accentSoft },
+  tabLabel: { color: visual.muted, fontSize: 11, lineHeight: 14, fontWeight: '600',
+    textAlign: 'center', maxWidth: 118, marginTop: 3 },
+  activeTabLabel: { color: visual.accent, fontWeight: '800' },
+  drawer: { backgroundColor: visual.surface, width: 300 },
+  drawerItem: { borderRadius: 14, marginHorizontal: 12, marginVertical: 3 },
+  drawerLabel: { fontSize: 15, fontWeight: '700', marginLeft: -8 },
+  headerTitle: { fontSize: 18, fontWeight: '800' },
+});
 
 function TripStack() {
   const t = useTranslation();

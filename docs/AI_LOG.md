@@ -1218,3 +1218,23 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y hash del commit:** Esta entrada #62 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Revisión sobre `f0900baa12eb324122b464e84cfa9ae78da21e0f`; no hay commit nuevo.
 - **Verificación:** Git mostró `Kevin-dev` en `f0900baa12eb324122b464e84cfa9ae78da21e0f`, un commit adelante de `origin/Kevin-dev`, con el avance local de FCM aún sin commit. La lectura confirmó el control de vigencia antes de reintentar, dos intentos máximos de envío y el filtro de respuestas exitosas antes del segundo intento; `app.config.js` usa `EAS_BUILD_PROFILE` y valida `EXPO_APNS_ENV`. `rg` confirmó que las pruebas visibles no simulan una respuesta multicast parcial. La configuración de Firebase sigue sin seguimiento en Git y debe incluirse en el entorno del build. No se ejecutaron pruebas ni builds; las 15 pruebas, los valores APNs y `git diff --check` fueron informados por Kevin. Las reglas siguen sin publicar y FCM no se probó en iPhone.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #63 — Rediseño visual de la aplicación (avance personal #16)
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Mejorar la presentación del registro, la navegación, las solicitudes, el viaje, el cobro, las ganancias y el historial sin cambiar sus funciones.
+- **Prompt completo y literal de la primera etapa:**
+
+> Voy a iniciar el rediseño visual del registro y la navegacion en Jhoseth-dev. Quiero mejorar los iconos, los formularios y la presentacion del selector de fecha. Mantendre las tres pestañas y las reglas actuales de validacion y envio. Kevin trabajara el diseño de las otras pantallas. Que aspectos visuales me recomiendas priorizar y como puedo comprobar que el cambio no afecta el funcionamiento?
+
+- **Ampliación del alcance:** Antes de publicar el commit, Jhoseth asumió también el rediseño de solicitudes, viaje, cobro, ganancias e historial porque Kevin no podía realizar esa parte. La respuesta compartida para esta segunda etapa recomendó una identidad visual común, destacar el temporizador y las etapas del viaje, separar los estados de pago y conservar filtros y cálculos.
+- **Qué se usó / modificó / descartó:** Se unificaron colores, iconos, tarjetas, botones y estados visuales. Se mejoraron los formularios, las tres pestañas y el selector de fecha; en iPhone se fijó el tema claro del calendario para que los días fueran legibles sobre fondo blanco. Se conservaron las validaciones, el envío, las rutas, las consultas, los cálculos y las acciones de pago.
+- **Integración previa:** El commit de notificaciones de Kevin `fad61119e33b112230b8c8b06c391637b24f9a76` llegó mediante la unión `9001b4026c29ab45c6f79cde96e8b0df59a2daf1`. No forma parte del trabajo visual propio.
+- **Archivos del rediseño:** `src/navigation/RootNavigator.js`; `src/config/appVisuals.js` (antes `registrationVisuals.js`); `src/components/AppIcon.js`, `ChoiceSelector.js`, `DateSelector.js`, `IncomingTripCard.js` y `ScreenHero.js`; las pantallas `RegistrationScreen.js`, `IncomingRequestScreen.js`, `TripPreviewScreen.js`, `ActiveTripScreen.js`, `TripCompletedScreen.js`, `PaymentScreen.js`, `EarningsScreen.js`, `HistoryScreen.js` y `HistoryDetailScreen.js`; y esta entrada en ambas bitácoras.
+- **Commit propio:** `Mejorar diseno visual de la aplicacion` en `Jhoseth-dev`. El hash definitivo se consulta con `git rev-parse HEAD`, pues esta entrada está dentro del mismo commit.
+- **Verificación:** Pasaron las pruebas de registro, disponibilidad, solicitudes, estados del viaje y fechas; también las 16 pruebas del servidor. `npm run check` indicó dependencias al día usando el mapa local de Expo. Expo exportó JavaScript y recursos para Android e iOS, y se repitió la exportación de iOS tras corregir el calendario. Esto no equivale a una compilación instalable ni verifica visualmente todas las pantallas en iPhone.
+- **Pendiente:** Comprobar en iPhone la legibilidad del calendario tras la corrección y recorrer visualmente las pantallas rediseñadas.
+- **Aprendizaje:** Los cambios visuales pueden compartir una misma identidad sin alterar las reglas que determinan estados, pagos y ganancias. La apariencia del selector nativo también depende del tema del dispositivo.

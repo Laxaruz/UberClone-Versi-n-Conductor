@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
-import { colors } from '../config/theme';
+import AppIcon from '../components/AppIcon';
+import ScreenHero, { InfoBanner, StatusPill } from '../components/ScreenHero';
+import { appVisuals as visual } from '../config/appVisuals';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
 import { loadTripDetail } from '../services/tripPages';
@@ -69,7 +71,7 @@ function HistoryMap({ origin, destination, t }) {
     <MapView ref={map} style={styles.map} initialRegion={region} scrollEnabled={false}>
       <Marker coordinate={start} title={t('pickup')} description={origin.address} />
       <Marker coordinate={end} title={t('destination')} description={destination.address} />
-      {route ? <Polyline coordinates={route.coordinates} strokeColor={colors.primary} strokeWidth={5} /> : null}
+      {route ? <Polyline coordinates={route.coordinates} strokeColor={visual.accent} strokeWidth={5} /> : null}
     </MapView>
     <Text style={styles.mapNote}>{t('historyMapNote')}</Text>
     {loading ? <Text style={styles.mapStatus}>{t('routeLoading')}</Text> : null}
@@ -114,21 +116,35 @@ export default function HistoryDetailScreen({ route }) {
         : trip?.paymentStatus === 'rejected' ? t('paymentRejected') : trip?.paymentStatus || '—';
   const method = trip?.paymentMethod === 'cash' ? t('cash')
     : trip?.paymentMethod === 'mercadopago' ? 'Mercado Pago' : trip?.paymentMethod || '—';
+  const paymentTone = ['cash_received', 'approved'].includes(trip?.paymentStatus) ? 'success'
+    : trip?.paymentStatus === 'rejected' ? 'danger' : 'warning';
 
   return <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-    <Text style={styles.title}>{t('historyDetail')}</Text>
-    {!firebaseConfigured ? <Text style={styles.missing}>{t('earningsBackendRequired')}</Text> : null}
+    <ScreenHero icon="history" title={t('historyDetail')} />
+    {!firebaseConfigured ? <InfoBanner>{t('earningsBackendRequired')}</InfoBanner> : null}
     {firebaseConfigured && !driverUid ? <Text style={styles.missing}>{t('earningsConnecting')}</Text> : null}
-    {loading ? <ActivityIndicator style={styles.spinner} color={colors.primary} /> : null}
-    {error ? <Text style={styles.missing}>{t('historyLoadFailed')}</Text> : null}
+    {loading ? <ActivityIndicator style={styles.spinner} color={visual.accent} /> : null}
+    {error ? <InfoBanner tone="danger">{t('historyLoadFailed')}</InfoBanner> : null}
     {loaded && !loading && !error && !trip ? <Text style={styles.missing}>{t('historyTripMissing')}</Text> : null}
     {trip ? <>
-      <Text style={styles.date}>{date}</Text>
+      <View style={styles.summary}>
+        <Text style={styles.date}>{date}</Text>
+        <StatusPill label={payment} tone={paymentTone} />
+        <Text style={styles.summaryLabel}>{t('earningsNet')}</Text>
+        <Text style={styles.summaryAmount}>{formatCop(trip.driverEarnings)}</Text>
+      </View>
       <View style={styles.card}>
-        <Text style={styles.placeLabel}>{t('pickup')}</Text>
-        <Text style={styles.place}>{trip.origin?.address || t('historyPlaceMissing')}</Text>
-        <Text style={styles.placeLabel}>{t('destination')}</Text>
-        <Text style={styles.place}>{trip.destination?.address || t('historyPlaceMissing')}</Text>
+        <View style={styles.routeRow}>
+          <AppIcon name="pin" size={21} color={visual.accent} />
+          <View style={styles.routeText}><Text style={styles.placeLabel}>{t('pickup')}</Text>
+            <Text style={styles.place}>{trip.origin?.address || t('historyPlaceMissing')}</Text></View>
+        </View>
+        <View style={styles.routeLine} />
+        <View style={styles.routeRow}>
+          <AppIcon name="flag" size={21} color={visual.gold} />
+          <View style={styles.routeText}><Text style={styles.placeLabel}>{t('destination')}</Text>
+            <Text style={styles.place}>{trip.destination?.address || t('historyPlaceMissing')}</Text></View>
+        </View>
       </View>
       <Text style={styles.sectionTitle}>{t('historyMap')}</Text>
       <HistoryMap origin={trip.origin} destination={trip.destination} t={t} />
@@ -155,26 +171,33 @@ export default function HistoryDetailScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: visual.background },
   content: { padding: 20, paddingBottom: 48 },
-  title: { color: colors.text, fontSize: 30, fontWeight: '800' },
-  date: { marginTop: 8, color: colors.muted },
-  sectionTitle: { marginTop: 25, marginBottom: 12, fontSize: 20, fontWeight: '800', color: colors.text },
-  card: { marginTop: 18, padding: 18, borderWidth: 1, borderColor: colors.border,
-    borderRadius: 18, backgroundColor: colors.surface },
-  placeLabel: { color: colors.muted, marginTop: 6 },
-  place: { color: colors.text, fontSize: 17, fontWeight: '700', marginTop: 5, marginBottom: 12 },
-  mapFrame: { overflow: 'hidden', borderRadius: 18, borderWidth: 1, borderColor: colors.border,
-    backgroundColor: colors.surface },
+  summary: { marginTop: 18, padding: 20, borderRadius: 22, borderWidth: 1,
+    borderColor: visual.border, backgroundColor: visual.surface, alignItems: 'flex-start' },
+  date: { color: visual.muted, marginBottom: 12 },
+  summaryLabel: { marginTop: 18, color: visual.muted, fontWeight: '700' },
+  summaryAmount: { marginTop: 5, color: visual.accent, fontSize: 30, fontWeight: '800' },
+  sectionTitle: { marginTop: 25, marginBottom: 12, fontSize: 21, fontWeight: '800', color: visual.ink },
+  card: { marginTop: 18, padding: 18, borderWidth: 1, borderColor: visual.border,
+    borderRadius: 22, backgroundColor: visual.surface },
+  routeRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  routeText: { flex: 1 },
+  routeLine: { marginLeft: 10, height: 24, borderLeftWidth: 2, borderLeftColor: visual.border },
+  placeLabel: { color: visual.muted, fontSize: 12 },
+  place: { color: visual.ink, fontSize: 16, fontWeight: '700', marginTop: 4 },
+  mapFrame: { overflow: 'hidden', borderRadius: 22, borderWidth: 1, borderColor: visual.border,
+    backgroundColor: visual.surface },
   map: { height: 270 },
-  mapNote: { padding: 12, color: colors.muted, lineHeight: 19 },
-  mapStatus: { paddingHorizontal: 12, paddingBottom: 12, color: colors.warning },
-  attribution: { paddingHorizontal: 12, paddingBottom: 12, color: colors.muted, fontSize: 12 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 14, marginVertical: 8 },
-  label: { flex: 1, color: colors.muted },
-  value: { flex: 1, color: colors.text, textAlign: 'right', fontWeight: '700' },
-  missing: { marginTop: 20, color: colors.warning },
+  mapNote: { padding: 12, color: visual.muted, lineHeight: 19 },
+  mapStatus: { paddingHorizontal: 12, paddingBottom: 12, color: visual.gold },
+  attribution: { paddingHorizontal: 12, paddingBottom: 12, color: visual.muted, fontSize: 12 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 14,
+    paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: visual.border },
+  label: { flex: 1, color: visual.muted },
+  value: { flex: 1, color: visual.ink, textAlign: 'right', fontWeight: '700' },
+  missing: { marginTop: 20, color: visual.gold },
   spinner: { marginTop: 20 },
   refresh: { marginTop: 20, padding: 14, alignItems: 'center' },
-  refreshText: { color: colors.primary, fontWeight: '700' },
+  refreshText: { color: visual.accent, fontWeight: '800' },
 });

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import AppIcon from '../components/AppIcon';
-import { colors } from '../config/theme';
+import ScreenHero, { InfoBanner, StatusPill } from '../components/ScreenHero';
+import { appVisuals as visual } from '../config/appVisuals';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
 import { cashServiceConfigured, recordCashReceipt } from '../services/cashPaymentService';
@@ -10,10 +10,10 @@ function formatCop(amount) {
   return `$${String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} COP`;
 }
 
-function Amount({ label, amount }) {
-  return <View style={styles.row}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.amount}>{formatCop(amount)}</Text>
+function Amount({ label, amount, featured }) {
+  return <View style={[styles.row, featured && styles.featuredRow]}>
+    <Text style={[styles.label, featured && styles.featuredLabel]}>{label}</Text>
+    <Text style={[styles.amount, featured && styles.featuredAmount]}>{formatCop(amount)}</Text>
   </View>;
 }
 
@@ -51,30 +51,28 @@ export default function TripCompletedScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.successIcon}><AppIcon name="check" size={38} color={colors.surface} /></View>
-      <Text style={styles.badge}>{t('tripDemoBadge')}</Text>
-      <Text style={styles.title}>{t('tripSummary')}</Text>
+      <ScreenHero icon="check" eyebrow={t('tripDemoBadge')} title={t('tripSummary')} />
       {completed ? <>
-        <Text style={styles.notice}>{t('finalFareEstimateNotice')}</Text>
+        <InfoBanner>{t('finalFareEstimateNotice')}</InfoBanner>
         <View style={styles.card}>
           <Text style={styles.detail}>{activeTrip.origin?.address} → {activeTrip.destination?.address}</Text>
           <Text style={styles.detail}>{activeTrip.distanceKm} km · {activeTrip.durationMin} min</Text>
           <View style={styles.separator} />
-          <Amount label={t('finalFare')} amount={activeTrip.finalFare} />
+          <Amount label={t('finalFare')} amount={activeTrip.finalFare} featured />
           <Amount label={t('commission')} amount={activeTrip.finalCommission} />
           <Amount label={t('netEarnings')} amount={activeTrip.finalDriverEarnings} />
           <View style={styles.paymentRow}><Text style={styles.label}>{t('paymentStatus')}</Text>
-            <Text style={styles.paymentPending}>{t(cashRecorded ? 'cashReceived'
-              : checkoutApproved ? 'paymentApproved' : 'paymentPending')}</Text></View>
+            <StatusPill tone={cashRecorded || checkoutApproved ? 'success' : 'warning'}
+              label={t(cashRecorded ? 'cashReceived' : checkoutApproved ? 'paymentApproved' : 'paymentPending')} /></View>
         </View>
         {cashTrip && cashRecorded ? <>
-          <Text style={styles.notice}>{t('cashReceiptDemo')}</Text>
-          <Amount label={t('driverBalance')} amount={activeTrip.cashBalance} />
-        </> : <Text style={styles.notice}>{t(cashTrip ? 'cashPending'
-          : checkoutApproved ? 'checkoutVerifiedNotice' : 'paymentNotProcessed')}</Text>}
+          <InfoBanner tone="info">{t('cashReceiptDemo')}</InfoBanner>
+          <View style={styles.balanceCard}><Amount label={t('driverBalance')} amount={activeTrip.cashBalance} /></View>
+        </> : <InfoBanner tone={checkoutApproved ? 'info' : 'warning'}>{t(cashTrip ? 'cashPending'
+          : checkoutApproved ? 'checkoutVerifiedNotice' : 'paymentNotProcessed')}</InfoBanner>}
         {cashTrip && !cashRecorded ? <>
-          {!cashCanSubmit && <Text style={styles.notice}>{t('cashBackendRequired')}</Text>}
-          {cashError && <Text style={styles.notice}>{t('cashSaveFailed')}</Text>}
+          {!cashCanSubmit && <InfoBanner>{t('cashBackendRequired')}</InfoBanner>}
+          {cashError && <InfoBanner tone="danger">{t('cashSaveFailed')}</InfoBanner>}
           <Pressable accessibilityRole="button" disabled={!cashCanSubmit || cashBusy}
             style={[styles.button, (!cashCanSubmit || cashBusy) && styles.buttonDisabled]}
             onPress={confirmCash}>
@@ -85,34 +83,37 @@ export default function TripCompletedScreen({ navigation }) {
           onPress={() => navigation.navigate('PaymentPreview', { tripId: activeTrip.id })}>
           <Text style={styles.buttonText}>{t('openTestCheckout')}</Text>
         </Pressable>}
-      </> : <Text style={styles.notice}>{t('noCompletedTrip')}</Text>}
-      <Pressable accessibilityRole="button" style={styles.button} onPress={() => navigation.getParent()?.navigate('MainDrawer')}>
-        <Text style={styles.buttonText}>{t('backHome')}</Text>
+      </> : <InfoBanner>{t('noCompletedTrip')}</InfoBanner>}
+      <Pressable accessibilityRole="button" style={styles.secondaryButton} onPress={() => navigation.getParent()?.navigate('MainDrawer')}>
+        <Text style={styles.secondaryText}>{t('backHome')}</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  container: { padding: 20, paddingBottom: 40 },
-  successIcon: { width: 72, height: 72, borderRadius: 24, backgroundColor: colors.primary,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
-  badge: { alignSelf: 'flex-start', padding: 8, borderRadius: 12, backgroundColor: colors.warningSoft,
-    color: colors.warning, fontWeight: '700' },
-  title: { marginTop: 16, fontSize: 30, fontWeight: '800', color: colors.text },
-  notice: { marginTop: 14, color: colors.warning, lineHeight: 22 },
-  card: { marginTop: 22, padding: 20, borderRadius: 20, borderWidth: 1,
-    borderColor: colors.border, backgroundColor: colors.surface },
-  detail: { marginBottom: 14, color: colors.text, fontSize: 16 },
-  separator: { height: 1, backgroundColor: colors.border, marginBottom: 12 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginVertical: 8 },
-  label: { flex: 1, color: colors.muted, fontSize: 15 },
-  amount: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  paymentRow: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
-  paymentPending: { color: colors.warning, backgroundColor: colors.warningSoft, paddingHorizontal: 12,
-    paddingVertical: 7, borderRadius: 10, fontWeight: '700' },
-  button: { marginTop: 24, padding: 17, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary },
+  screen: { flex: 1, backgroundColor: visual.background },
+  container: { padding: 16, paddingTop: 20, paddingBottom: 40 },
+  card: { marginTop: 16, padding: 19, borderRadius: 22, borderWidth: 1,
+    borderColor: visual.border, backgroundColor: visual.surface },
+  detail: { marginBottom: 10, color: visual.ink, fontSize: 16, fontWeight: '600' },
+  separator: { height: 1, backgroundColor: visual.border, marginVertical: 13 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginVertical: 9 },
+  featuredRow: { flexDirection: 'column', padding: 15, marginBottom: 10,
+    backgroundColor: visual.accentSoft, borderRadius: 15 },
+  label: { flex: 1, color: visual.muted, fontSize: 14 },
+  featuredLabel: { flex: 0, color: visual.accent, fontWeight: '700' },
+  amount: { color: visual.ink, fontSize: 16, fontWeight: '800', textAlign: 'right' },
+  featuredAmount: { color: visual.accent, fontSize: 27, textAlign: 'left', marginTop: 6 },
+  paymentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+    marginTop: 17, borderTopWidth: 1, borderTopColor: visual.border, paddingTop: 16 },
+  balanceCard: { backgroundColor: visual.surface, borderWidth: 1, borderColor: visual.border,
+    borderRadius: 16, padding: 16, marginTop: 12 },
+  button: { marginTop: 22, minHeight: 56, padding: 16, borderRadius: 16, alignItems: 'center',
+    justifyContent: 'center', backgroundColor: visual.accent },
   buttonDisabled: { opacity: 0.45 },
-  buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
+  buttonText: { color: visual.surface, fontSize: 16, fontWeight: '800' },
+  secondaryButton: { marginTop: 12, minHeight: 54, padding: 15, borderRadius: 16,
+    borderWidth: 1.5, borderColor: visual.border, alignItems: 'center', justifyContent: 'center' },
+  secondaryText: { color: visual.accent, fontWeight: '800' },
 });

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import IncomingTripCard from '../components/IncomingTripCard';
-import { colors } from '../config/theme';
+import ScreenHero, { InfoBanner, StatusPill } from '../components/ScreenHero';
+import { appVisuals as visual } from '../config/appVisuals';
 import { pricing } from '../config/pricing';
 import { useDriver } from '../context/DriverContext';
 import useDriverLocation from '../hooks/useDriverLocation';
@@ -39,6 +40,7 @@ export default function IncomingRequestScreen({ navigation, route }) {
     rejected: firebaseConfigured ? 'requestRejectedTest' : 'requestRejectedDemo',
     expired: 'requestExpiredDemo',
   }[request?.status];
+  const timerWidth = `${Math.max(0, Math.min(100, remainingSeconds / 15 * 100))}%`;
 
   // AI-assisted: see docs/AI_LOG.md #29
   async function handleAccept() {
@@ -51,15 +53,24 @@ export default function IncomingRequestScreen({ navigation, route }) {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{t('incomingRequest')}</Text>
-      <Text style={styles.badge}>{t(firebaseConfigured ? 'firestoreRequestTestMode' : 'mockMode')}</Text>
-      <Text style={styles.notice}>{t(firebaseConfigured ? 'firestoreRequestTestNotice' : 'demoRequestNotice')}</Text>
-      {firebaseConfigured && !available ? <Text style={styles.notice}>{t('requestAvailabilityRequired')}</Text> : null}
+      <ScreenHero icon="clock" eyebrow={t(firebaseConfigured ? 'firestoreRequestTestMode' : 'mockMode')}
+        title={t('incomingRequest')}
+        description={t(firebaseConfigured ? 'firestoreRequestTestNotice' : 'demoRequestNotice')}>
+        {request ? <View style={styles.timerPanel}>
+          <View style={styles.timerRow}>
+            <Text style={styles.timerLabel}>{t('secondsRemaining')}</Text>
+            <Text style={[styles.timer, remainingSeconds <= 5 && styles.timerUrgent]}>{remainingSeconds} s</Text>
+          </View>
+          <View style={styles.timerTrack}><View style={[styles.timerFill, { width: timerWidth },
+            remainingSeconds <= 5 && styles.timerFillUrgent]} /></View>
+        </View> : null}
+      </ScreenHero>
+      {firebaseConfigured && !available ? <InfoBanner>{t('requestAvailabilityRequired')}</InfoBanner> : null}
       {request ? (
         <>
           <IncomingTripCard request={request} />
-          <Text style={styles.timer}>{t('secondsRemaining')}: {remainingSeconds} s</Text>
-          <Text style={styles.status}>{statusKey ? t(statusKey) : null}</Text>
+          {statusKey ? <View style={styles.status}><StatusPill label={t(statusKey)}
+            tone={request.status === 'accepted' ? 'success' : request.status === 'requested' ? 'info' : 'warning'} /></View> : null}
           <View style={styles.actions}>
             <Pressable accessibilityRole="button" disabled={!canDecide}
               style={[styles.action, styles.accept, !canDecide && styles.disabled]} onPress={handleAccept}>
@@ -71,9 +82,9 @@ export default function IncomingRequestScreen({ navigation, route }) {
             </Pressable>
           </View>
         </>
-      ) : <Text style={styles.empty}>{t('noIncomingRequests')}</Text>}
-      {firebaseConfigured && !connected && available ? <Text style={styles.notice}>{t('requestConnecting')}</Text> : null}
-      {error ? <Text style={styles.notice}>{t(error)}</Text> : null}
+      ) : <View style={styles.empty}><Text style={styles.emptyText}>{t('noIncomingRequests')}</Text></View>}
+      {firebaseConfigured && !connected && available ? <InfoBanner tone="info">{t('requestConnecting')}</InfoBanner> : null}
+      {error ? <InfoBanner tone="danger">{t(error)}</InfoBanner> : null}
       {!firebaseConfigured ? (
         <Pressable accessibilityRole="button" disabled={!active} style={styles.newButton} onPress={restartDemo}>
           <Text style={styles.newButtonText}>{t('newDemoRequest')}</Text>
@@ -84,22 +95,28 @@ export default function IncomingRequestScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 28, fontWeight: '800', color: colors.text },
-  badge: { alignSelf: 'flex-start', marginTop: 12, paddingHorizontal: 12, paddingVertical: 7,
-    backgroundColor: colors.warningSoft, color: colors.warning, borderRadius: 20, fontWeight: '700' },
-  notice: { marginVertical: 16, color: colors.warning, lineHeight: 22 },
-  timer: { marginTop: 20, fontSize: 24, fontWeight: '800', color: colors.text },
-  status: { marginTop: 8, marginBottom: 16, color: colors.primary, fontSize: 16, fontWeight: '600' },
+  screen: { flex: 1, backgroundColor: visual.background },
+  content: { padding: 16, paddingTop: 20, paddingBottom: 40 },
+  timerPanel: { marginTop: 20, padding: 15, borderRadius: 17, backgroundColor: '#31565D' },
+  timerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  timerLabel: { color: visual.heroMuted, fontWeight: '700', flex: 1 },
+  timer: { color: visual.surface, fontSize: 31, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  timerUrgent: { color: '#FFD7D2' },
+  timerTrack: { height: 7, borderRadius: 5, backgroundColor: '#53767A', marginTop: 11, overflow: 'hidden' },
+  timerFill: { height: '100%', borderRadius: 5, backgroundColor: '#75D7BF' },
+  timerFillUrgent: { backgroundColor: '#FFB2AA' },
+  status: { marginTop: 14, marginBottom: 16 },
   actions: { flexDirection: 'row', gap: 12 },
-  action: { flex: 1, padding: 16, borderRadius: 14, alignItems: 'center' },
-  accept: { backgroundColor: colors.primary },
-  reject: { borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.surface },
+  action: { flex: 1, minHeight: 54, padding: 15, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  accept: { backgroundColor: visual.accent },
+  reject: { borderWidth: 1.5, borderColor: visual.border, backgroundColor: visual.surface },
   disabled: { opacity: 0.45 },
-  acceptText: { color: colors.surface, fontWeight: '700' },
-  rejectText: { color: colors.primary, fontWeight: '700' },
-  newButton: { padding: 16, marginTop: 20, alignItems: 'center' },
-  newButtonText: { color: colors.primary, fontWeight: '700' },
-  empty: { marginTop: 20, color: colors.muted },
+  acceptText: { color: visual.surface, fontWeight: '800', fontSize: 15 },
+  rejectText: { color: visual.ink, fontWeight: '800', fontSize: 15 },
+  newButton: { padding: 16, marginTop: 20, alignItems: 'center', borderRadius: 14,
+    backgroundColor: visual.accentSoft },
+  newButtonText: { color: visual.accent, fontWeight: '800' },
+  empty: { padding: 24, borderRadius: 20, borderWidth: 1, borderColor: visual.border,
+    backgroundColor: visual.surface, alignItems: 'center' },
+  emptyText: { color: visual.muted, textAlign: 'center', lineHeight: 22 },
 });
