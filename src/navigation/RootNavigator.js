@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import FeaturePreview from '../components/FeaturePreview';
+import { ActivityIndicator, View } from 'react-native';
 import AppIcon from '../components/AppIcon';
 import { colors } from '../config/theme';
 import useTranslation from '../i18n/useTranslation';
@@ -11,6 +11,8 @@ import HistoryScreen from '../screens/HistoryScreen';
 import EarningsScreen from '../screens/EarningsScreen';
 import IncomingRequestScreen from '../screens/IncomingRequestScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import LoginScreen from '../screens/LoginScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
 import ActiveTripScreen from '../screens/ActiveTripScreen';
 import TripCompletedScreen from '../screens/TripCompletedScreen';
@@ -32,11 +34,6 @@ function VehicleScreen() {
 
 function DocumentsScreen() {
   return <RegistrationScreen section="documents" />;
-}
-
-function ProfileScreen() {
-  const t = useTranslation();
-  return <FeaturePreview title={t('profile')} />;
 }
 
 function RegistrationTabs() {
@@ -106,12 +103,18 @@ function TripStack() {
 
 export default function RootNavigator() {
   const t = useTranslation();
+  const { authLoading, sessionClosed } = useDriver();
+  if (authLoading) return <View style={{ flex: 1, justifyContent: 'center', backgroundColor: colors.background }}>
+    <ActivityIndicator color={colors.primary} />
+  </View>;
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainDrawer" component={MainDrawer} />
-      <Stack.Screen name="TripFlow" component={TripStack} />
-      <Stack.Screen name="HistoryDetail" component={HistoryDetailScreen}
-        options={{ headerShown: true, title: t('historyDetail'), headerBackTitle: t('history'), headerTintColor: colors.text }} />
+      {sessionClosed ? <Stack.Screen name="Login" component={LoginScreen} /> : <>
+        <Stack.Screen name="MainDrawer" component={MainDrawer} />
+        <Stack.Screen name="TripFlow" component={TripStack} />
+        <Stack.Screen name="HistoryDetail" component={HistoryDetailScreen}
+          options={{ headerShown: true, title: t('historyDetail'), headerBackTitle: t('history'), headerTintColor: colors.text }} />
+      </>}
     </Stack.Navigator>
   );
 }

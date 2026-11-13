@@ -25,6 +25,15 @@ for (const key of ['fullName', 'identityNumber', 'phone', 'birthDate', 'gender',
 assert.equal(restored.profilePhoto, '');
 assert.equal(restored.vehiclePhoto, '');
 
+const restoredDocuments = restoreRegistrationDetails({ licenseNumber: '' }, {
+  ...saved, licenseNumber: '123456', licenseExpiry: '2027-01-01',
+  soatExpiry: '2027-02-01', inspectionExpiry: '', paymentEmail: 'persona@example.com',
+});
+assert.equal(restoredDocuments.licenseNumber, '123456');
+assert.equal(restoredDocuments.licenseExpiry, '2027-01-01');
+assert.equal(restoredDocuments.soatExpiry, '2027-02-01');
+assert.equal(restoredDocuments.paymentEmail, 'persona@example.com');
+
 const oldRecord = restoreRegistrationDetails({ phone: '' }, { displayName: 'Antiguo', vehicleCategory: 'economy' });
 assert.equal(oldRecord.fullName, 'Antiguo');
 assert.equal(oldRecord.category, 'economy');

@@ -51,7 +51,6 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Verificación:** Se renderizaron y revisaron visualmente las 9 páginas del PDF; los requisitos se verificaron en la sección 8 (páginas 7–9). La lectura local y la consulta de ramas en GitHub confirmaron que Kevin-dev y Jhoseth-dev apuntan a 085730a5af585e3d7c58c335e9d5a41f4783f8dd y main a d249e54fd14d81d9d6f0172388f74a81cbc847af. La consulta del estado local falló por permisos; no quedó confirmado si el árbol de trabajo está limpio. No se ejecutaron pruebas del proyecto.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
 
-
 ## Entrada #2
 
 - **Fecha y hora:** 2026-11-04 19:23:57 (America/Bogota)
@@ -1147,3 +1146,21 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y hash del commit:** Solo esta entrada #58 en docs/AI_LOG_KEVIN.md y docs/AI_LOG.md. Revisión sobre df356599b86b314eeff5a08ba7bb8d34ca49f638; no hay commit nuevo.
 - **Verificación:** Git mostró Kevin-dev en df35659, una confirmación adelante de origin/Kevin-dev y los cambios de Historial staged. La lectura confirmó headerBackTitle con la traducción history y el uso de historyRefresh en la pantalla y el detalle. git diff --check y git diff --cached --check no reportaron errores; aparecieron solo avisos de conversión LF/CRLF en las bitácoras. La prueba de Historial en iPhone y la exportación de iOS fueron reportadas por Kevin y no se repitieron. No se hizo commit ni push.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #59 — Perfil y Configuración del conductor
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Completar Perfil y Configuración, permitir editar datos propios y recuperar la misma cuenta después de cerrar sesión.
+- **Prompt completo y literal:**
+
+> Ya prepare Perfil y Configuracion en Jhoseth-dev despues de traer el Historial de Kevin. Habilite Correo y Contrasena en Firebase y publique las reglas para editar el perfil propio. La cuenta anonima se puede vincular antes de cerrar sesion para recuperar el mismo perfil. Pasaron las pruebas automaticas y la exportacion de Android e iOS. Todavia debo probar el flujo completo en mi iPhone. No hice commit ni push. Ayudame a actualizar este avance como pendiente de prueba en dispositivo.
+
+- **Resumen de la respuesta:** Se recomendó separar la consulta y edición del perfil, la configuración y la gestión de sesión. Se señaló que cerrar una cuenta anónima sin vincularla podría impedir recuperar el UID y sus datos.
+- **Qué se usó y modificó:** Se completaron Perfil y la pantalla de acceso, se agregó la vinculación de la cuenta anónima con correo y contraseña antes de cerrar sesión, y se mantuvo el selector de idioma. La edición del perfil propio devuelve la aprobación de demostración a pendiente y desactiva la disponibilidad. La aplicación no puede aprobar al conductor ni cambiar pagos. Se incorporó Historial desde la rama de Kevin como base, sin atribuir sus cambios a este avance.
+- **Archivos del avance:** `src/screens/ProfileScreen.js`, `src/screens/LoginScreen.js`, `src/screens/SettingsScreen.js`, `src/context/DriverContext.js`, `src/services/firebaseClient.js`, `src/services/driverRepository.js`, `src/services/checkoutService.js`, `src/utils/profileDetails.js`, `src/utils/registrationDetails.js`, `src/utils/validateRegistration.js`, `src/navigation/RootNavigator.js`, `src/i18n/translations.js`, `firestore.rules`, `docs/FIREBASE_SETUP.md` y las pruebas correspondientes. Esta entrada se agrega también a `docs/AI_LOG_JHOSETH.md`. La actualización local de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasaron las pruebas automáticas del proyecto, incluidas las de perfil, vinculación y recuperación de la cuenta. `npm run check` indicó dependencias al día usando el mapa local de Expo, sin consulta de red. La exportación de JavaScript y recursos para Android e iOS terminó correctamente. En Firebase se habilitó Correo/Contraseña y se publicaron las reglas de Perfil. Falta probar el flujo completo en iPhone; no se presenta la exportación como prueba en dispositivo.
+- **Commit y hash al redactar esta entrada:** Pendientes. `main` no se modificó.
+- **Aprendizaje:** Vincular la cuenta anónima antes de salir conserva el UID usado por los documentos de Firestore y permite recuperar el perfil con correo y contraseña.

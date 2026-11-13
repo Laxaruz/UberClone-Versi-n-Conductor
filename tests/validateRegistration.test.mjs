@@ -45,4 +45,5 @@ assert.equal(normalizeRegistrationInput('phone', '3001234567'), '3001234567');
 assert.equal(normalizeRegistrationInput('phone', '300123456'), '300123456');
 assert.equal(validateRegistration({ ...valid, phone: normalizeRegistrationInput('phone', '30012345678') }, today).phone, undefined);
 assert.equal(validateRegistration({ ...valid, identityNumber: '12345' }, today).identityNumber, 'invalidIdentity');
-console.log('18 validation cases and 14 input limit cases passed');
+assert.equal(validateRegistration({ ...valid, licenseNumber: 'AB123' }, today).licenseNumber, 'required');
+console.log('19 validation cases and 14 input limit cases passed');

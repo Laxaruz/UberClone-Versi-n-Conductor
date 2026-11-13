@@ -73,6 +73,10 @@ export function getLastCheckoutTripId() {
   return AsyncStorage.getItem(LAST_CHECKOUT_TRIP_KEY);
 }
 
+export function clearCheckoutTrip() {
+  return AsyncStorage.removeItem(LAST_CHECKOUT_TRIP_KEY);
+}
+
 export function observeCheckoutTrip(tripId, onUpdate) {
   if (!database || !/^[A-Za-z0-9_-]{1,128}$/.test(tripId || '')) return () => {};
   let lastState = null;

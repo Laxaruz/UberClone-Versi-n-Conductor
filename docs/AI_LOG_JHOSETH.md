@@ -224,3 +224,21 @@
 - **Verificación:** Pasó la prueba de cálculos de Ganancias, las 11 pruebas del servidor y las pruebas existentes de registro, disponibilidad, solicitudes, viaje y fechas. Expo exportó JavaScript y recursos para Android e iOS; esto no equivale a una compilación instalable. Se publicaron las reglas de lectura en Firestore y se creó el índice `trips` por `driverId` y `completedAt`; al cierre de esta revisión, Firestore todavía lo mostraba en construcción. No se ha probado la pantalla en iPhone ni un cobro completo de Mercado Pago con este cambio.
 - **Commit, push y hash:** Pendientes. Los cambios de Ganancias permanecen locales en `Jhoseth-dev` y `main` no se modificó en este avance.
 - **Aprendizaje:** Los ingresos de un período y el saldo acumulado son cifras distintas. Los pagos pendientes se muestran aparte; la comisión del efectivo se descuenta del saldo una sola vez cuando el servidor registra ese cobro.
+
+## Entrada #59 — Perfil y Configuración del conductor
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Completar Perfil y Configuración, permitir editar datos propios y recuperar la misma cuenta después de cerrar sesión.
+- **Prompt completo y literal:**
+
+> Ya prepare Perfil y Configuracion en Jhoseth-dev despues de traer el Historial de Kevin. Habilite Correo y Contrasena en Firebase y publique las reglas para editar el perfil propio. La cuenta anonima se puede vincular antes de cerrar sesion para recuperar el mismo perfil. Pasaron las pruebas automaticas y la exportacion de Android e iOS. Todavia debo probar el flujo completo en mi iPhone. No hice commit ni push. Ayudame a actualizar este avance como pendiente de prueba en dispositivo.
+
+- **Resumen de la respuesta:** Se recomendó separar la consulta y edición del perfil, la configuración y la gestión de sesión. Se señaló que cerrar una cuenta anónima sin vincularla podría impedir recuperar el UID y sus datos.
+- **Qué se usó y modificó:** Se completaron Perfil y la pantalla de acceso, se agregó la vinculación de la cuenta anónima con correo y contraseña antes de cerrar sesión, y se mantuvo el selector de idioma. La edición del perfil propio devuelve la aprobación de demostración a pendiente y desactiva la disponibilidad. La aplicación no puede aprobar al conductor ni cambiar pagos. Se incorporó Historial desde la rama de Kevin como base, sin atribuir sus cambios a este avance.
+- **Archivos del avance:** `src/screens/ProfileScreen.js`, `src/screens/LoginScreen.js`, `src/screens/SettingsScreen.js`, `src/context/DriverContext.js`, `src/services/firebaseClient.js`, `src/services/driverRepository.js`, `src/services/checkoutService.js`, `src/utils/profileDetails.js`, `src/utils/registrationDetails.js`, `src/utils/validateRegistration.js`, `src/navigation/RootNavigator.js`, `src/i18n/translations.js`, `firestore.rules`, `docs/FIREBASE_SETUP.md` y las pruebas correspondientes. Esta entrada se agrega también a `docs/AI_LOG.md`. La actualización local de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasaron las pruebas automáticas del proyecto, incluidas las de perfil, vinculación y recuperación de la cuenta. `npm run check` indicó dependencias al día usando el mapa local de Expo, sin consulta de red. La exportación de JavaScript y recursos para Android e iOS terminó correctamente. En Firebase se habilitó Correo/Contraseña y se publicaron las reglas de Perfil. Falta probar el flujo completo en iPhone; no se presenta la exportación como prueba en dispositivo.
+- **Commit y hash al redactar esta entrada:** Pendientes. `main` no se modificó.
+- **Aprendizaje:** Vincular la cuenta anónima antes de salir conserva el UID usado por los documentos de Firestore y permite recuperar el perfil con correo y contraseña.

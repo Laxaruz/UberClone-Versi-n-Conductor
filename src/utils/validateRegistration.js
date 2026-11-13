@@ -68,6 +68,7 @@ export function validateRegistration(form, today = new Date()) {
   for (const key of ['licenseExpiry', 'soatExpiry']) {
     if (required(form[key]) && !futureDate(form[key], today)) errors[key] = 'expiredDocument';
   }
+  if (required(form.licenseNumber) && !/^\d+$/.test(form.licenseNumber)) errors.licenseNumber = 'required';
   if (needsInspection(form.year, today)) {
     if (!required(form.inspectionPhoto)) errors.inspectionPhoto = 'required';
     if (!required(form.inspectionExpiry)) errors.inspectionExpiry = 'required';
