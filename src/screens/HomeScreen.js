@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { AppState, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AvailabilityToggle from '../components/AvailabilityToggle';
+import AppIcon from '../components/AppIcon';
 import DriverMap from '../components/DriverMap';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
@@ -70,16 +71,21 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <Pressable style={styles.button} onPress={() => navigation.navigate('Registration')}>
+        <AppIcon name="person" size={21} color={colors.surface} />
         <Text style={styles.buttonText}>{t('openRegistration')}</Text>
       </Pressable>
       <Pressable
         style={styles.secondaryButton}
         onPress={() => {
           enteringTripFlow.current = true;
-          navigation.getParent()?.navigate('TripFlow');
+          navigation.getParent()?.navigate('TripFlow', activeTrip ? {
+            screen: activeTrip.status === 'completed' ? 'TripCompleted'
+              : activeTrip.status === 'accepted' ? 'TripPreview' : 'ActiveTrip',
+          } : { screen: 'IncomingRequest' });
         }}
       >
-        <Text style={styles.secondaryButtonText}>{t('openDemoRequest')}</Text>
+        <AppIcon name="route" size={21} />
+        <Text style={styles.secondaryButtonText}>{t(activeTrip ? 'continueTrip' : 'openDemoRequest')}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -115,7 +121,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 16,
     borderRadius: 14,
-    alignItems: 'center',
+    alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10,
     backgroundColor: colors.primary,
   },
   buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
@@ -125,7 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.primary, justifyContent: 'center', flexDirection: 'row', gap: 10,
   },
   secondaryButtonText: { color: colors.primary, fontSize: 16, fontWeight: '700' },
 });

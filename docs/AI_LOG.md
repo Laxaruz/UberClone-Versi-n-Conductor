@@ -659,3 +659,25 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Archivos afectados y commit:** Solo esta entrada #31 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Código local sin commit: los tres archivos revisados. HEAD base `c05c4acefc7e67274f6543b288662709bd089714`.
 - **Verificación:** `git status` confirmó `Kevin-dev`, HEAD `c05c4acefc7e67274f6543b288662709bd089714`, tres archivos de código y las dos bitácoras modificadas. `git diff --check` no reportó errores de whitespace. En el diff no aparecen comentarios de referencia IA junto a las nuevas líneas revisadas. No se verificó el resultado en iPhone ni en Firestore de forma independiente; restauración tras reinicio no se probó según Kevin.
 - **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+## Entrada #32 — Flujo de viaje y ampliacion de interfaz
+
+- **Fecha:** 2026-11-12
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Desarrollar el flujo local desde una solicitud aceptada hasta el resumen del viaje y mejorar el registro, las fechas, las fotos, los iconos y la navegacion.
+- **Prompt inicial:**
+
+  > Quiero iniciar mi siguiente avance en Jhoseth-dev. Ya traje el cambio de Kevin que muestra la solicitud aceptada en una vista previa de solo lectura. Voy a trabajar los estados del viaje, la recogida, el boton Pasajero a bordo, el trayecto al destino y la finalizacion. La guia pide usar Stack y calcular la tarifa final con la misma funcion de la estimacion. Todavia no hay ruta real ni backend de pagos, por lo que identificare este flujo como demostracion. La vista previa conserva activeTrip solo mientras la app esta abierta y aun no dibuja una ruta real. Que estructura y pruebas me recomiendas antes de programar?
+
+- **Ampliacion del avance:**
+
+  > Ya implemente localmente en Jhoseth-dev el flujo de viaje desde la solicitud aceptada. Puedo iniciar la recogida, confirmar la llegada, marcar al pasajero a bordo y finalizar. El resumen calcula la tarifa con la misma funcion usada en la estimacion. Pasaron las pruebas automatizadas y la exportacion de Android e iOS. El flujo sigue en memoria y no tiene ruta real ni procesa pagos. Todavia debo probarlo en mi iPhone y no he hecho el commit. Ayudame a registrar este estado como avance local pendiente. Amplie mi avance local en Jhoseth-dev. Ademas del flujo de recogida y finalizacion, cambie el diseño del registro, las fechas, las fotos, los iconos y la navegacion que me corresponden. La fecha se puede escribir por dia, mes y año o elegir en el calendario. Pasaron las pruebas automatizadas y la exportacion de Android e iOS. Todavia debo comprobar el diseño y el flujo en mi iPhone. No he hecho el commit.
+
+- **Resumen de la respuesta:** Se recomendo controlar las transiciones del viaje, usar el Stack existente y reutilizar la funcion de tarifa. Se separaron las comprobaciones automatizadas de la prueba visual y funcional pendiente en iPhone.
+- **Que se uso / modifico / descarto:** Se implementaron recogida, llegada, pasajero a bordo, finalizacion y resumen local; se mejoraron registro, fechas, fotos, iconos y navegacion. No se presentaron como implementadas una ruta real ni el procesamiento de pagos.
+- **Archivos afectados:** `package.json`, `package-lock.json`, `src/context/DriverContext.js`, `src/i18n/translations.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/RegistrationScreen.js`, `src/screens/TripPreviewScreen.js`, `src/screens/ActiveTripScreen.js`, `src/screens/TripCompletedScreen.js`, `src/components/AppIcon.js`, `src/components/ChoiceSelector.js`, `src/components/DateSelector.js`, `src/utils/dateInput.js`, `src/utils/tripTransitions.js`, `tests/dateInput.test.mjs` y `tests/tripFlow.test.mjs`.
+- **Bitacora:** Esta entrada se incorpora en `docs/AI_LOG.md` y `docs/AI_LOG_JHOSETH.md`.
+- **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar flujo de viaje y renovar registro`.
+- **Verificacion:** Pasaron las pruebas de fechas, transiciones y tarifa del viaje, 18 casos de validacion y 14 de limites del registro, 7 de disponibilidad, 15 del temporizador de solicitudes y el contrato de solicitudes. Expo exporto JavaScript y recursos para Android e iOS; no genera APK ni IPA. La comprobacion visual y funcional de este avance en iPhone sigue pendiente.
+- **Aprendizaje:** Los estados del viaje impiden saltar etapas y la tarifa final puede usar la misma funcion pura de la estimacion. El selector de fecha permite escribir una fecha sin recorrer muchos años. Una exportacion y las pruebas automatizadas no sustituyen la prueba en dispositivo.

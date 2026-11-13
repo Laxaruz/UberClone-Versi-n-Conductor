@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import AppIcon from '../components/AppIcon';
+import ChoiceSelector from '../components/ChoiceSelector';
+import DateSelector from '../components/DateSelector';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
@@ -25,17 +27,11 @@ const sections = {
   ],
 };
 
-function dateString(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
 export default function RegistrationScreen({ section }) {
   const t = useTranslation();
   const { updateLanguage, registration, registrationLoading, updateRegistration, registrationSubmitted, registrationStatus,
     submitRegistration, firebaseConfigured, realtimeConnected, backendError, registering } = useDriver();
   const [touched, setTouched] = useState({});
-  const [openDate, setOpenDate] = useState(null);
-  const [openChoice, setOpenChoice] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
   const errors = validateRegistration(registration);
   const inspectionRequired = needsInspection(registration.year);
@@ -85,46 +81,34 @@ export default function RegistrationScreen({ section }) {
         <Text style={styles.label}>{t(key)}{key === 'inspectionPhoto' && ' *'}</Text>
         {type === 'image' && (
           <View>
-            {registration[key] ? <Image source={{ uri: registration[key] }} style={styles.photo} accessibilityLabel={t(key)} /> : null}
+            <View style={styles.photoFrame}>
+              {registration[key] ? <Image source={{ uri: registration[key] }} style={styles.photo} accessibilityLabel={t(key)} />
+                : <View style={styles.photoPlaceholder}>
+                  <AppIcon name="gallery" size={32} color={colors.muted} />
+                  <Text style={styles.photoPlaceholderText}>{t('noPhotoSelected')}</Text>
+                </View>}
+            </View>
             <View style={styles.choices}>
-              <Pressable disabled={locked} style={styles.choice} onPress={() => pickImage(key, 'camera')}><Text style={styles.choiceText}>{t('camera')}</Text></Pressable>
-              <Pressable disabled={locked} style={styles.choice} onPress={() => pickImage(key, 'library')}><Text style={styles.choiceText}>{t('gallery')}</Text></Pressable>
+              <Pressable disabled={locked} style={[styles.choice, locked && styles.disabledChoice]} onPress={() => pickImage(key, 'camera')}>
+                <AppIcon name="camera" size={19} /><Text style={styles.choiceText}>{t('camera')}</Text>
+              </Pressable>
+              <Pressable disabled={locked} style={[styles.choice, locked && styles.disabledChoice]} onPress={() => pickImage(key, 'library')}>
+                <AppIcon name="gallery" size={19} /><Text style={styles.choiceText}>{t('gallery')}</Text>
+              </Pressable>
             </View>
           </View>
         )}
         {type === 'choice' && (
-          <View>
-            <Pressable accessibilityRole="button" accessibilityState={{ expanded: openChoice === key }}
-              disabled={locked} style={styles.input}
-              onPress={() => setOpenChoice((current) => current === key ? null : key)}>
-              <Text>{selectedChoice ? choiceLabel(selectedChoice) : t('selectOption')} {openChoice === key ? '▲' : '▼'}</Text>
-            </Pressable>
-            {openChoice === key && (
-              <View style={styles.choiceList}>{options.map((option) => (
-                <Pressable key={option} accessibilityRole="button" accessibilityState={{ selected: selectedChoice === option }}
-                  style={[styles.choiceOption, selectedChoice === option && styles.selected]}
-                  onPress={() => {
-                    if (key === 'language') updateLanguage(option);
-                    else updateRegistration(key, option);
-                    setTouched((current) => ({ ...current, [key]: true }));
-                    setOpenChoice(null);
-                  }}>
-                  <Text style={[styles.choiceText, selectedChoice === option && styles.selectedText]}>{choiceLabel(option)}</Text>
-                </Pressable>
-              ))}</View>
-            )}
-          </View>
+          <ChoiceSelector label={t(key)} value={selectedChoice} options={options} getLabel={choiceLabel}
+            disabled={locked} onChange={(option) => {
+              if (key === 'language') updateLanguage(option);
+              else updateRegistration(key, option);
+              setTouched((current) => ({ ...current, [key]: true }));
+            }} />
         )}
         {type === 'date' && (
-          <View>
-            <Pressable disabled={locked} style={styles.input} onPress={() => setOpenDate(key)}><Text>{registration[key] || t('selectDate')}</Text></Pressable>
-            {openDate === key && <DateTimePicker value={registration[key] ? new Date(`${registration[key]}T12:00:00`) : key === 'birthDate' ? new Date(2000, 0, 1) : new Date()}
-              mode="date" display="default" onChange={(event, date) => {
-                setOpenDate(null);
-                if (event.type === 'set' && date) updateRegistration(key, dateString(date));
-                setTouched((current) => ({ ...current, [key]: true }));
-              }} />}
-          </View>
+          <DateSelector label={t(key)} value={registration[key]} disabled={locked} birthDate={key === 'birthDate'}
+            onChange={(date) => { updateRegistration(key, date); setTouched((current) => ({ ...current, [key]: true })); }} />
         )}
         {['text', 'number', 'phone', 'email', 'plate'].includes(type) && (
           <TextInput style={styles.input} value={registration[key]} onChangeText={(value) => updateRegistration(key, normalizeRegistrationInput(key, value))}
@@ -152,13 +136,17 @@ export default function RegistrationScreen({ section }) {
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.step}>{section === 'personal' ? '01 / 03' : section === 'vehicle' ? '02 / 03' : '03 / 03'}</Text>
         <Text style={styles.title}>{t(section)}</Text>
+        <Text style={styles.sectionHint}>{t(`${section}SectionHint`)}</Text>
         {sections[section].map(renderField)}
         {section === 'documents' && (
           <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: registration.acceptedTerms }} style={styles.terms}
             disabled={locked}
             onPress={() => updateRegistration('acceptedTerms', !registration.acceptedTerms)}>
-            <Text style={styles.checkbox}>{registration.acceptedTerms ? '☑' : '☐'}</Text>
+            <View style={[styles.checkbox, registration.acceptedTerms && styles.checkboxChecked]}>
+              {registration.acceptedTerms ? <AppIcon name="check" size={17} color={colors.surface} /> : null}
+            </View>
             <Text style={styles.termsText}>{t('acceptTerms')}</Text>
           </Pressable>
         )}
@@ -187,21 +175,31 @@ const styles = StyleSheet.create({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
   screen: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 20, paddingBottom: 24 },
-  title: { color: colors.text, fontSize: 24, fontWeight: '700', marginBottom: 16 },
-  field: { marginBottom: 18 }, label: { color: colors.text, fontWeight: '600', marginBottom: 8 },
-  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, minHeight: 48, justifyContent: 'center' },
-  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  choice: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.surface },
-  choiceList: { marginTop: 4, borderWidth: 1, borderColor: colors.border, borderRadius: 10, backgroundColor: colors.surface },
-  choiceOption: { padding: 12 },
-  choiceText: { color: colors.primary }, selected: { backgroundColor: colors.primary }, selectedText: { color: colors.surface },
-  photo: { height: 120, width: 120, borderRadius: 10, marginBottom: 8 },
+  content: { paddingHorizontal: 20, paddingTop: 22, paddingBottom: 28 },
+  step: { color: colors.primary, fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  title: { color: colors.text, fontSize: 29, fontWeight: '800', marginTop: 8 },
+  sectionHint: { color: colors.muted, fontSize: 15, lineHeight: 22, marginTop: 6, marginBottom: 24 },
+  field: { marginBottom: 22 }, label: { color: colors.text, fontSize: 15, fontWeight: '700', marginBottom: 10 },
+  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16,
+    paddingHorizontal: 16, minHeight: 58, color: colors.text, fontSize: 16 },
+  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 10 },
+  choice: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 11,
+    borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  disabledChoice: { opacity: 0.55 }, choiceText: { color: colors.primary, fontWeight: '700' },
+  photoFrame: { width: '100%', height: 160, borderRadius: 18, overflow: 'hidden', borderWidth: 1,
+    borderColor: colors.border, backgroundColor: colors.surface },
+  photo: { height: '100%', width: '100%', resizeMode: 'cover' },
+  photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  photoPlaceholderText: { color: colors.muted, fontSize: 14 },
   error: { color: '#B3261E', marginTop: 5 },
-  terms: { flexDirection: 'row', alignItems: 'center', marginVertical: 14 }, checkbox: { fontSize: 24, marginRight: 8 }, termsText: { flex: 1, color: colors.text },
-  footer: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 20, paddingVertical: 12 },
+  terms: { flexDirection: 'row', alignItems: 'center', marginVertical: 14, padding: 14, borderRadius: 16,
+    borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  checkbox: { width: 24, height: 24, borderRadius: 7, borderWidth: 2, borderColor: colors.primary,
+    marginRight: 12, alignItems: 'center', justifyContent: 'center' },
+  checkboxChecked: { backgroundColor: colors.primary }, termsText: { flex: 1, color: colors.text, lineHeight: 21 },
+  footer: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 20, paddingVertical: 14 },
   footerStatus: { color: colors.warning, fontWeight: '700', textAlign: 'center', marginTop: 8 },
-  submit: { backgroundColor: colors.primary, padding: 16, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
+  submit: { backgroundColor: colors.primary, padding: 17, borderRadius: 15, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
   spinner: { marginRight: 10 }, disabled: { opacity: 0.4 }, submitText: { color: colors.surface, fontWeight: '700' },
   hint: { color: colors.muted, marginTop: 8 }, notice: { color: colors.warning, marginTop: 20 },
 });

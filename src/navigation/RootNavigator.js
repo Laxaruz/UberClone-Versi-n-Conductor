@@ -2,12 +2,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FeaturePreview from '../components/FeaturePreview';
+import AppIcon from '../components/AppIcon';
 import { colors } from '../config/theme';
 import useTranslation from '../i18n/useTranslation';
 import HomeScreen from '../screens/HomeScreen';
 import IncomingRequestScreen from '../screens/IncomingRequestScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
+import ActiveTripScreen from '../screens/ActiveTripScreen';
+import TripCompletedScreen from '../screens/TripCompletedScreen';
 import RegistrationScreen from '../screens/RegistrationScreen';
 import { useDriver } from '../context/DriverContext';
 
@@ -51,10 +54,15 @@ function RegistrationTabs() {
   const t = useTranslation();
   const { showRegistrationErrors } = useDriver();
   return (
-    <Tabs.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary }}>
-      <Tabs.Screen name="Personal" component={PersonalScreen} options={{ title: t('personal') }} listeners={{ blur: showRegistrationErrors }} />
-      <Tabs.Screen name="Vehicle" component={VehicleScreen} options={{ title: t('vehicle') }} listeners={{ blur: showRegistrationErrors }} />
-      <Tabs.Screen name="Documents" component={DocumentsScreen} options={{ title: t('documents') }} listeners={{ blur: showRegistrationErrors }} />
+    <Tabs.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary,
+      tabBarInactiveTintColor: colors.muted, tabBarStyle: { borderTopColor: colors.border, paddingTop: 8 },
+      tabBarLabelStyle: { fontSize: 11, fontWeight: '700' } }}>
+      <Tabs.Screen name="Personal" component={PersonalScreen} options={{ title: t('personal'),
+        tabBarIcon: ({ color }) => <AppIcon name="person" color={color} size={23} /> }} listeners={{ blur: showRegistrationErrors }} />
+      <Tabs.Screen name="Vehicle" component={VehicleScreen} options={{ title: t('vehicle'),
+        tabBarIcon: ({ color }) => <AppIcon name="car" color={color} size={23} /> }} listeners={{ blur: showRegistrationErrors }} />
+      <Tabs.Screen name="Documents" component={DocumentsScreen} options={{ title: t('documents'),
+        tabBarIcon: ({ color }) => <AppIcon name="document" color={color} size={23} /> }} listeners={{ blur: showRegistrationErrors }} />
     </Tabs.Navigator>
   );
 }
@@ -69,16 +77,21 @@ function MainDrawer() {
         headerStyle: { backgroundColor: colors.surface },
       }}
     >
-      <Drawer.Screen name="Home" component={HomeScreen} options={{ title: t('home') }} />
+      <Drawer.Screen name="Home" component={HomeScreen} options={{ title: t('home'),
+        drawerIcon: ({ color }) => <AppIcon name="home" color={color} /> }} />
       <Drawer.Screen
         name="Registration"
         component={RegistrationTabs}
-        options={{ title: t('registration') }}
+        options={{ title: t('registration'), drawerIcon: ({ color }) => <AppIcon name="person" color={color} /> }}
       />
-      <Drawer.Screen name="Earnings" component={EarningsScreen} options={{ title: t('earnings') }} />
-      <Drawer.Screen name="History" component={HistoryScreen} options={{ title: t('history') }} />
-      <Drawer.Screen name="Profile" component={ProfileScreen} options={{ title: t('profile') }} />
-      <Drawer.Screen name="Settings" component={SettingsScreen} options={{ title: t('settings') }} />
+      <Drawer.Screen name="Earnings" component={EarningsScreen} options={{ title: t('earnings'),
+        drawerIcon: ({ color }) => <AppIcon name="earnings" color={color} /> }} />
+      <Drawer.Screen name="History" component={HistoryScreen} options={{ title: t('history'),
+        drawerIcon: ({ color }) => <AppIcon name="history" color={color} /> }} />
+      <Drawer.Screen name="Profile" component={ProfileScreen} options={{ title: t('profile'),
+        drawerIcon: ({ color }) => <AppIcon name="person" color={color} /> }} />
+      <Drawer.Screen name="Settings" component={SettingsScreen} options={{ title: t('settings'),
+        drawerIcon: ({ color }) => <AppIcon name="settings" color={color} /> }} />
     </Drawer.Navigator>
   );
 }
@@ -89,6 +102,8 @@ function TripStack() {
     <Stack.Navigator screenOptions={{ headerTintColor: colors.text }}>
       <Stack.Screen name="IncomingRequest" component={IncomingRequestScreen} options={{ title: t('incomingRequest') }} />
       <Stack.Screen name="TripPreview" component={TripPreviewScreen} options={{ title: t('trip') }} />
+      <Stack.Screen name="ActiveTrip" component={ActiveTripScreen} options={{ title: t('trip') }} />
+      <Stack.Screen name="TripCompleted" component={TripCompletedScreen} options={{ title: t('tripSummary') }} />
       <Stack.Screen
         name="PaymentPreview"
         component={PaymentPreviewScreen}

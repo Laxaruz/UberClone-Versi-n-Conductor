@@ -3,6 +3,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import IncomingTripCard from '../components/IncomingTripCard';
 import { colors } from '../config/theme';
+import { pricing } from '../config/pricing';
 import { useDriver } from '../context/DriverContext';
 import useDriverLocation from '../hooks/useDriverLocation';
 import useTripRequests from '../hooks/useTripRequests';
@@ -41,7 +42,8 @@ export default function IncomingRequestScreen({ navigation }) {
   async function handleAccept() {
     const acceptedRequest = await accept();
     if (acceptedRequest?.status !== 'accepted') return;
-    setActiveTrip(acceptedRequest);
+    setActiveTrip({ ...acceptedRequest, commissionRate: pricing.commissionRate, tip: 0 });
+    await updateAvailability(false);
     navigation.navigate('TripPreview');
   }
 

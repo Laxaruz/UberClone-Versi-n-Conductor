@@ -10,7 +10,9 @@
     "check": "expo install --check",
     "test:registration": "node tests/validateRegistration.test.mjs",
     "test:availability": "node tests/availability.test.mjs",
-    "test:requests": "node tests/tripRequestTimer.test.mjs"
+    "test:requests": "node tests/tripRequestTimer.test.mjs",
+    "test:trip-flow": "node tests/tripFlow.test.mjs",
+    "test:date-input": "node tests/dateInput.test.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -23,6 +25,7 @@
     "expo-image-picker": "~58.0.10",
     "expo-location": "~58.0.20",
     "expo-status-bar": "~58.0.4",
+    "expo-symbols": "~58.0.5",
     "firebase": "^13.1.0",
     "react": "19.3.0",
     "react-native": "^0.88.1",

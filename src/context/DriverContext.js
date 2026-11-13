@@ -5,6 +5,8 @@ import { canEnableAvailability } from '../utils/canEnableAvailability';
 import { restoreRegistrationDetails } from '../utils/registrationDetails';
 import { firebaseConfigured, ensureDemoUser } from '../services/firebaseClient';
 import { createPendingDriver, observeDriver, saveDriverLocation, setDriverAvailability, toCoordinates } from '../services/driverRepository';
+import { calculateFare } from '../utils/calculateFare';
+import { transitionTrip } from '../utils/tripTransitions';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -188,6 +190,16 @@ export function DriverProvider({ children }) {
     }
   }, [driverUid, updateAvailability]);
 
+  const advanceTrip = useCallback((action) => {
+    setActiveTrip((current) => {
+      if (!current) return current;
+      const finalAmounts = action === 'complete' && current.status === 'in_progress'
+        ? calculateFare({ distanceKm: current.distanceKm, durationMin: current.durationMin,
+          category: current.category, tip: current.tip ?? 0 }) : null;
+      return transitionTrip(current, action, Date.now(), finalAmounts);
+    });
+  }, []);
+
   return (
     <DriverContext.Provider
       value={{
@@ -197,6 +209,7 @@ export function DriverProvider({ children }) {
         driverUid,
         activeTrip,
         setActiveTrip,
+        advanceTrip,
         registration,
         registrationLoading,
         updateRegistration,
