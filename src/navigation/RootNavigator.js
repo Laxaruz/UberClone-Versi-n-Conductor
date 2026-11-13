@@ -11,7 +11,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import TripPreviewScreen from '../screens/TripPreviewScreen';
 import ActiveTripScreen from '../screens/ActiveTripScreen';
 import TripCompletedScreen from '../screens/TripCompletedScreen';
-import CheckoutScreen from '../screens/CheckoutScreen';
+import PaymentScreen from '../screens/PaymentScreen';
 import RegistrationScreen from '../screens/RegistrationScreen';
 import { useDriver } from '../context/DriverContext';
 
@@ -84,6 +84,8 @@ function MainDrawer() {
         drawerIcon: ({ color }) => <AppIcon name="earnings" color={color} /> }} />
       <Drawer.Screen name="History" component={HistoryScreen} options={{ title: t('history'),
         drawerIcon: ({ color }) => <AppIcon name="history" color={color} /> }} />
+      <Drawer.Screen name="Payment" component={PaymentScreen} options={{ title: t('payment'),
+        drawerIcon: ({ color }) => <AppIcon name="payment" color={color} /> }} />
       <Drawer.Screen name="Profile" component={ProfileScreen} options={{ title: t('profile'),
         drawerIcon: ({ color }) => <AppIcon name="person" color={color} /> }} />
       <Drawer.Screen name="Settings" component={SettingsScreen} options={{ title: t('settings'),
@@ -102,7 +104,7 @@ function TripStack() {
       <Stack.Screen name="TripCompleted" component={TripCompletedScreen} options={{ title: t('tripSummary') }} />
       <Stack.Screen
         name="PaymentPreview"
-        component={CheckoutScreen}
+        component={PaymentScreen}
         options={{ title: t('payment') }}
       />
     </Stack.Navigator>

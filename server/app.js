@@ -1,5 +1,5 @@
 const express = require('express');
-const { canStartCheckout, validWebhookSignature, matchesApprovedTestPayment } = require('./paymentChecks');
+const { canStartCheckout, isSandboxCheckoutUrl, validWebhookSignature, matchesApprovedTestPayment } = require('./paymentChecks');
 
 function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCashReceipt, mercadoPago, webhookSecret, notificationUrl, paymentsTestMode = false, testAccounts }) {
   const app = express();
@@ -93,15 +93,21 @@ function createApp({ verifyIdToken, findTrip, savePreference, markPaid, recordCa
       return response.status(409).json({ error: 'Trip is not eligible for test checkout' });
     }
     if (trip.paymentPreferenceId && trip.paymentCheckoutUrl) {
+      if (!isSandboxCheckoutUrl(trip.paymentCheckoutUrl)) {
+        return response.status(502).json({ error: 'Invalid test checkout response' });
+      }
       return response.json({ preferenceId: trip.paymentPreferenceId, checkoutUrl: trip.paymentCheckoutUrl });
     }
 
     try {
       const preference = await mercadoPago.createPreference({ tripId, fare: trip.fare, notificationUrl });
-      if (!preference?.id || !preference.sandbox_init_point) {
+      if (!preference?.id || !isSandboxCheckoutUrl(preference.sandbox_init_point)) {
         return response.status(502).json({ error: 'Invalid test checkout response' });
       }
       const saved = await savePreference(tripId, preference.id, preference.sandbox_init_point);
+      if (!saved?.paymentPreferenceId || !isSandboxCheckoutUrl(saved.paymentCheckoutUrl)) {
+        return response.status(502).json({ error: 'Invalid test checkout response' });
+      }
       return response.json({ preferenceId: saved.paymentPreferenceId, checkoutUrl: saved.paymentCheckoutUrl });
     } catch {
       return response.status(503).json({ error: 'Test checkout unavailable' });

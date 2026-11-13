@@ -70,7 +70,8 @@ export default function TripCompletedScreen({ navigation }) {
         {cashTrip && cashRecorded ? <>
           <Text style={styles.notice}>{t('cashReceiptDemo')}</Text>
           <Amount label={t('driverBalance')} amount={activeTrip.cashBalance} />
-        </> : !checkoutApproved && <Text style={styles.notice}>{t(cashTrip ? 'cashPending' : 'paymentNotProcessed')}</Text>}
+        </> : <Text style={styles.notice}>{t(cashTrip ? 'cashPending'
+          : checkoutApproved ? 'checkoutVerifiedNotice' : 'paymentNotProcessed')}</Text>}
         {cashTrip && !cashRecorded ? <>
           {!cashCanSubmit && <Text style={styles.notice}>{t('cashBackendRequired')}</Text>}
           {cashError && <Text style={styles.notice}>{t('cashSaveFailed')}</Text>}
@@ -81,8 +82,8 @@ export default function TripCompletedScreen({ navigation }) {
           </Pressable>
         </> : null}
         {checkoutTrip && <Pressable accessibilityRole="button" style={styles.button}
-          onPress={() => navigation.navigate('PaymentPreview')}>
-          <Text style={styles.buttonText}>{t('openPayment')}</Text>
+          onPress={() => navigation.navigate('PaymentPreview', { tripId: activeTrip.id })}>
+          <Text style={styles.buttonText}>{t('openTestCheckout')}</Text>
         </Pressable>}
       </> : <Text style={styles.notice}>{t('noCompletedTrip')}</Text>}
       <Pressable accessibilityRole="button" style={styles.button} onPress={() => navigation.getParent()?.navigate('MainDrawer')}>

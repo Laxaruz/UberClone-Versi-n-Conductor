@@ -185,3 +185,24 @@
 - **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar flujo de viaje y renovar registro`.
 - **Verificacion:** Pasaron las pruebas de fechas, transiciones y tarifa del viaje, 18 casos de validacion y 14 de limites del registro, 7 de disponibilidad, 15 del temporizador de solicitudes y el contrato de solicitudes. Expo exporto JavaScript y recursos para Android e iOS; no genera APK ni IPA. La comprobacion visual y funcional de este avance en iPhone sigue pendiente.
 - **Aprendizaje:** Los estados del viaje impiden saltar etapas y la tarifa final puede usar la misma funcion pura de la estimacion. El selector de fecha permite escribir una fecha sin recorrer muchos años. Una exportacion y las pruebas automatizadas no sustituyen la prueba en dispositivo.
+
+## Entrada #52 — Integración local del checkout de prueba
+
+- **Fecha:** 2026-11-13
+- **Integrante:** Keiner Jhoseth Vega
+- **Herramienta:** ChatGPT
+- **Rama:** `Jhoseth-dev`
+- **Objetivo:** Preparar la pantalla de cobro de prueba, consultar el estado confirmado por el servidor y escuchar los cambios del viaje en Firestore.
+- **Prompts completos y literales:**
+
+> Prepare en Jhoseth-dev la pantalla de cobro de prueba. La app consulta al servidor el estado del viaje, abre solo el enlace de prueba y vuelve a consultar al regresar. El telefono no aprueba pagos. El servidor marca el viaje como pagado solo despues de verificar la notificacion y evita actualizarlo dos veces. Pasaron 9 pruebas del servidor, las pruebas de la app y la exportacion de Android e iOS. Todavia faltan la URL publica, Firebase Admin, las credenciales de prueba y la prueba completa en mi iPhone. No hice commit ni push. Ayudame a registrar este estado como avance local pendiente.
+
+> Despues de mi mensaje anterior revise el PDF y ajuste el avance local. La guia pide que el viaje pase a status paid cuando el servidor confirme el pago y que la app escuche el cambio en tiempo real. Agregue esa escucha en Firestore a la pantalla Cobro. La app vuelve a consultar el estado al servidor cuando detecta el cambio. Repeti la exportacion de Android e iOS y termino bien. El flujo completo en iPhone, la URL publica y la configuracion de prueba siguen pendientes. No hice commit ni push. Actualiza la entrada pendiente con esta informacion.
+
+- **Resumen de la respuesta:** Se recomendó separar las responsabilidades de la app y del servidor. Abrir el checkout o regresar de él no confirma un pago. La respuesta actualizada incorporó la escucha de Firestore y la nueva consulta al servidor cuando cambia el estado del viaje.
+- **Qué se usó y modificó:** Se preparó la pantalla Cobro y su servicio de consulta autenticada. La app abre únicamente enlaces de prueba, escucha el documento del viaje y vuelve a consultar al servidor al detectar un cambio confirmado. El servidor valida el enlace de sandbox y, tras verificar el webhook, cambia el viaje a `status: paid` y `paymentStatus: approved` sin repetir la actualización. El teléfono no escribe la aprobación. Este ajuste sigue lo indicado en la sección 4 del PDF.
+- **Archivos del avance:** `src/screens/PaymentScreen.js`, `src/services/checkoutService.js`, `src/context/DriverContext.js`, `src/screens/TripCompletedScreen.js`, `src/navigation/RootNavigator.js`, `src/components/AppIcon.js`, `src/i18n/translations.js`, `server/app.js`, `server/paymentChecks.js`, `server/paymentRepository.js`, `server/test/app.test.js`, `server/test/payments.test.js`, `server/README.md` y `docs/TRIPS.md`. La actualización local de Expo en `package.json` y `package-lock.json` permanece separada.
+- **Verificación:** Pasaron 9 pruebas del servidor; también las pruebas existentes de registro, límites de escritura, disponibilidad, solicitudes, flujo de viaje y fechas. `npm run check` indicó dependencias al día usando el mapa local de Expo porque no hubo consulta de red. La exportación de JavaScript y recursos para Android e iOS se repitió después de añadir la escucha y terminó correctamente. No equivale a una compilación instalable ni a una prueba del checkout en el teléfono.
+- **Pendientes:** URL pública HTTPS del webhook, Firebase Admin, configuración segura de credenciales de prueba de Mercado Pago, habilitación de un viaje de prueba elegible y verificación completa de checkout, webhook, estado `paid` y escucha en iPhone. No se activaron pagos ni servicios con gasto.
+- **Commit, push y hash al redactar esta entrada:** Pendientes. Los cambios estaban locales en `Jhoseth-dev` y no se habian integrado en `main`.
+- **Aprendizaje:** El regreso del navegador no prueba que el pago fue aprobado. La confirmación procede del servidor; Firestore avisa a la app del cambio y la app consulta de nuevo el estado verificado.

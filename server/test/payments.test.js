@@ -3,7 +3,7 @@ const { createHmac } = require('node:crypto');
 const { test } = require('node:test');
 const { createApp } = require('../app');
 const { createMercadoPagoClient } = require('../mercadoPagoClient');
-const { canStartCheckout, matchesApprovedTestPayment } = require('../paymentChecks');
+const { canStartCheckout, isSandboxCheckoutUrl, matchesApprovedTestPayment } = require('../paymentChecks');
 const { createPaymentRepository } = require('../paymentRepository');
 
 async function start(app) {
@@ -44,6 +44,8 @@ test('current trips remain blocked, and test checkout uses the stored fare', asy
     assert.deepEqual(await first.json(), { preferenceId: 'pref-1', checkoutUrl: 'https://sandbox.mercadopago.com/test' });
     assert.equal((await post('owner')).status, 200);
     assert.equal(calls, 1);
+    trip.paymentCheckoutUrl = 'https://sandbox.mercadopago.com.evil.test/checkout';
+    assert.equal((await post('owner')).status, 502);
   } finally {
     await server.close();
   }
@@ -168,6 +170,10 @@ test('payment checks reject live and mismatched provider data', () => {
     payments: [{ id: 123, status: 'approved' }],
   };
   assert.equal(canStartCheckout(trip), true);
+  assert.equal(isSandboxCheckoutUrl('https://sandbox.mercadopago.com/checkout'), true);
+  assert.equal(isSandboxCheckoutUrl('https://sandbox.mercadopago.com.co/checkout'), true);
+  assert.equal(isSandboxCheckoutUrl('http://sandbox.mercadopago.com/checkout'), false);
+  assert.equal(isSandboxCheckoutUrl('https://sandbox.mercadopago.com.evil.test/checkout'), false);
   assert.equal(matchesApprovedTestPayment(payment, order, 'trip-1', trip), true);
   assert.equal(matchesApprovedTestPayment(payment, { ...order, is_test: undefined }, 'trip-1', trip), true);
   assert.equal(matchesApprovedTestPayment({ ...payment, live_mode: true }, order, 'trip-1', trip), false);
