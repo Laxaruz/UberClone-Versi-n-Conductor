@@ -9,7 +9,7 @@ import useTranslation from '../i18n/useTranslation';
 export default function ActiveTripScreen({ navigation }) {
   const t = useTranslation();
   const isFocused = useIsFocused();
-  const { activeTrip, advanceTrip } = useDriver();
+  const { activeTrip, advanceTrip, completeTrip, tripSaving, tripSaveError } = useDriver();
   const status = activeTrip?.status;
   const headingKey = status === 'driver_arriving'
     ? activeTrip.pickupReachedAt ? 'atPickup' : 'goingToPickup'
@@ -18,12 +18,11 @@ export default function ActiveTripScreen({ navigation }) {
     ? activeTrip.pickupReachedAt ? 'passengerOnBoard' : 'confirmArrival'
     : status === 'in_progress' ? 'finishTrip' : null;
 
-  function handleAction() {
+  async function handleAction() {
     if (status === 'driver_arriving') {
       advanceTrip(activeTrip.pickupReachedAt ? 'board_passenger' : 'confirm_arrival');
     } else if (status === 'in_progress') {
-      advanceTrip('complete');
-      navigation.navigate('TripCompleted');
+      if (await completeTrip()) navigation.navigate('TripCompleted');
     }
   }
 
@@ -77,9 +76,11 @@ export default function ActiveTripScreen({ navigation }) {
       <TripRouteMap key={`${activeTrip.id}-${status}`} isFocused={isFocused}
         target={status === 'in_progress' ? activeTrip.destination : activeTrip.origin} />
       <Text style={styles.notice}>{t('routeNotNavigation')} {t('tripLocalOnly')}</Text>
-      <Pressable accessibilityRole="button" style={styles.button} onPress={handleAction}>
+      {tripSaveError && status === 'in_progress' ? <Text style={styles.notice}>{t(tripSaveError)}</Text> : null}
+      <Pressable accessibilityRole="button" disabled={tripSaving}
+        style={[styles.button, tripSaving && styles.buttonDisabled]} onPress={handleAction}>
         <AppIcon name={status === 'in_progress' ? 'flag' : 'check'} color={colors.surface} size={21} />
-        <Text style={styles.buttonText}>{t(actionKey)}</Text>
+        <Text style={styles.buttonText}>{t(tripSaving ? 'savingTrip' : actionKey)}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -115,5 +116,6 @@ const styles = StyleSheet.create({
   estimateValue: { color: colors.primary, fontWeight: '800' },
   button: { marginTop: 24, padding: 17, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
     flexDirection: 'row', gap: 10, backgroundColor: colors.primary },
+  buttonDisabled: { opacity: 0.6 },
   buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
 });

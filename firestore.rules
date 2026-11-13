@@ -138,5 +138,50 @@ service cloud.firestore {
           && request.resource.data.respondedAt == request.time;
       }
     }
+
+    function completedTripFields() {
+      return [
+        'requestId', 'driverId', 'passengerName', 'origin', 'destination',
+        'distanceKm', 'durationMin', 'category', 'paymentMethod',
+        'fare', 'commission', 'driverEarnings', 'commissionRate', 'tip',
+        'status', 'paymentStatus', 'paymentId', 'createdAt', 'completedAt'
+      ];
+    }
+
+    // AI-assisted: see docs/AI_LOG.md #35
+    match /trips/{tripId} {
+      allow get: if request.auth != null
+        && ((resource != null && resource.data.driverId == request.auth.uid)
+          || (resource == null
+            && exists(/databases/$(database)/documents/tripRequests/$(tripId))
+            && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.acceptedBy == request.auth.uid));
+      allow list: if false;
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/tripRequests/$(tripId))
+        && request.resource.data.keys().hasOnly(completedTripFields())
+        && request.resource.data.keys().hasAll(completedTripFields())
+        && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.status == 'accepted'
+        && get(/databases/$(database)/documents/tripRequests/$(tripId)).data.acceptedBy == request.auth.uid
+        && request.resource.data.requestId == tripId
+        && request.resource.data.driverId == request.auth.uid
+        && request.resource.data.passengerName == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.passengerName
+        && request.resource.data.origin == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.origin
+        && request.resource.data.destination == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.destination
+        && request.resource.data.distanceKm == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.distanceKm
+        && request.resource.data.durationMin == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.durationMin
+        && request.resource.data.category == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.category
+        && request.resource.data.paymentMethod == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.paymentMethod
+        && request.resource.data.fare == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.fare
+        && request.resource.data.commission == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.commission
+        && request.resource.data.driverEarnings == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.driverEarnings
+        && request.resource.data.createdAt == get(/databases/$(database)/documents/tripRequests/$(tripId)).data.createdAt
+        && request.resource.data.commissionRate == 0.2
+        && request.resource.data.tip == 0
+        && request.resource.data.status == 'completed'
+        && request.resource.data.paymentStatus == 'pending'
+        && request.resource.data.paymentId == null
+        && request.resource.data.completedAt == request.time;
+      allow update, delete: if false;
+    }
   }
 }

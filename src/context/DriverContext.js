@@ -7,6 +7,7 @@ import { firebaseConfigured, ensureDemoUser } from '../services/firebaseClient';
 import { createPendingDriver, observeDriver, saveDriverLocation, setDriverAvailability, toCoordinates } from '../services/driverRepository';
 import { calculateFare } from '../utils/calculateFare';
 import { transitionTrip } from '../utils/tripTransitions';
+import { saveCompletedTrip } from '../services/tripRepository';
 
 const LANGUAGE_KEY = '@uberclone_driver_language';
 const DriverContext = createContext(null);
@@ -27,6 +28,9 @@ export function DriverProvider({ children }) {
   const registrationAlreadySaved = useRef(false);
   const registrationRestored = useRef(false);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
+  const [tripSaving, setTripSaving] = useState(false);
+  const [tripSaveError, setTripSaveError] = useState(null);
+  const tripCompleteInFlight = useRef(false);
   const availabilityIntent = useRef(false);
   const availabilityTask = useRef(Promise.resolve());
   const registrationStatus = driverSession?.approvalStatus ?? 'not_submitted';
@@ -191,14 +195,37 @@ export function DriverProvider({ children }) {
   }, [driverUid, updateAvailability]);
 
   const advanceTrip = useCallback((action) => {
+    if (action === 'complete') return;
     setActiveTrip((current) => {
       if (!current) return current;
-      const finalAmounts = action === 'complete' && current.status === 'in_progress'
-        ? calculateFare({ distanceKm: current.distanceKm, durationMin: current.durationMin,
-          category: current.category, tip: current.tip ?? 0 }) : null;
-      return transitionTrip(current, action, Date.now(), finalAmounts);
+      return transitionTrip(current, action, Date.now());
     });
   }, []);
+
+  const completeTrip = useCallback(async () => {
+    if (tripCompleteInFlight.current || activeTrip?.status !== 'in_progress') return false;
+    tripCompleteInFlight.current = true;
+    setTripSaving(true);
+    setTripSaveError(null);
+    try {
+      const amounts = calculateFare({ distanceKm: activeTrip.distanceKm, durationMin: activeTrip.durationMin,
+        category: activeTrip.category, tip: activeTrip.tip ?? 0 });
+      const completed = transitionTrip(activeTrip, 'complete', Date.now(), amounts);
+      if (completed.status !== 'completed') throw new Error('Trip cannot be completed');
+      if (firebaseConfigured) {
+        if (activeTrip.source !== 'firestore_test' || !driverUid) throw new Error('Trip has no driver');
+        await saveCompletedTrip(driverUid, completed);
+      }
+      setActiveTrip(completed);
+      return true;
+    } catch {
+      setTripSaveError('tripSaveFailed');
+      return false;
+    } finally {
+      tripCompleteInFlight.current = false;
+      setTripSaving(false);
+    }
+  }, [activeTrip, driverUid]);
 
   return (
     <DriverContext.Provider
@@ -210,6 +237,9 @@ export function DriverProvider({ children }) {
         activeTrip,
         setActiveTrip,
         advanceTrip,
+        completeTrip,
+        tripSaving,
+        tripSaveError,
         registration,
         registrationLoading,
         updateRegistration,
