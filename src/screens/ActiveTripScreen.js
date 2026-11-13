@@ -1,11 +1,14 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import AppIcon from '../components/AppIcon';
+import TripRouteMap from '../components/TripRouteMap';
 import { colors } from '../config/theme';
 import { useDriver } from '../context/DriverContext';
 import useTranslation from '../i18n/useTranslation';
 
 export default function ActiveTripScreen({ navigation }) {
   const t = useTranslation();
+  const isFocused = useIsFocused();
   const { activeTrip, advanceTrip } = useDriver();
   const status = activeTrip?.status;
   const headingKey = status === 'driver_arriving'
@@ -68,10 +71,12 @@ export default function ActiveTripScreen({ navigation }) {
         </View>
       </View>
       <View style={styles.estimateCard}>
-        <Text style={styles.estimateLabel}>{t('distance')} · {t('duration')}</Text>
+        <Text style={styles.estimateLabel}>{t('requestEstimate')}</Text>
         <Text style={styles.estimateValue}>{activeTrip.distanceKm} km · {activeTrip.durationMin} min</Text>
       </View>
-      <Text style={styles.notice}>{t('routeNotAvailable')} {t('tripLocalOnly')}</Text>
+      <TripRouteMap key={`${activeTrip.id}-${status}`} isFocused={isFocused}
+        target={status === 'in_progress' ? activeTrip.destination : activeTrip.origin} />
+      <Text style={styles.notice}>{t('routeNotNavigation')} {t('tripLocalOnly')}</Text>
       <Pressable accessibilityRole="button" style={styles.button} onPress={handleAction}>
         <AppIcon name={status === 'in_progress' ? 'flag' : 'check'} color={colors.surface} size={21} />
         <Text style={styles.buttonText}>{t(actionKey)}</Text>

@@ -681,3 +681,39 @@ Cada entrada registra una interacción de IA relacionada con el proyecto. Los da
 - **Commit:** Pendiente al redactar esta entrada. Mensaje propuesto: `Implementar flujo de viaje y renovar registro`.
 - **Verificacion:** Pasaron las pruebas de fechas, transiciones y tarifa del viaje, 18 casos de validacion y 14 de limites del registro, 7 de disponibilidad, 15 del temporizador de solicitudes y el contrato de solicitudes. Expo exporto JavaScript y recursos para Android e iOS; no genera APK ni IPA. La comprobacion visual y funcional de este avance en iPhone sigue pendiente.
 - **Aprendizaje:** Los estados del viaje impiden saltar etapas y la tarifa final puede usar la misma funcion pura de la estimacion. El selector de fecha permite escribir una fecha sin recorrer muchos años. Una exportacion y las pruebas automatizadas no sustituyen la prueba en dispositivo.
+
+## Entrada #33 — Revisión del alcance de rutas con OSRM
+
+- **Fecha y hora:** 2026-11-12 21:07:49 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Confirmar si el repositorio ya tiene un servicio de rutas, evaluar el alcance OSRM y detectar dependencias con el flujo de viaje de Jhoseth.
+- **Prompt completo y literal:**
+
+> Revise mi proyecto y confirme que todavia no tenemos servicio de rutas. Comprobe que Google Maps Platform me pide registrar una tarjeta para usar Routes API, por eso quiero usar la opcion OSRM que permite la guia para esta entrega. Pienso mostrar la ruta desde mi ubicacion hasta la recogida y luego hacia el destino, con la distancia y el tiempo del servicio y la linea en el mapa. Tambien voy a dejar claro que las solicitudes de prueba tienen datos estimados y que la ruta no es navegacion paso a paso. Podrias revisar si este alcance corresponde a mi siguiente commit y si ves algun problema con el flujo que ya hizo Jhoseth?
+
+- **Resumen de la respuesta:** La búsqueda local confirma que aún no hay servicio OSRM/rutas ni dibujo `Polyline`; el flujo actual de Jhoseth sí tiene estados locales `accepted`, `driver_arriving`, `in_progress` y `completed`. El alcance cabe como ruta visual de prueba, pero requiere coordinar cambios en `ActiveTripScreen` y resolver cómo obtener GPS allí; el servidor demo público de OSRM limita uso razonable no comercial a una solicitud por segundo y no garantiza disponibilidad.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se usaron `git status`, búsqueda en fuentes, lectura de pantallas, transiciones, contexto y navegador, además de documentación oficial de OSRM y la guía del proyecto. No se modificó código ni se ejecutaron pruebas. Se distingue la ruta visual de las estimaciones ya guardadas en la solicitud, sin presentarla como navegación paso a paso. Se añadió esta entrada a ambas bitácoras.
+- **Archivos revisados:** Guía PDF; `package.json`, `src/components/DriverMap.js`, `src/hooks/useDriverLocation.js`, `src/screens/IncomingRequestScreen.js`, `src/screens/TripPreviewScreen.js`, `src/screens/ActiveTripScreen.js`, `src/screens/TripCompletedScreen.js`, `src/context/DriverContext.js`, `src/utils/tripTransitions.js`, `src/navigation/RootNavigator.js`, `src/screens/HomeScreen.js`.
+- **Archivos afectados y commit:** Solo esta entrada #33 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. HEAD revisado `818179cee7cf0c5ac1d0b0057f07f8c37796f029` (`Implementar flujo de viaje y renovar registro`); no hay commit para esta consulta.
+- **Verificación:** `git status` confirmó el árbol de trabajo limpio en `Kevin-dev`, una confirmación adelante de `origin/Kevin-dev`; HEAD coincide con `origin/Jhoseth-dev`. `rg` no encontró OSRM, OpenRouteService, Directions, Distance Matrix, `Polyline`, ni llamadas HTTP de ruta en `src`/`package.json`; `DriverMap` solo muestra la ubicación actual. El código confirma que la aceptación apaga disponibilidad, `ActiveTripScreen` no llama a `useDriverLocation`, y `advanceTrip` usa estado local. La documentación OSRM indica que `Route` devuelve trayecto/duración/distancia/geometría y el servidor demo público no ofrece SLA. No se ejecutaron pruebas.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
+
+## Entrada #34 — Revisión de la integración de rutas OSRM
+
+- **Fecha y hora:** 2026-11-12 21:27:33 (America/Bogota)
+- **Integrante:** Kevin
+- **Herramienta:** ChatGPT (Codex)
+- **Objetivo:** Revisar el servicio OSRM, el dibujo de las rutas por tramo, la separación de estimaciones y tarifas, y su compatibilidad con los estados actuales del viaje antes del commit.
+- **Prompt completo y literal:**
+
+> Conecte el mapa del viaje con OSRM y mostre una ruta desde mi ubicacion hasta la recogida. Ademas, cuando el pasajero sube, el mapa cambia la ruta hacia el destino. La distancia y el tiempo de cada tramo se muestran aparte de los valores estimados de la solicitud. Tambien agregue mensajes para cuando falten coordenadas o falle la ruta, sin cambiar la tarifa ni los estados del viaje. Comprobe las pruebas del servicio de rutas y del flujo de viaje, y Expo exporto para Android e iOS. En mi iPhone vi la ruta hacia la recogida y despues hacia el destino. Tambien confirme en Firestore que la solicitud quedo aceptada. Podrias revisar si ves algun error antes del commit y si este avance cumple con el alcance que acordamos?
+
+- **Resumen de la respuesta:** La lectura confirma que OSRM construye rutas de conducción, transforma la geometría para `Polyline` y muestra métricas por tramo según los estados existentes, sin modificar tarifa ni transiciones. No encontré un error funcional comprobado en el diff; antes del commit falta añadir las referencias IA de la guía a los bloques asistidos, y la prueba de iPhone/Firestore, las pruebas automatizadas y las exportaciones se registran como reportadas por Kevin.
+- **Enlace al chat:** No disponible en esta sesión.
+- **Qué se usó / modificó / descartó:** Se revisó el diff y los archivos nuevos de servicio, mapa y prueba, además de pantalla y traducciones. No se modificó código ni se ejecutaron pruebas o exportaciones. Se registra como reporte de Kevin la comprobación en iPhone, Firestore, pruebas y exportaciones.
+- **Archivos revisados:** `src/services/routeService.js`, `src/components/TripRouteMap.js`, `src/screens/ActiveTripScreen.js`, `src/i18n/translations.js`, `tests/routeService.test.mjs`, `src/context/DriverContext.js`, `src/utils/tripTransitions.js`, `src/screens/TripPreviewScreen.js`.
+- **Archivos afectados y commit:** Solo esta entrada #34 en `docs/AI_LOG_KEVIN.md` y `docs/AI_LOG.md`. Código local sin commit: `src/i18n/translations.js`, `src/screens/ActiveTripScreen.js`, `src/components/TripRouteMap.js`, `src/services/routeService.js`, `tests/routeService.test.mjs`. HEAD base `818179cee7cf0c5ac1d0b0057f07f8c37796f029`.
+- **Verificación:** `git status` confirmó `Kevin-dev` una confirmación adelante de `origin/Kevin-dev`, HEAD `818179cee7cf0c5ac1d0b0057f07f8c37796f029`, y los cinco archivos de código listados como modificados o nuevos. La lectura confirma que el destino cambia entre `origin` y `destination` según `driver_arriving`/`in_progress`, que distancia y duración OSRM se muestran separadas, y que `DriverContext`/`tripTransitions` no están modificados. `git diff --check` no reportó whitespace en los diffs rastreados. `rg` no encontró comentarios `AI-assisted` en el servicio, componente, pantalla, traducciones ni prueba nueva. No se ejecutaron pruebas ni se repitieron verificaciones de iPhone, Firestore o Expo.
+- **Aprendizaje:** Pendiente de Kevin; no se atribuye una reflexión personal sin confirmación.
